@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
-import { OutletRouter } from "./routers/outlet.router";
-import { EmployeeRouter } from "./routers/employee.router";
+import { OutletRouter } from "./routers/outlet/outlet.router";
+import { EmployeeRouter } from "./routers/employee/employee.router";
 
 
 const PORT: number = 8000;
