@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { OutletController } from "../controllers/outlet.controller";
+import { OutletController } from "../../controllers/outlet/outlet.controller";
 
 
 export class OutletRouter {
