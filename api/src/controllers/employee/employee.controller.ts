@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { addEmployeeService } from "../../services/employee/employee.service";
+import { addEmployeeService } from "../../services/employee/addEmployee.service";
+import { getAllEmployeeService } from "../../services/employee/getAllEmployee.service";
 
 export class EmployeeController {
   async addEmployee(req: Request, res: Response) {
@@ -17,4 +18,13 @@ export class EmployeeController {
       res.status(500).send({ message: error.message });
     }
   }
+
+  async getAllEmployee(req: Request, res: Response) {
+    try {
+      const result = await getAllEmployeeService();
+      res.status(200).send({ message: "Employee get successfully", result });
+    } catch (error: any) {
+      res.status(500).send({ message: error.message });
+    }
+  } 
 }
