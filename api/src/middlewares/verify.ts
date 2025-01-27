@@ -9,18 +9,32 @@ export const verifyToken = async (
 ) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    console.log(token);
     
     if (!token) throw { message: "Unauthorize!" };
     
     const verifiedUser = verify(token, process.env.JWT_KEY!);
-    console.log(verifiedUser);
 
     req.user = verifiedUser as UserPayload;
 
     next();
-  } catch (err) {
-    console.log(err);
-    res.status(400).send(err);
+  } catch (error: any) {
+    res.status(400).send(error.message);
   }
 };
+
+export const checkSuperAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role == "SUPER_ADMIN") {
+    next();
+  } else {
+    res.status(400).send({ message: "Unauthorize, Super Admin only!" });
+  }
+};
+
+export const checkOutletAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role == "OUTLET_ADMIN") {
+    next();
+  } else {
+    res.status(400).send({ message: "Unauthorize, Admin only!" });
+  }
+};
+
