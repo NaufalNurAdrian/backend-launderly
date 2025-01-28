@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
+import { AttendanceRouter } from "./routers/attendance.router";
 import { OutletRouter } from "./routers/outlet.router";
 import { EmployeeRouter } from "./routers/employee.router";
 
@@ -22,9 +23,11 @@ app.get("/api", (req: Request, res: Response) => {
   res.status(200).send("Welcome to my API");
 });
 
+const attendanceRouter = new AttendanceRouter()
 const outletRouter = new OutletRouter();
 const employeeRouter = new EmployeeRouter();
 
+app.use("/api/attendance", attendanceRouter.getRouter())
 app.use("/api/outlet", outletRouter.getRouter());
 app.use("/api/employee", employeeRouter.getRouter());
 
