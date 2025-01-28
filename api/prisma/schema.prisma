@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -273,9 +274,9 @@ model Payment {
 
 model Attendance {
   id               Int              @id @default(autoincrement())
-  userRole         Role
-  checkIn          DateTime
+  checkIn          DateTime         @default(now())
   checkOut         DateTime?
+  createdAt        DateTime              @default(now())
   workHour         Int
   userId           Int
   attendanceStatus AttendanceStatus @default(INACTIVE)
