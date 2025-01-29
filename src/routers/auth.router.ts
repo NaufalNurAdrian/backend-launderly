@@ -1,4 +1,4 @@
-import { AuthController } from "@/controllers/user/auth.controller";
+import { AuthController } from "../controllers/auth/auth.controller";
 import { Router } from "express";
 
 export class AuthRouter {
@@ -12,9 +12,11 @@ export class AuthRouter {
   }
 
   private initializeRoutes() {
-    this.router.post(
-      '/register',
-      this.authController.registerController,
+    this.router.post("/register", this.authController.registerController);
+    this.router.post("/login", this.authController.loginController);
+    this.router.patch(
+      "/verify/customers/:token",
+      this.authController.verifyController
     );
   }
 
