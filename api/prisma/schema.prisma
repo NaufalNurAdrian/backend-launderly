@@ -41,11 +41,6 @@ enum OrderStatus {
   COMPLETED
 }
 
-enum EmployeeWorkShift {
-  DAY
-  NIGHT
-}
-
 enum EmployeeStation {
   WASHING
   IRONING
@@ -105,7 +100,6 @@ model User {
 
 model Employee {
   id           Int                @id @default(autoincrement())
-  workShift    EmployeeWorkShift?
   isSuperAdmin Boolean            @default(false)
   station      EmployeeStation?
   userId       Int                @unique

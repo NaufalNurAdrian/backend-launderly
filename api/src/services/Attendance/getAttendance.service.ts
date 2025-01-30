@@ -25,22 +25,18 @@ export const getAttendanceService = async (query: GetAttendanceQuery) => {
 
         const result = await prisma.attendance.findMany({
             where: {
-                userId: userId,
+                userId : userId
+            }, 
+            include: {
+                user: true
             },
-            select: {
-                userId: true,
-                checkIn: true,
-                checkOut: true,
-                workHour: true,
-                createdAt: true
-            },
-            orderBy: orderBy,
+            orderBy: orderBy, 
             skip: skip, 
             take: pageSize, 
         });
 
         return {data: result, 
-            pagination: {
+             pagination: {
                 total: totalAttendances,
                 page: page,
                 pageSize: pageSize,
