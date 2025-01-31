@@ -90,6 +90,9 @@ model User {
   avatar           String?
   createdAt        DateTime           @default(now())
   isDelete         Boolean            @default(false)
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  emailVerifyToken String?
   employee         Employee?
   address          Address[]
   pickupOrder      PickupOrder[]

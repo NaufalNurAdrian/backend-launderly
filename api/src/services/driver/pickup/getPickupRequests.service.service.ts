@@ -1,18 +1,17 @@
 import { Prisma } from "@prisma/client";
-import haversineDistance from "../../helpers/haversine";
-import prisma from "../../prisma";
+import haversineDistance from "../../../helpers/haversine";
+import prisma from "../../../prisma";
 
-interface getDeliveryData {
+interface getPickupData {
   driverId: number;
   sortBy?: "createdAt" | "location";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }
-
-export const getDeliveryRequestsService = async (query: getDeliveryData) => {
+export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-    const { driverId, sortBy, order = "asc", page = 1, pageSize = 4 } = query;
+    const { driverId, sortBy, order, page = 1, pageSize = 4 } = query;
     const user = await prisma.user.findUnique({
       where: { id: driverId },
       select: { role: true },
@@ -30,17 +29,39 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     });
 
     if (!activeAttendance) {
-      throw new Error("Driver hasn't checked in");
+      throw new Error("Driver doesn't check the attendance yet");
     }
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
-      select: { outletId: true, id: true },
+      select: {
+        outletId: true,
+        id: true,
+      },
     });
 
     if (!driver || !driver.outletId) {
       throw new Error("Outlet not found");
     }
+
+    const outletId = driver.outletId;
+    const whereClause: Prisma.PickupOrderWhereInput = {
+      AND: [
+        {
+          OR: [
+            { pickupStatus: "WAITING_FOR_DRIVER", driverId: null },
+            { pickupStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
+            { pickupStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
+          ],
+        },
+        {
+          NOT: { pickupStatus: "RECEIVED_BY_OUTLET" },
+        },
+        {
+          outletId: outletId,
+        },
+      ],
+    };
 
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
@@ -57,22 +78,7 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     const outletLat = parseFloat(outletAddress.latitude || "0");
     const outletLon = parseFloat(outletAddress.longitude || "0");
 
-    const whereClause: Prisma.DeliveryOrderWhereInput = {
-      AND: [
-        {
-          OR: [
-            { deliveryStatus: "WAITING_FOR_DRIVER", driverId: null },
-            { deliveryStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
-            { deliveryStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
-          ],
-        },
-        {
-          NOT: { deliveryStatus: "RECEIVED_BY_CUSTOMER" },
-        },
-      ],
-    };
-
-    const deliveryRequests = await prisma.deliveryOrder.findMany({
+    const pickupRequests = await prisma.pickupOrder.findMany({
       where: whereClause,
       include: {
         address: true,
@@ -80,35 +86,35 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
       },
     });
 
-    const deliveryRequestsWithDistance = deliveryRequests.map((request) => {
+    const pickupRequestsWithDistance = pickupRequests.map((request) => {
       if (!request.address) {
-        throw new Error("Delivery request doesn't have an address");
+        throw new Error("Pickup request doesn't have address");
       }
 
-      const deliveryLat = parseFloat(request.address.latitude || "0");
-      const deliveryLon = parseFloat(request.address.longitude || "0");
+      const pickupLat = parseFloat(request.address.latitude || "0");
+      const pickupLon = parseFloat(request.address.longitude || "0");
 
-      const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
-      return { ...request, distance, deliveryPrice: 20000 };
+      const distance = haversineDistance(outletLat, outletLon, pickupLat, pickupLon);
+      return { ...request, distance };
     });
 
     if (sortBy === "location") {
-      deliveryRequestsWithDistance.sort((a, b) => {
+      pickupRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });
     }
 
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRequests = deliveryRequestsWithDistance.slice(startIndex, endIndex);
+    const paginatedRequests = pickupRequestsWithDistance.slice(startIndex, endIndex);
 
     return {
       data: paginatedRequests,
       pagination: {
-        total: deliveryRequestsWithDistance.length,
+        total: pickupRequestsWithDistance.length,
         page: page,
         pageSize: pageSize,
-        totalPages: Math.ceil(deliveryRequestsWithDistance.length / pageSize),
+        totalPages: Math.ceil(pickupRequestsWithDistance.length / pageSize),
       },
     };
   } catch (err) {

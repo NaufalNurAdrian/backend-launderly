@@ -1,5 +1,6 @@
-import haversineDistance from "../../helpers/haversine";
-import prisma from "../../prisma";
+import { Prisma } from "@prisma/client";
+import haversineDistance from "../../../helpers/haversine";
+import prisma from "../../../prisma";
 
 interface getDeliveryData {
   driverId: number;
@@ -8,7 +9,8 @@ interface getDeliveryData {
   page?: number;
   pageSize?: number;
 }
-export const getDeliveryHistoryService = async (query: getDeliveryData) => {
+
+export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
     const { driverId, sortBy, order = "asc", page = 1, pageSize = 4 } = query;
     const user = await prisma.user.findUnique({
@@ -18,6 +20,17 @@ export const getDeliveryHistoryService = async (query: getDeliveryData) => {
 
     if (!user || user.role !== "DRIVER") {
       throw new Error("Hanya driver yang dapat mengakses data ini");
+    }
+
+    const activeAttendance = await prisma.attendance.findFirst({
+      where: {
+        userId: driverId,
+        checkOut: null,
+      },
+    });
+
+    if (!activeAttendance) {
+      throw new Error("Driver hasn't checked in");
     }
 
     const driver = await prisma.employee.findUnique({
@@ -31,57 +44,71 @@ export const getDeliveryHistoryService = async (query: getDeliveryData) => {
 
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
-      include: { address: true },
+      include: {
+        address: true,
+      },
     });
 
     if (!outlet || !outlet.address || outlet.address.length === 0) {
-      throw new Error("Primary adress not found");
+      throw new Error("Primary address not found");
     }
 
     const outletAddress = outlet.address[0];
     const outletLat = parseFloat(outletAddress.latitude || "0");
     const outletLon = parseFloat(outletAddress.longitude || "0");
 
-    const deliveryHistory = await prisma.deliveryOrder.findMany({
-      where: {
-        deliveryStatus: "RECEIVED_BY_CUSTOMER",
-        driverId: driver.id
-      },
+    const whereClause: Prisma.DeliveryOrderWhereInput = {
+      AND: [
+        {
+          OR: [
+            { deliveryStatus: "WAITING_FOR_DRIVER", driverId: null },
+            { deliveryStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
+            { deliveryStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
+          ],
+        },
+        {
+          NOT: { deliveryStatus: "RECEIVED_BY_CUSTOMER" },
+        },
+      ],
+    };
+
+    const deliveryRequests = await prisma.deliveryOrder.findMany({
+      where: whereClause,
       include: {
         address: true,
         user: true,
       },
     });
 
-    const deliveryHistoryWithDistance = deliveryHistory.map((request) => {
+    const deliveryRequestsWithDistance = deliveryRequests.map((request) => {
       if (!request.address) {
-        throw new Error("Delivery request doesn't have address");
+        throw new Error("Delivery request doesn't have an address");
       }
 
       const deliveryLat = parseFloat(request.address.latitude || "0");
       const deliveryLon = parseFloat(request.address.longitude || "0");
 
       const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
-      return { ...request, distance };
+      return { ...request, distance, deliveryPrice: 20000 };
     });
 
     if (sortBy === "location") {
-      deliveryHistoryWithDistance.sort((a, b) => {
+      deliveryRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });
     }
 
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatryHistory = deliveryHistoryWithDistance.slice(startIndex, endIndex);
+    const paginatedRequests = deliveryRequestsWithDistance.slice(startIndex, endIndex);
 
     return {
-      data: paginatryHistory,
+      data: paginatedRequests,
       pagination: {
-        total: deliveryHistoryWithDistance.length,
+        total: deliveryRequestsWithDistance.length,
         page: page,
         pageSize: pageSize,
-        totalPages: Math.ceil(deliveryHistoryWithDistance.length / pageSize),
+        totalPages: Math.ceil(deliveryRequestsWithDistance.length / pageSize),
       },
     };
   } catch (err) {
