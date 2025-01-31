@@ -23,7 +23,7 @@ export const loginService = async (
     });
 
     if (!customer) throw { message: "Customer account not found!" };
-    const isValidPass = await bcrypt.compare(password, customer.password);
+    const isValidPass = await bcrypt.compare(password, customer.password!);
     if (!isValidPass) throw { message: "Incorrect Password!" };
     if (!customer.isVerify)
       throw {
