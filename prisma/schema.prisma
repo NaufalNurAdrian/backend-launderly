@@ -277,7 +277,6 @@ model Payment {
 
 model Attendance {
   id               Int              @id @default(autoincrement())
-  userRole         Role
   checkIn          DateTime         @default(now())
   checkOut         DateTime?
   createdAt        DateTime         @default(now())

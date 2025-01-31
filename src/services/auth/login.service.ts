@@ -32,7 +32,11 @@ export const loginService = async (
       };
 
     // Create JWT token for the customer
-    const payload = { id: customer.id, email: customer.email };
+    const payload = {
+      id: customer.id,
+      email: customer.email,
+      role: customer.role,
+    };
     const token = sign(payload, process.env.JWT_KEY!, { expiresIn: "1d" });
 
     res
