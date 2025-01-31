@@ -120,8 +120,8 @@ model Address {
   addressLine String
   city        String
   isPrimary   Boolean @default(false)
-  latitude    String?
-  longitude   String?
+  latitude    Float?
+  longitude   Float?
   isDelete    Boolean @default(false)
   outletId    Int?
   userId      Int?

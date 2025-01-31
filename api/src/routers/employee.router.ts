@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { EmployeeController } from "../controllers/employee/employee.controller";
+import { EmployeeController } from "../controllers/employee.controller";
 
 
 export class EmployeeRouter {
