@@ -3,8 +3,8 @@ import prisma from "../../prisma";
 interface AddressInput {
   addressLine: string;
   city: string;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
 }
 
 interface CreateOutletInput {
@@ -13,7 +13,7 @@ interface CreateOutletInput {
   address: AddressInput[];
 }
 
-export const createOutlet = async (data: CreateOutletInput) => {
+export const createOutletService = async (data: CreateOutletInput) => {
   try {
     const { outletName, outletType, address } = data;
 

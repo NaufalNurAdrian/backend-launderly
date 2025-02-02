@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
+import { AttendanceRouter } from "./routers/attendance.router";
 import { OutletRouter } from "./routers/outlet.router";
 import { EmployeeRouter } from "./routers/employee.router";
 import { AuthRouter } from "./routers/auth.router";
@@ -24,11 +25,13 @@ app.get("/api", (req: Request, res: Response) => {
   res.status(200).send("Welcome to my Launderly API");
 });
 
+const attendanceRouter = new AttendanceRouter()
 const authRouter = new AuthRouter();
 const outletRouter = new OutletRouter();
 const employeeRouter = new EmployeeRouter();
 const userRouter = new UserRouter()
 
+app.use("/api/attendance", attendanceRouter.getRouter())
 app.use("/api/auth", authRouter.getRouter());
 app.use("/api/outlet", outletRouter.getRouter());
 app.use("/api/employee", employeeRouter.getRouter());

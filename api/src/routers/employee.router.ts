@@ -11,10 +11,12 @@ export class EmployeeRouter {
     this.initializeRoutes();
   }
 
-  private initializeRoutes() {
-    this.router.post("/create", this.employeeController.addEmployee);
-    this.router.get("/", this.employeeController.getAllEmployee);
-  }
+    private initializeRoutes() {
+        this.router.post("/create", this.employeeController.addEmployee);
+        this.router.get("/", this.employeeController.getAllEmployee);
+
+        this.router.patch("/update/:id", this.employeeController.updateEmployee)
+    }
 
   getRouter() {
     return this.router;
