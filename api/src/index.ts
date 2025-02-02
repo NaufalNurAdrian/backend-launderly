@@ -26,19 +26,13 @@ app.get("/api", (req: Request, res: Response) => {
 });
 
 const attendanceRouter = new AttendanceRouter()
-<<<<<<< HEAD
-=======
 const authRouter = new AuthRouter();
->>>>>>> 96b306485324b8941142f9717854f7f56460c6ef
 const outletRouter = new OutletRouter();
 const employeeRouter = new EmployeeRouter();
 const userRouter = new UserRouter()
 
 app.use("/api/attendance", attendanceRouter.getRouter())
-<<<<<<< HEAD
-=======
 app.use("/api/auth", authRouter.getRouter());
->>>>>>> 96b306485324b8941142f9717854f7f56460c6ef
 app.use("/api/outlet", outletRouter.getRouter());
 app.use("/api/employee", employeeRouter.getRouter());
 app.use("/api/user", userRouter.getRouter());
