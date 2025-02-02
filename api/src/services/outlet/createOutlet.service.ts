@@ -30,7 +30,7 @@ export const createOutlet = async (data: CreateOutletInput) => {
         outletName: outletName,
         outletType: outletType,
         address: {
-          create: address,
+          // create: address,
         },
       },
     });
