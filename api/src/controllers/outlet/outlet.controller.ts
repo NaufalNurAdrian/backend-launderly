@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createOutletService } from "../services/outlet/createOutlet.service";
+import { createOutletService } from "../../services/outlet/createOutlet.service";
 
 export class OutletController {
     async createOutletController(req: Request, res: Response) {

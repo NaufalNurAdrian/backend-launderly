@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { EmployeeController } from "../controllers/employee.controller";
+import { EmployeeController } from "../controllers/employee/employee.controller";
 
 
 export class EmployeeRouter {
@@ -15,6 +15,8 @@ export class EmployeeRouter {
     private initializeRoutes() {
         this.router.post("/create", this.employeeController.addEmployee);
         this.router.get("/", this.employeeController.getAllEmployee);
+
+        this.router.patch("/update/:id", this.employeeController.updateEmployee)
     }
 
     getRouter() {
