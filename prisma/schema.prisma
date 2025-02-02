@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  OUTLET_ADMIN
+  WORKER
+  DRIVER
+  CUSTOMER
+}
+
+enum OrderStatus {
+  WAITING_FOR_PICKUP_DRIVER
+  ON_THE_WAY_TO_CUSTOMER
+  ON_THE_WAY_TO_OUTLET
+  ARRIVED_AT_OUTLET
+  READY_FOR_WASHING
+  BEING_WASHED
+  WASHING_COMPLETED
+  BEING_IRONED
+  IRONING_COMPLETED
+  BEING_PACKED
+  AWAITING_PAYMENT
+  READY_FOR_DELIVERY
+  WAITING_FOR_DELIVERY_DRIVER
+  BEING_DELIVERED_TO_CUSTOMER
+  RECEIVED_BY_CUSTOMER
+  COMPLETED
+}
+
+enum EmployeeWorkShift {
+  DAY
+  NIGHT
+}
+
+enum EmployeeStation {
+  WASHING
+  IRONING
+  PACKING
+}
+
+enum OutletType {
+  MAIN
+  BRANCH
+}
+
+enum DeliveryStatus {
+  NOT_READY_TO_DELIVER
+  WAITING_FOR_DRIVER
+  ON_THE_WAY_TO_OUTLET
+  ON_THE_WAY_TO_CUSTOMER
+  RECEIVED_BY_CUSTOMER
+}
+
+enum PickupStatus {
+  WAITING_FOR_DRIVER
+  ON_THE_WAY_TO_CUSTOMER
+  ON_THE_WAY_TO_OUTLET
+  RECEIVED_BY_OUTLET
+}
+
+enum AttendanceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PaymentStatus {
+  SUCCESSED
+  CANCELLED
+  DENIED
+  EXPIRED
+  PENDING
+}
+
+model User {
+  id                   Int                @id @default(autoincrement())
+  fullName             String
+  email                String             @unique
+  password             String?
+  isVerify             Boolean            @default(false)
+  role                 Role               @default(CUSTOMER)
+  avatar               String?
+  createdAt            DateTime           @default(now())
+  isDelete             Boolean            @default(false)
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  emailVerifyToken     String?
+  employee             Employee?
+  address              Address[]
+  pickupOrder          PickupOrder[]
+  deliveryOrder        DeliveryOrder[]
+  userNotification     UserNotification[]
+  Attendance           Attendance[]
+}
+
+model Employee {
+  id           Int                @id @default(autoincrement())
+  workShift    EmployeeWorkShift?
+  isSuperAdmin Boolean            @default(false)
+  station      EmployeeStation?
+  userId       Int                @unique
+  outletId     Int?
+
+  outlet        Outlet?         @relation(fields: [outletId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
+  pickupOrder   PickupOrder[]
+  deliveryOrder DeliveryOrder[]
+  orderWorker   OrderWorker[]
+}
+
+model Address {
+  id          Int     @id @default(autoincrement())
+  addressLine String
+  city        String
+  isPrimary   Boolean @default(false)
+  latitude    Float?
+  longitude   Float?
+  isDelete    Boolean @default(false)
+  outletId    Int?
+  userId      Int?
+
+  outlet        Outlet?         @relation(fields: [outletId], references: [id])
+  user          User?           @relation(fields: [userId], references: [id])
+  pickupOrder   PickupOrder[]
+  deliveryOrder DeliveryOrder[]
+}
+
+model Outlet {
+  id          Int           @id @default(autoincrement())
+  outletName  String
+  outletType  OutletType
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime      @updatedAt
+  isDelete    Boolean       @default(false)
+  employee    Employee[]
+  address     Address[]
+  pickupOrder PickupOrder[]
+}
+
+model PickupOrder {
+  id             Int          @id @default(autoincrement())
+  pickupNumber   String       @unique
+  pickupStatus   PickupStatus @default(WAITING_FOR_DRIVER)
+  distance       Int
+  pickupPrice    Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  isOrderCreated Boolean      @default(false)
+  userId         Int
+  outletId       Int?
+  driverId       Int?
+  addressId      Int?
+
+  user    User      @relation(fields: [userId], references: [id])
+  outlet  Outlet?   @relation(fields: [outletId], references: [id])
+  order   Order[]
+  driver  Employee? @relation(fields: [driverId], references: [id])
+  address Address?  @relation(fields: [addressId], references: [id])
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  orderNumber   String
+  orderStatus   OrderStatus @default(WAITING_FOR_PICKUP_DRIVER)
+  weight        Int?
+  laundryPrice  Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  pickupOrderId Int         @unique
+  isPaid        Boolean     @default(false)
+
+  pickupOrder   PickupOrder     @relation(fields: [pickupOrderId], references: [id])
+  orderItem     OrderItem[]
+  deliveryOrder DeliveryOrder[]
+  orderWorker   OrderWorker[]
+  payment       Payment[]
+}
+
+model OrderItem {
+  id            Int @id @default(autoincrement())
+  qty           Int
+  orderId       Int
+  laundryItemId Int
+
+  laundryItem LaundryItem @relation(fields: [laundryItemId], references: [id])
+  order       Order       @relation(fields: [orderId], references: [id])
+}
+
+model LaundryItem {
+  id        Int         @id @default(autoincrement())
+  itemName  String
+  isDelete  Boolean     @default(false)
+  orderItem OrderItem[]
+}
+
+model DeliveryOrder {
+  id             Int            @id @default(autoincrement())
+  deliveryNumber String         @unique
+  deliveryStatus DeliveryStatus @default(NOT_READY_TO_DELIVER)
+  distance       Int
+  deliveryPrice  Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  userId         Int
+  driverId       Int?
+  orderId        Int            @unique
+  addressId      Int?
+
+  user    User      @relation(fields: [userId], references: [id])
+  driver  Employee? @relation(fields: [driverId], references: [id])
+  order   Order     @relation(fields: [orderId], references: [id])
+  address Address?  @relation(fields: [addressId], references: [id])
+}
+
+model OrderWorker {
+  id             Int              @id @default(autoincrement())
+  orderId        Int
+  workerId       Int
+  station        EmployeeStation?
+  isComplete     Boolean          @default(false)
+  bypassRequest  Boolean          @default(false)
+  bypassNote     String?
+  bypassAccepted Boolean          @default(false)
+  bypassRejected Boolean          @default(false)
+
+  order  Order    @relation(fields: [orderId], references: [id])
+  worker Employee @relation(fields: [workerId], references: [id])
+}
+
+model UserNotification {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  isRead         Boolean  @default(false)
+  userId         Int
+  notificationId Int
+
+  user         User         @relation(fields: [userId], references: [id])
+  notification Notification @relation(fields: [notificationId], references: [id])
+}
+
+model Notification {
+  id               Int                @id @default(autoincrement())
+  title            String
+  description      String
+  createdAt        DateTime           @default(now())
+  userNotification UserNotification[]
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  invoiceNumber   String        @unique
+  amount          Int
+  paymentMethode  String?
+  paymentStatus   PaymentStatus @default(PENDING)
+  snapToken       String?
+  snapRedirectUrl String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  orderId         Int
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Attendance {
+  id               Int              @id @default(autoincrement())
+  checkIn          DateTime         @default(now())
+  checkOut         DateTime?
+  createdAt        DateTime         @default(now())
+  workHour         Int
+  userId           Int
+  attendanceStatus AttendanceStatus @default(INACTIVE)
+
+  user User @relation(fields: [userId], references: [id])
+}
