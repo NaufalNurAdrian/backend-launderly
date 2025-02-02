@@ -7,7 +7,6 @@ export const verifyService = async (req: Request, res: Response) => {
     const { token } = req.params;
     const verifiedCustomer = verify(token, process.env.JWT_KEY!) as {
       id: number;
-      role: string;
     };
     await prisma.user.update({
       data: { isVerify: true },
