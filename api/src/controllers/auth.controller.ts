@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { registerService } from "../../services/auth/register.service";
-import { loginService } from "../../services/auth/login.service";
-import { verifyService } from "../../services/auth/verify.service";
+import { registerService } from "../services/auth/register.service";
+import { loginService } from "../services/auth/login.service";
+import { verifyService } from "../services/auth/verify.service";
 
 export class AuthController {
   async registerController(req: Request, res: Response, next: NextFunction) {

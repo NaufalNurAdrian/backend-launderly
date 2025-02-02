@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { addEmployeeService } from "../../services/employee/addEmployee.service";
-import { getAllEmployeeService } from "../../services/employee/getAllEmployee.service";
-import { UpdateEmployeeInput, updateEmployeeService } from "../../services/employee/updateEmployee.service";
+import { addEmployeeService } from "../services/employee/addEmployee.service";
+import { getAllEmployeeService } from "../services/employee/getAllEmployee.service";
+import { UpdateEmployeeInput, updateEmployeeService } from"../services/employee/updateEmployee.service";
 
 export class EmployeeController {
   async addEmployee(req: Request, res: Response) {

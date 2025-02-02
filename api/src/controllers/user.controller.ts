@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { getUsersId } from "../../services/user/getUserById.service";
-import { resetPasswordUser } from "../../services/user/resetPassword.service";
+import { getUsersId } from "../services/user/getUserById.service";
+import { resetPasswordUser } from "../services/user/resetPassword.service";
 
 
 export class UserController {
