@@ -2,7 +2,7 @@
 import bcrypt from "bcrypt";
 import prisma from "../../prisma";
 
-interface AddEmployeeInput {
+export interface AddEmployeeInput {
   fullName: string;
   email: string;
   password: string;
