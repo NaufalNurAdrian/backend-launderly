@@ -23,13 +23,8 @@ export const checkInService = async (data: CheckInData) => {
             throw new Error("only Driver and Worker allowed to check attendance.");
         }
 
-<<<<<<< HEAD
         const todayStart = DateTime.now().startOf("day").toJSDate(); 
         const todayEnd = DateTime.now().endOf("day").toJSDate(); 
-=======
-        const todayStart = DateTime.now().startOf("day").toJSDate(); // Awal hari ini
-        const todayEnd = DateTime.now().endOf("day").toJSDate(); // Akhir hari ini
->>>>>>> f41371dc56e334fb40a340c0c21e8273f93b24c3
 
         const existingAttendance = await prisma.attendance.findFirst({
             where: {

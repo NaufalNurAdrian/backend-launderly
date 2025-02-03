@@ -7,6 +7,8 @@ import { OutletRouter } from "./routers/outlet.router";
 import { EmployeeRouter } from "./routers/employee.router";
 import { PickupRouter } from "./routers/pickup.router";
 import { DeliveryRouter } from "./routers/delivery.routes";
+import { RequestRouter } from "./routers/driver.router";
+import { NotificationRouter } from "./routers/notification";
 
 
 const PORT: number = 8000;
@@ -28,12 +30,16 @@ app.get("/api", (req: Request, res: Response) => {
 const attendanceRouter = new AttendanceRouter()
 const pickupRouter = new PickupRouter();
 const deliveryRouter = new DeliveryRouter();
+const requestRouter = new RequestRouter();
+const notificationRouter = new NotificationRouter();
 const outletRouter = new OutletRouter();
 const employeeRouter = new EmployeeRouter();
 
 app.use("/api/attendance", attendanceRouter.getRouter())
 app.use("/api/pickup", pickupRouter.getRouter())
 app.use("/api/delivery", deliveryRouter.getRouter())
+app.use("/api/request", requestRouter.getRouter())
+app.use("/api/notification", notificationRouter.getRouter())
 app.use("/api/outlet", outletRouter.getRouter());
 app.use("/api/employee", employeeRouter.getRouter());
 

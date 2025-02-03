@@ -4,14 +4,15 @@ import prisma from "../../../prisma";
 
 interface getPickupData {
   driverId: number;
-  sortBy?: "createdAt" | "location";
+  sortBy?: "createdAt" | "distance";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-    const { driverId, sortBy, order, page = 1, pageSize = 4 } = query;
+    const { driverId, sortBy, order, page = 1, pageSize = 3 } = query;
+
     const user = await prisma.user.findUnique({
       where: { id: driverId },
       select: { role: true },
@@ -63,6 +64,7 @@ export const getPickupRequestsService = async (query: getPickupData) => {
       ],
     };
 
+    console.log("Query:", JSON.stringify(whereClause, null, 2));
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
       include: {
@@ -75,8 +77,8 @@ export const getPickupRequestsService = async (query: getPickupData) => {
     }
 
     const outletAddress = outlet.address[0];
-    const outletLat = parseFloat(outletAddress.latitude || "0");
-    const outletLon = parseFloat(outletAddress.longitude || "0");
+    const outletLat = outletAddress.latitude || 0;
+    const outletLon = outletAddress.longitude || 0;
 
     const pickupRequests = await prisma.pickupOrder.findMany({
       where: whereClause,
@@ -91,14 +93,14 @@ export const getPickupRequestsService = async (query: getPickupData) => {
         throw new Error("Pickup request doesn't have address");
       }
 
-      const pickupLat = parseFloat(request.address.latitude || "0");
-      const pickupLon = parseFloat(request.address.longitude || "0");
+      const pickupLat = request.address.latitude || 0;
+      const pickupLon = request.address.longitude || 0;
 
       const distance = haversineDistance(outletLat, outletLon, pickupLat, pickupLon);
       return { ...request, distance };
     });
 
-    if (sortBy === "location") {
+    if (sortBy === "distance") {
       pickupRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });

@@ -4,7 +4,7 @@ import prisma from "../../../prisma";
 interface getHistoryData {
   driverId: number;
   type?: "pickup" | "delivery"; 
-  sortBy?: "createdAt" | "location";
+  sortBy?: "createdAt" | "distance";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
@@ -44,8 +44,8 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
     }
 
     const outletAddress = outlet.address[0];
-    const outletLat = parseFloat(outletAddress.latitude || "0");
-    const outletLon = parseFloat(outletAddress.longitude || "0");
+    const outletLat = outletAddress.latitude || 0;
+    const outletLon = outletAddress.longitude || 0;
 
     const pickupHistory =
       !type || type === "pickup"
@@ -93,14 +93,14 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
         throw new Error("Request tidak memiliki alamat");
       }
 
-      const requestLat = parseFloat(request.address.latitude || "0");
-      const requestLon = parseFloat(request.address.longitude || "0");
+      const requestLat = request.address.latitude || 0;
+      const requestLon = request.address.longitude || 0;
 
       const distance = haversineDistance(outletLat, outletLon, requestLat, requestLon);
       return { ...request, distance };
     });
 
-    if (sortBy === "location") {
+    if (sortBy === "distance") {
       historyWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });

@@ -4,7 +4,7 @@ import prisma from "../../../prisma";
 
 interface getDeliveryData {
   driverId: number;
-  sortBy?: "createdAt" | "location";
+  sortBy?: "createdAt" | "distance";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
@@ -12,7 +12,7 @@ interface getDeliveryData {
 
 export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
-    const { driverId, sortBy, order = "asc", page = 1, pageSize = 4 } = query;
+    const { driverId, sortBy, order = "asc", page = 1, pageSize = 3 } = query;
     const user = await prisma.user.findUnique({
       where: { id: driverId },
       select: { role: true },
@@ -54,8 +54,8 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     }
 
     const outletAddress = outlet.address[0];
-    const outletLat = parseFloat(outletAddress.latitude || "0");
-    const outletLon = parseFloat(outletAddress.longitude || "0");
+    const outletLat = outletAddress.latitude || 0;
+    const outletLon = outletAddress.longitude || 0;
 
     const whereClause: Prisma.DeliveryOrderWhereInput = {
       AND: [
@@ -85,14 +85,14 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
         throw new Error("Delivery request doesn't have an address");
       }
 
-      const deliveryLat = parseFloat(request.address.latitude || "0");
-      const deliveryLon = parseFloat(request.address.longitude || "0");
+      const deliveryLat = request.address.latitude || 0;
+      const deliveryLon = request.address.longitude || 0;
 
       const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
       return { ...request, distance, deliveryPrice: 20000 };
     });
 
-    if (sortBy === "location") {
+    if (sortBy === "distance") {
       deliveryRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });

@@ -40,7 +40,7 @@ export const addEmployeeService = async (data: AddEmployeeInput) => {
       data: {
         userId: user.id,
         outletId: data.outletId,
-        workShift: data.workShift,
+        // workShift: data.workShift,
         station: data.station,
       },
     });

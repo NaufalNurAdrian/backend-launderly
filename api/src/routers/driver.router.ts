@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { RequestController } from "src/controllers/driver/driver/driver.controller";
+import { RequestController } from "../controllers/driver/driver/driver.controller";
 
 export class RequestRouter {
   private requestController: RequestController;
@@ -12,7 +12,7 @@ export class RequestRouter {
   }
 
   private initializeRoutes() {
-    this.router.post("/", this.requestController.updateRequestStatus);
+    this.router.patch("/", this.requestController.updateRequestStatus);
     this.router.get("/", this.requestController.getDriverHistory);
   }
 

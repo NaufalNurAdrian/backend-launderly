@@ -11,12 +11,12 @@ export class DeliveryController {
 
       const deliveryRequests = await getDeliveryRequestsService({
         driverId: parseInt(driverId as string),
-        sortBy: sortBy as "createdAt" | "location",
+        sortBy: sortBy as "createdAt" | "distance",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,
       });
 
-      res.status(200).send({ data: deliveryRequests });
+      res.status(200).send( deliveryRequests );
     } catch (err: any) {
       console.log(err);
       res.status(400).send({ message: err.message });

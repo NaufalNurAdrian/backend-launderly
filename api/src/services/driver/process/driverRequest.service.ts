@@ -14,11 +14,47 @@ enum DeliveryStatus {
   RECEIVED_BY_CUSTOMER = "RECEIVED_BY_CUSTOMER",
 }
 
+enum OrderStatus {
+  WAITING_FOR_PICKUP_DRIVER = "WAITING_FOR_PICKUP_DRIVER",
+  ON_THE_WAY_TO_CUSTOMER = "ON_THE_WAY_TO_CUSTOMER",
+  ON_THE_WAY_TO_OUTLET = "ON_THE_WAY_TO_OUTLET",
+  ARRIVED_AT_OUTLET = "ARRIVED_AT_OUTLET",
+  WAITING_FOR_DELIVERY_DRIVER = "WAITING_FOR_DELIVERY_DRIVER",
+  BEING_DELIVERED_TO_CUSTOMER = "BEING_DELIVERED_TO_CUSTOMER",
+  RECEIVED_BY_CUSTOMER = "RECEIVED_BY_CUSTOMER",
+  COMPLETED = "COMPLETED",
+}
+
 interface UpdateRequestStatusData {
   driverId: number;
   requestId: number;
   type: "pickup" | "delivery";
 }
+
+const mapToOrderStatus = (
+  status: PickupStatus | DeliveryStatus
+): OrderStatus => {
+  switch (status) {
+    case PickupStatus.WAITING_FOR_DRIVER:
+      return OrderStatus.WAITING_FOR_PICKUP_DRIVER;
+    case PickupStatus.ON_THE_WAY_TO_CUSTOMER:
+      return OrderStatus.ON_THE_WAY_TO_CUSTOMER;
+    case PickupStatus.ON_THE_WAY_TO_OUTLET:
+      return OrderStatus.ON_THE_WAY_TO_OUTLET;
+    case PickupStatus.RECEIVED_BY_OUTLET:
+      return OrderStatus.ARRIVED_AT_OUTLET;
+    case DeliveryStatus.WAITING_FOR_DELIVERY_DRIVER:
+      return OrderStatus.WAITING_FOR_DELIVERY_DRIVER;
+    case DeliveryStatus.ON_THE_WAY_TO_OUTLET:
+      return OrderStatus.ON_THE_WAY_TO_OUTLET;
+    case DeliveryStatus.ON_THE_WAY_TO_CUSTOMER:
+      return OrderStatus.BEING_DELIVERED_TO_CUSTOMER;
+    case DeliveryStatus.RECEIVED_BY_CUSTOMER:
+      return OrderStatus.RECEIVED_BY_CUSTOMER;
+    default:
+      throw new Error("Status tidak valid");
+  }
+};
 
 export const updateRequestStatusService = async (data: UpdateRequestStatusData) => {
   const { driverId, requestId, type } = data;
@@ -42,6 +78,24 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
 
     if (!activeAttendance) {
       throw new Error("Driver belum check-in atau sudah check-out");
+    }
+    const [isProcessingPickup, isProcessingDelivery] = await Promise.all([
+      prisma.pickupOrder.findFirst({
+        where: {
+          driverId,
+          pickupStatus: PickupStatus.WAITING_FOR_DRIVER,
+        },
+      }),
+      prisma.deliveryOrder.findFirst({
+        where: {
+          driverId,
+          deliveryStatus: DeliveryStatus.WAITING_FOR_DELIVERY_DRIVER,
+        },
+      }),
+    ]);
+
+    if (isProcessingPickup || isProcessingDelivery) {
+      throw new Error("Driver sedang memproses request lain");
     }
 
     let request;
@@ -104,7 +158,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
     });
 
     if (!driver || !driver.outletId) {
-      throw new Error("Driver tidak memiliki akses ke delivery order ini");
+      throw new Error("Driver tidak memiliki akses ke request ini");
     }
 
     let updatedRequest;
@@ -120,6 +174,13 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
           user: true,
         },
       });
+
+      await prisma.order.update({
+        where: { pickupOrderId: requestId },
+        data: {
+          orderStatus: mapToOrderStatus(nextStatus),
+        },
+      });
     } else if (type === "delivery" && "deliveryStatus" in request) {
       updatedRequest = await prisma.deliveryOrder.update({
         where: { id: requestId },
@@ -130,6 +191,13 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         include: {
           address: true,
           user: true,
+        },
+      });
+
+      await prisma.order.update({
+        where: { id: updatedRequest.orderId },
+        data: {
+          orderStatus: mapToOrderStatus(nextStatus),
         },
       });
     }

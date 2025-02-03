@@ -18,9 +18,8 @@ export class AttendanceController {
       });
 
       res.status(200).send(attendance);
-    } catch (err) {
-      //   console.log(err);
-      res.status(400).send(err);
+    } catch (err: any) {
+      res.status(400).send({ message: err });
     }
   }
 
@@ -39,9 +38,8 @@ export class AttendanceController {
       });
 
       res.status(200).send(attendances);
-    } catch (err) {
-      //   console.log(err);
-      res.status(400).send(err);
+    } catch (err: any) {
+      res.status(400).send({ message: err });
     }
   }
 
@@ -56,8 +54,7 @@ export class AttendanceController {
         message: "Check-in berhasil.",
         data: result,
       });
-    } catch (err) {
-      //   console.log(err);
+    } catch (err: any) {
       res.status(400).send({ message: err });
     }
   }
@@ -73,8 +70,7 @@ export class AttendanceController {
         message: "Check-out berhasil.",
         data: result,
       });
-    } catch (err) {
-      //   console.log(err);
+    } catch (err : any) {
       res.status(400).send({ message: err });
     }
   }
