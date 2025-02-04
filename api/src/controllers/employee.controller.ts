@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { addEmployeeService } from "../services/employee/addEmployee.service";
 import { getAllEmployeeService } from "../services/employee/getAllEmployee.service";
 import { UpdateEmployeeInput, updateEmployeeService } from"../services/employee/updateEmployee.service";
+import { deleteEmployeeService } from "../services/employee/deleteEmployeeService";
 
 export class EmployeeController {
   async addEmployee(req: Request, res: Response) {
@@ -57,4 +58,16 @@ export class EmployeeController {
     }
   }
 
+  async deleteEmployee(req: Request, res: Response) {
+    try {
+      const result = await deleteEmployeeService(
+        Number(req.params.id)      
+      );
+      res.status(200).send({ message: "Employee deleted successfully", result });
+    } catch (error: any) {
+      res.status(500).send({message: error.message})
+    }
+  }
+
+  
 }
