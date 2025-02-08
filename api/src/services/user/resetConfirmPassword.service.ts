@@ -14,15 +14,20 @@ export const confirmResetPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Passwords do not match!" });
     }
 
-    // Cari user berdasarkan token
-    const user = await prisma.user.findFirst({
+    // Cari user berdasarkan token (periksa hash)
+    const users = await prisma.user.findMany({
       where: {
-        resetPasswordToken: token,
-        resetPasswordExpires: {
-          gte: new Date(), // Pastikan token belum kedaluwarsa
-        },
+        resetPasswordExpires: { gte: new Date() }, // Token masih berlaku
       },
     });
+
+    let user = null;
+    for (const u of users) {
+      if (await bcrypt.compare(token, u.resetPasswordToken!)) {
+        user = u;
+        break;
+      }
+    }
 
     if (!user) {
       return res.status(400).json({ message: "Invalid or expired token!" });
@@ -41,10 +46,10 @@ export const confirmResetPassword = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json({ message: "Password has been reset successfully!" });
+    return res.status(200).json({ message: "Password has been reset successfully!" });
 
   } catch (error) {
     console.error("Error confirming reset password:", error);
-    res.status(500).json({ message: "An internal server error occurred!" });
+    return res.status(500).json({ message: "An internal server error occurred!" });
   }
 };
