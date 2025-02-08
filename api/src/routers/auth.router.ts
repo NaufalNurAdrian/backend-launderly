@@ -14,10 +14,8 @@ export class AuthRouter {
   private initializeRoutes() {
     this.router.post("/register", this.authController.registerController);
     this.router.post("/login", this.authController.loginController);
-    this.router.patch(
-      "/verify/:token",
-      this.authController.verifyController
-    );
+    this.router.post('/google', this.authController.getGoogleTokenController);
+    this.router.patch("/verify/:token", this.authController.verifyController);
   }
 
   getRouter() {
