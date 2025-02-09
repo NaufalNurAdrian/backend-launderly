@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../../prisma";
 
-export const verifyEmail = async (req: Request, res: Response) => {
+export const verifyEmailService = async (req: Request, res: Response) => {
   try {
     const token = req.query.token;
 
@@ -24,7 +24,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
       where: { id: user.id },
       data: {
         isVerify: true,
-        emailVerifyToken: null, // Hapus token setelah verifikasi
+        emailVerifyToken: null, 
       },
     });
 

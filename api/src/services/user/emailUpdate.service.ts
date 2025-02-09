@@ -6,9 +6,9 @@ import fs from "fs";
 import Handlebars from "handlebars";
 import { transporter } from "../../libs/nodemailer";
 
-export const updateEmail = async (req: Request, res: Response) => {
+export const updateEmailService = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id; // Dapatkan user ID dari JWT
+    const userId = req.user?.id; 
     const { newEmail } = req.body;
 
     if (!newEmail) {

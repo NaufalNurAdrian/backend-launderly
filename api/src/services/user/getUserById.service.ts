@@ -1,7 +1,7 @@
 import prisma from "../../prisma";
 import { Request, Response } from "express";
 
-export const getUsersId = async (req: Request, res: Response) => {
+export const getUsersIdService = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).send({ message: "Unauthorized" });

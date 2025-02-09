@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../../prisma";
 import bcrypt from "bcrypt";
 
-export const confirmResetPassword = async (req: Request, res: Response) => {
+export const confirmForgetPasswordService = async (req: Request, res: Response) => {
   try {
     const { token, newPassword, confirmPassword } = req.body;
 
@@ -14,10 +14,10 @@ export const confirmResetPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Passwords do not match!" });
     }
 
-    // Cari user berdasarkan token (periksa hash)
+    // Cari user dengan token valid
     const users = await prisma.user.findMany({
       where: {
-        resetPasswordExpires: { gte: new Date() }, // Token masih berlaku
+        resetPasswordExpires: { gte: new Date() }, 
       },
     });
 
@@ -36,15 +36,17 @@ export const confirmResetPassword = async (req: Request, res: Response) => {
     // Hash password baru
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update password user dan hapus token reset password
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
-      },
-    });
+    // Update password dalam transaksi agar aman
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+        },
+      }),
+    ]);
 
     return res.status(200).json({ message: "Password has been reset successfully!" });
 
