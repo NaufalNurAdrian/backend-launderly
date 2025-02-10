@@ -13,26 +13,7 @@ interface getDeliveryData {
 export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
     const { driverId, sortBy, order = "asc", page = 1, pageSize = 3 } = query;
-    const user = await prisma.user.findUnique({
-      where: { id: driverId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "DRIVER") {
-      throw new Error("Hanya driver yang dapat mengakses data ini");
-    }
-
-    const activeAttendance = await prisma.attendance.findFirst({
-      where: {
-        userId: driverId,
-        checkOut: null,
-      },
-    });
-
-    if (!activeAttendance) {
-      throw new Error("Driver hasn't checked in");
-    }
-
+   
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },

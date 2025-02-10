@@ -4,13 +4,14 @@ import { getDeliveryRequestsService } from "../../../services/driver/delivery/ge
 export class DeliveryController {
   async getDeliveryRequest(req: Request, res: Response) {
     try {
-      const { driverId, page, sortBy, order } = req.query;
+      const driverId = req.user?.id!;
+      const { page, sortBy, order } = req.query;
       if (!driverId) {
         res.status(400).json({ message: "Driver ID diperlukan" });
       }
 
       const deliveryRequests = await getDeliveryRequestsService({
-        driverId: parseInt(driverId as string),
+        driverId: driverId,
         sortBy: sortBy as "createdAt" | "distance",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,

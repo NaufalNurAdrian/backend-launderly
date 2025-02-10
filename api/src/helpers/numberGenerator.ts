@@ -1,6 +1,6 @@
 import prisma from "../prisma";
 
-export const generateOrderNumber = async (type: "DLV" | "PCK") => {
+export const generateOrderNumber = async (type: "DLV" | "PCK" | "ORD") => {
   const today = new Date();
   const formattedDate = today.toISOString().split("T")[0].replace(/-/g, ""); 
 

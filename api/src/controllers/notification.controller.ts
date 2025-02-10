@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
-import { getUserNotificationsService } from "../../../services/driver/notifications/getNotification.service";
-import { markNotificationAsReadService } from "../../../services/driver/notifications/updateNotification.service";
-import { markAllNotificationAsReadService } from "../../../services/driver/notifications/updateAllNotification.service";
+import { getUserNotificationsService } from "../services/driver/notifications/getNotification.service";
+import { markNotificationAsReadService } from "../services/driver/notifications/updateNotification.service";
+import { markAllNotificationAsReadService } from "../services/driver/notifications/updateAllNotification.service";
 
 export class NotificationController {
   async getNotifications(req: Request, res: Response) {
     try {
-      const { userId, sortBy, order, page } = req.query;
+      const userId = req.user?.id!;
+      const { sortBy, order, page } = req.query;
       const notifications = await getUserNotificationsService({
-        userId: parseInt(userId as string),
+        userId: userId,
         sortBy: sortBy as "createdAt",
         order: order as "desc" | "asc",
         page: page ? parseInt(page as string) : 1,
@@ -28,13 +29,13 @@ export class NotificationController {
         message: "Notification marked as read",
         data: updatedNotification,
       });
-      res.status(200).send({message: "notification read", updatedNotification})
+      res.status(200).send({ message: "notification read", updatedNotification });
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }
   }
   async markAllNotificationAsRead(req: Request, res: Response) {
-    const { userId } = req.query;
+    const userId = req.user?.id!;
 
     try {
       const updatedNotification = await markAllNotificationAsReadService(Number(userId));
@@ -42,7 +43,7 @@ export class NotificationController {
         message: "Notification marked as read",
         data: updatedNotification,
       });
-      res.status(200).send({message: "notification read", updatedNotification})
+      res.status(200).send({ message: "notification read", updatedNotification });
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }

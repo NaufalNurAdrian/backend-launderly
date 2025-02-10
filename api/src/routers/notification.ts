@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { NotificationController } from "../controllers/driver/notification/notification.controller";
+import { NotificationController } from "../controllers/notification.controller";
+import { verifyToken } from "../middlewares/verify";
 
 export class NotificationRouter {
   private notificationController: NotificationController;
@@ -12,9 +13,9 @@ export class NotificationRouter {
   }
 
   private initializeRoutes() {
-    this.router.get("/", this.notificationController.getNotifications);
+    this.router.get("/", verifyToken, this.notificationController.getNotifications);
     this.router.patch("/", this.notificationController.markNotificationAsRead);
-    this.router.patch("/mark-all", this.notificationController.markAllNotificationAsRead);
+    this.router.patch("/mark-all", verifyToken, this.notificationController.markAllNotificationAsRead);
   }
 
   getRouter() {

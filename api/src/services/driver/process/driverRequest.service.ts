@@ -31,9 +31,7 @@ interface UpdateRequestStatusData {
   type: "pickup" | "delivery";
 }
 
-const mapToOrderStatus = (
-  status: PickupStatus | DeliveryStatus
-): OrderStatus => {
+const mapToOrderStatus = (status: PickupStatus | DeliveryStatus): OrderStatus => {
   switch (status) {
     case PickupStatus.WAITING_FOR_DRIVER:
       return OrderStatus.WAITING_FOR_PICKUP_DRIVER;
@@ -57,45 +55,31 @@ const mapToOrderStatus = (
 };
 
 export const updateRequestStatusService = async (data: UpdateRequestStatusData) => {
-  const { driverId, requestId, type } = data;
-
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: driverId },
-      select: { role: true },
-    });
+    const { driverId, requestId, type } = data;
 
-    if (!user || user.role !== "DRIVER") {
-      throw new Error("Hanya driver yang dapat mengakses data ini");
-    }
-
-    const activeAttendance = await prisma.attendance.findFirst({
+    const isProcessingPickup = await prisma.pickupOrder.findFirst({
       where: {
-        userId: driverId,
-        checkOut: null,
+        driverId,
+        id: { not: requestId },
+        pickupStatus: {
+          in: [ PickupStatus.ON_THE_WAY_TO_CUSTOMER, PickupStatus.ON_THE_WAY_TO_OUTLET],
+        },
+      },
+    });
+    
+    const isProcessingDelivery = await prisma.deliveryOrder.findFirst({
+      where: {
+        driverId,
+        id: { not: requestId },
+        deliveryStatus: {
+          in: [DeliveryStatus.ON_THE_WAY_TO_OUTLET, DeliveryStatus.ON_THE_WAY_TO_CUSTOMER],
+        },
       },
     });
 
-    if (!activeAttendance) {
-      throw new Error("Driver belum check-in atau sudah check-out");
-    }
-    const [isProcessingPickup, isProcessingDelivery] = await Promise.all([
-      prisma.pickupOrder.findFirst({
-        where: {
-          driverId,
-          pickupStatus: PickupStatus.WAITING_FOR_DRIVER,
-        },
-      }),
-      prisma.deliveryOrder.findFirst({
-        where: {
-          driverId,
-          deliveryStatus: DeliveryStatus.WAITING_FOR_DELIVERY_DRIVER,
-        },
-      }),
-    ]);
-
     if (isProcessingPickup || isProcessingDelivery) {
-      throw new Error("Driver sedang memproses request lain");
+      throw new Error("Driver still processing other order");
     }
 
     let request;
@@ -108,11 +92,11 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         where: { id: requestId },
       });
     } else {
-      throw new Error("Tipe request tidak valid");
+      throw new Error("invalid request type");
     }
 
     if (!request) {
-      throw new Error("Request tidak ditemukan");
+      throw new Error("Request not found");
     }
 
     let nextStatus: PickupStatus | DeliveryStatus;
@@ -128,9 +112,9 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
           nextStatus = PickupStatus.RECEIVED_BY_OUTLET;
           break;
         case PickupStatus.RECEIVED_BY_OUTLET:
-          throw new Error("Pickup request sudah selesai");
+          throw new Error("Pickup request finished");
         default:
-          throw new Error("Status pickup request tidak valid");
+          throw new Error("invalid pickup request status");
       }
     } else if (type === "delivery" && "deliveryStatus" in request) {
       switch (request.deliveryStatus) {
@@ -144,12 +128,12 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
           nextStatus = DeliveryStatus.RECEIVED_BY_CUSTOMER;
           break;
         case DeliveryStatus.RECEIVED_BY_CUSTOMER:
-          throw new Error("Delivery request sudah selesai");
+          throw new Error("Delivery request finished");
         default:
-          throw new Error("Status delivery request tidak valid");
+          throw new Error("invalid delivery request status");
       }
     } else {
-      throw new Error("Tipe request tidak valid");
+      throw new Error("invalid request type");
     }
 
     const driver = await prisma.employee.findUnique({
@@ -158,7 +142,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
     });
 
     if (!driver || !driver.outletId) {
-      throw new Error("Driver tidak memiliki akses ke request ini");
+      throw new Error("Driver have no access to this outlet");
     }
 
     let updatedRequest;
@@ -186,7 +170,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         where: { id: requestId },
         data: {
           deliveryStatus: nextStatus as DeliveryStatus,
-          driverId: driverId,
+          driverId: driver.id,
         },
         include: {
           address: true,

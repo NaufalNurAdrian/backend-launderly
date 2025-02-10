@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { RequestController } from "../controllers/driver/driver/driver.controller";
+import { verifyRole, verifyRoleAndAttendance, verifyToken } from "../middlewares/verify";
 
 export class RequestRouter {
   private requestController: RequestController;
@@ -12,8 +13,8 @@ export class RequestRouter {
   }
 
   private initializeRoutes() {
-    this.router.patch("/", this.requestController.updateRequestStatus);
-    this.router.get("/", this.requestController.getDriverHistory);
+    this.router.patch("/",verifyToken, verifyRoleAndAttendance(["DRIVER"]),  this.requestController.updateRequestStatus);
+    this.router.get("/",verifyToken, verifyRole(["DRIVER"]), this.requestController.getDriverHistory);
   }
 
   getRouter() {

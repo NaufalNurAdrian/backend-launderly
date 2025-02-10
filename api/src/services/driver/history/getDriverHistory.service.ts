@@ -13,16 +13,6 @@ interface getHistoryData {
 export const getDriverHistoryService = async (query: getHistoryData) => {
   try {
     const { driverId, type, sortBy, order, page = 1, pageSize = 15 } = query;
-
-    const user = await prisma.user.findUnique({
-      where: { id: driverId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "DRIVER") {
-      throw new Error("Hanya driver yang dapat mengakses data ini");
-    }
-
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },

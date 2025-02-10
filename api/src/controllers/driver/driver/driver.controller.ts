@@ -5,7 +5,8 @@ import { getDriverHistoryService } from "../../../services/driver/history/getDri
 export class RequestController {
   async updateRequestStatus(req: Request, res: Response) {
     try {
-      const { driverId, requestId, type } = req.body;
+      const driverId = req.user?.id!
+      const { requestId, type } = req.body;
 
       const result = await updateRequestStatusService({ driverId, requestId, type });
 
@@ -20,13 +21,14 @@ export class RequestController {
 
   async getDriverHistory(req: Request, res: Response) {
     try {
-      const { driverId, type, sortBy, order, page } = req.query;
+      const driverId = req.user?.id!
+      const { type, sortBy, order, page } = req.query;
       if (!driverId) {
         res.status(400).json({ message: "Driver ID diperlukan" });
       }
 
       const driverHistory = await getDriverHistoryService({
-        driverId: parseInt(driverId as string),
+        driverId: driverId,
         sortBy: sortBy as "createdAt" | "distance",
         order: order as "asc" | "desc",
         type: type as "pickup" | "delivery",

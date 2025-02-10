@@ -7,11 +7,11 @@ import { checkOutService } from "../../services/Attendance/checkout.service";
 export class AttendanceController {
   async getAttendance(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId  = req.user?.id!;
       const { sortBy, order, page } = req.query;
-
+      
       const attendance = await getAttendanceService({
-        userId: parseInt(userId),
+        userId: userId,
         sortBy: sortBy as "createdAt" | "workHour",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,
@@ -25,11 +25,11 @@ export class AttendanceController {
 
   async getAllAttendances(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId  = req.user?.id!;
       const { outletId, sortBy, order, page, role} = req.query;
 
       const attendances = await getAllAttendancesService({
-        userId: parseInt(userId),
+        userId: userId,
         outletId: outletId ? parseInt(outletId as string) : undefined,
         sortBy: sortBy as "createdAt" | "workHour",
         order: order as "asc" | "desc",
@@ -45,7 +45,7 @@ export class AttendanceController {
 
   async checkIn(req: Request, res: Response) {
     try {
-      const { userId } = req.body;
+      const userId  = req.user?.id!;
       const checkInTime = new Date();
 
       const result = await checkInService({ userId, checkInTime });
@@ -61,7 +61,7 @@ export class AttendanceController {
 
   async checkOut(req: Request, res: Response) {
     try {
-      const { userId } = req.body;
+      const  userId  = req.user?.id!;
       const checkOutTime = new Date();
 
       const result = await checkOutService({ userId, checkOutTime });

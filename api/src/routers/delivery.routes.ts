@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { DeliveryController } from "../controllers/driver/delivery/delivery.controller";
+import { verifyRoleAndAttendance, verifyToken } from "../middlewares/verify";
 
 export class DeliveryRouter {
   private deliveryController: DeliveryController;
@@ -12,7 +13,7 @@ export class DeliveryRouter {
   }
 
   private initializeRoutes() {
-    this.router.get("/", this.deliveryController.getDeliveryRequest);
+    this.router.get("/",verifyToken, verifyRoleAndAttendance(["DRIVER"]),  this.deliveryController.getDeliveryRequest);
   }
 
   getRouter() {

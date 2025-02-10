@@ -4,13 +4,11 @@ import { getPickupRequestsService } from "../../../services/driver/pickup/getPic
 export class PickupController {
   async getPickupRequest(req: Request, res: Response) {
     try {
-      const { driverId, page, sortBy, order } = req.query;
-      if (!driverId) {
-        res.status(400).json({ message: "Driver ID diperlukan" });
-      }
-
+      const driverId = req.user?.id!;
+      const {page, sortBy, order } = req.query;
+      
       const pickupRequests = await getPickupRequestsService({
-        driverId: parseInt(driverId as string),
+        driverId: driverId,
         sortBy: sortBy as "createdAt" | "distance",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,
@@ -22,3 +20,4 @@ export class PickupController {
     }
   }
 }
+        // const driverId = req.user?.id!

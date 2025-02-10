@@ -21,7 +21,11 @@ export const getAttendanceService = async (query: GetAttendanceQuery) => {
       orderBy[sortBy] = sortOrder;
     }
 
-    const totalAttendances = await prisma.attendance.count();
+    const totalAttendances = await prisma.attendance.count({
+      where: {
+        userId: userId,
+      },
+    });
 
     const result = await prisma.attendance.findMany({
       where: {
