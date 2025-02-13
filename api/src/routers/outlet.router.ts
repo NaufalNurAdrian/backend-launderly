@@ -1,22 +1,21 @@
 import { Router } from "express";
 import { OutletController } from "../controllers/outlet.controller";
 
-
 export class OutletRouter {
-    private outletController: OutletController;
-    private router: Router;
+  private outletController: OutletController;
+  private router: Router;
 
-    constructor() {
-        this.outletController = new OutletController();
-        this.router = Router();
-        this.initializeRoutes();
-    }
+  constructor() {
+    this.outletController = new OutletController();
+    this.router = Router();
+    this.initializeRoutes();
+  }
 
-    private initializeRoutes() {
-        this.router.post("/create", this.outletController.createOutletController);
-    }
+  private initializeRoutes() {
+    this.router.post("/create", this.outletController.createOutletController);
+  }
 
-    getRouter() {
-        return this.router;
-    }
+  getRouter() {
+    return this.router;
+  }
 }

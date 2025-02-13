@@ -3,15 +3,16 @@ import prisma from "../../prisma";
 interface GetAllAttendancesQuery {
     userId?: number; 
     outletId?: number; 
-    sortBy?: 'createdAt' | 'workHour'; 
+    sortBy?: 'createdAt' | 'workHour' ; 
     order?: 'asc' | 'desc';
     page?: number; 
     pageSize?: number; 
+    role?: 'WORKER' | 'DRIVER';
 }
 
 export const getAllAttendancesService = async (query: GetAllAttendancesQuery) => {
     try {
-        const { userId, outletId, sortBy, order, page = 1, pageSize = 6  } = query;
+        const { userId, outletId, sortBy, order, page = 1, pageSize = 20, role  } = query;
         const skip = (page - 1) * pageSize;
 
         const user = await prisma.user.findUnique({
@@ -20,14 +21,14 @@ export const getAllAttendancesService = async (query: GetAllAttendancesQuery) =>
         });
 
         if (!user) {
-            throw new Error("unauthorized");
+            throw new Error("unAuthorized");
         }
         
         const userRole = user.role;
         const userOutletId = user.employee?.outletId;
 
         if (userRole === "OUTLET_ADMIN" && outletId !== userOutletId) {
-            throw new Error("Admin outlet hanya bisa mengakses data untuk outlet mereka sendiri.");
+            throw new Error("Admin outlet can only access data of their outlet.");
         }
 
         let filter: any = {};
@@ -41,11 +42,16 @@ export const getAllAttendancesService = async (query: GetAllAttendancesQuery) =>
             };
         }
 
+        if (role) {
+            filter.user = filter.user || {};
+            filter.user.role = role;
+        }
+
         let orderBy: Record<string, 'asc' | 'desc'> = {};
 
-        if (sortBy && (sortBy === 'createdAt' || sortBy === 'workHour')) {
+        if (sortBy && (sortBy === 'createdAt' || sortBy === 'workHour' )) {
             const sortOrder = order === 'desc' ? 'desc' : 'asc';
-            orderBy[sortBy] = sortOrder;
+                orderBy[sortBy] = sortOrder;
         }
 
         const result = await prisma.attendance.findMany({

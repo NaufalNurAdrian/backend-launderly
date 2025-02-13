@@ -2,7 +2,7 @@
 import bcrypt from "bcrypt";
 import prisma from "../../prisma";
 
-interface AddEmployeeInput {
+export interface AddEmployeeInput {
   fullName: string;
   email: string;
   password: string;
@@ -40,7 +40,7 @@ export const addEmployeeService = async (data: AddEmployeeInput) => {
       data: {
         userId: user.id,
         outletId: data.outletId,
-        workShift: data.workShift,
+        // workShift: data.workShift,
         station: data.station,
       },
     });
