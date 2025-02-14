@@ -3,7 +3,11 @@ import prisma from "../prisma";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const verifyToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
     console.log("Received Token:", token); // Debug: Menampilkan token yang diterima
@@ -28,12 +32,17 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
       return;
     }
     res.status(500).send({
-      message: "Oops! There was an error verifying your token. Please check and try again.",
+      message:
+        "Oops! There was an error verifying your token. Please check and try again.",
     });
   }
 };
 
-export const checkSuperAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const checkSuperAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   if (req.user?.role == "SUPER_ADMIN") {
     next();
   } else {
@@ -41,7 +50,11 @@ export const checkSuperAdmin = (req: Request, res: Response, next: NextFunction)
   }
 };
 
-export const checkOutletAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const checkOutletAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   if (req.user?.role == "OUTLET_ADMIN") {
     next();
   } else {
@@ -54,7 +67,13 @@ export const verifyRole = (allowedRoles: string[]) => {
     const userRole = req.user?.role;
 
     if (!allowedRoles.includes(userRole ?? "")) {
-      res.status(403).json({ message: `only ${allowedRoles.join(" or ")} allowed to access this data` });
+      res
+        .status(403)
+        .json({
+          message: `only ${allowedRoles.join(
+            " or "
+          )} allowed to access this data`,
+        });
     }
 
     next();
@@ -67,8 +86,14 @@ export const verifyRoleAndAttendance = (allowedRoles: string[]) => {
     const userRole = req.user?.role;
 
     if (!userId || !allowedRoles.includes(userRole ?? "")) {
-      res.status(403).json({ message: `only ${allowedRoles.join(" or ")} allowed to access this data` });
-      return; 
+      res
+        .status(403)
+        .json({
+          message: `only ${allowedRoles.join(
+            " or "
+          )} allowed to access this data`,
+        });
+      return;
     }
 
     const activeAttendance = await prisma.attendance.findFirst({
@@ -76,8 +101,10 @@ export const verifyRoleAndAttendance = (allowedRoles: string[]) => {
     });
 
     if (!activeAttendance) {
-      res.status(403).json({ message: "Anda belum check-in atau sudah check-out" });
-      return; 
+      res
+        .status(403)
+        .json({ message: "Anda belum check-in atau sudah check-out" });
+      return;
     }
 
     next();
