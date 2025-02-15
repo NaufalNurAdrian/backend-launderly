@@ -2,7 +2,6 @@ import prisma from "../../prisma";
 import { Prisma } from "@prisma/client";
 import { endOfMonth, getDaysInMonth } from 'date-fns';
 
-
 interface GetPaymentChartQuery {
     id: number;
     filterOutlet: number | string;

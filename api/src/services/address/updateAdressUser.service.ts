@@ -27,7 +27,6 @@ export const updateUserAddressService = async (
       const existingAddress = await prisma.address.findFirst({
         where: { addressLine: { equals: addressLine }, id: { not: id } },
       });
-
       if (existingAddress) {
         throw new Error("Address already exists!");
       }

@@ -1,6 +1,5 @@
 import prisma from "../../prisma";
 
-
 interface GetPaymentQuery {
   id: number;
   orderId: number;
