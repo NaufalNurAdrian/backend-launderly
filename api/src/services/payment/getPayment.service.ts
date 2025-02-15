@@ -1,4 +1,5 @@
-import prisma from '@/prisma';
+import prisma from "../../prisma";
+
 
 interface GetPaymentQuery {
   id: number;

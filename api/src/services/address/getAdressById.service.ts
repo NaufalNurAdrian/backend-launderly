@@ -7,7 +7,7 @@ export const getAddressByIdService = async (id: number) => {
     });
 
     if (!address) {
-      throw new Error('Address not found !');
+      throw new Error("Address not found !");
     }
 
     return address;

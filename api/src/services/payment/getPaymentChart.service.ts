@@ -1,7 +1,7 @@
-import prisma from "@/prisma";
+import prisma from "../../prisma";
 import { Prisma } from "@prisma/client";
 import { endOfMonth, getDaysInMonth } from 'date-fns';
-import { body } from "express-validator";
+
 
 interface GetPaymentChartQuery {
     id: number;

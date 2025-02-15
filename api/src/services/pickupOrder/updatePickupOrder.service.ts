@@ -1,4 +1,4 @@
-import prisma from '@/prisma';
+import prisma from '../../prisma';
 import { OrderStatus, PickupStatus } from '@prisma/client';
 
 interface UpdatePickupOrderBody {

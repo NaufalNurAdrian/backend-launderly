@@ -13,14 +13,22 @@ export const createUserAddressService = async (
   body: FormUpdateAddressArgs,
 ) => {
   try {
-    const { addressLine } = body;
+    const { addressLine, latitude, longitude } = body;
 
     const existingAddress = await prisma.address.findFirst({
       where: { addressLine: { equals: addressLine } },
     });
 
     if (existingAddress) {
-      throw new Error('Address already exist !');
+      throw new Error('Address already exists!');
+    }
+
+    // Konversi latitude dan longitude ke number
+    const latitudeNumber = parseFloat(latitude);
+    const longitudeNumber = parseFloat(longitude);
+
+    if (isNaN(latitudeNumber) || isNaN(longitudeNumber)) {
+      throw new Error('Invalid latitude or longitude!');
     }
 
     const createUserAddress = await prisma.address.create({
@@ -28,8 +36,8 @@ export const createUserAddressService = async (
         addressLine: body.addressLine,
         city: body.city,
         isPrimary: body.isPrimary,
-        latitude: body.latitude,
-        longitude: body.longitude,
+        latitude: latitudeNumber,
+        longitude: longitudeNumber,
         userId: id,
       },
     });
