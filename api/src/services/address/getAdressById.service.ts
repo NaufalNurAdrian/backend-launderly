@@ -5,13 +5,12 @@ export const getAddressByIdService = async (id: number) => {
     const address = await prisma.address.findFirst({
       where: { id: id, isDelete: false },
     });
-
     if (!address) {
-      throw new Error('Address not found !');
+      throw new Error("Address not found !");
     }
-
     return address;
   } catch (error) {
     throw error;
   }
 };
+

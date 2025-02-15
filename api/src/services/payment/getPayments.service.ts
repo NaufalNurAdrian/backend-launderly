@@ -1,4 +1,4 @@
-import prisma from '@/prisma';
+import prisma from "../../prisma";
 import { PaginationQueryParams } from '@/types/pagination.type';
 import { Prisma } from '@prisma/client';
 import { endOfMonth, getDaysInMonth } from 'date-fns';

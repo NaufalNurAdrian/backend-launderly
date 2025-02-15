@@ -13,7 +13,9 @@ import { AuthRouter } from "./routers/auth.router";
 import { UserRouter } from "./routers/user";
 import { OrderWorkerRouter } from "./routers/workerOrder.router";
 import { BypassRouter } from "./routers/bypass.router";
-
+import { AddressRouter } from "./routers/address.router";
+import { PickupOrderRouter } from "./routers/pickupOrder.router";
+import { PaymentRouter } from "./routers/payment.router";
 
 const PORT: number = 8000;
 
@@ -31,7 +33,7 @@ app.get("/api", (req: Request, res: Response) => {
   res.status(200).send("Welcome to my Launderly API");
 });
 
-const attendanceRouter = new AttendanceRouter()
+const attendanceRouter = new AttendanceRouter();
 const pickupRouter = new PickupRouter();
 const deliveryRouter = new DeliveryRouter();
 const requestRouter = new RequestRouter();
@@ -41,19 +43,25 @@ const notificationRouter = new NotificationRouter();
 const authRouter = new AuthRouter();
 const outletRouter = new OutletRouter();
 const employeeRouter = new EmployeeRouter();
-const userRouter = new UserRouter()
+const userRouter = new UserRouter();
+const addressRouter = new AddressRouter();
+const pickupOrderRouter = new PickupOrderRouter();
+const paymentRouter = new PaymentRouter();
 
-app.use("/api/attendance", attendanceRouter.getRouter())
-app.use("/api/pickup", pickupRouter.getRouter())
-app.use("/api/delivery", deliveryRouter.getRouter())
-app.use("/api/request", requestRouter.getRouter())
-app.use("/api/order", orderRouter.getRouter())
-app.use("/api/bypass", bypassRouter.getRouter())
-app.use("/api/notification", notificationRouter.getRouter())
+app.use("/api/attendance", attendanceRouter.getRouter());
+app.use("/api/pickup", pickupRouter.getRouter());
+app.use("/api/delivery", deliveryRouter.getRouter());
+app.use("/api/request", requestRouter.getRouter());
+app.use("/api/order", orderRouter.getRouter());
+app.use("/api/bypass", bypassRouter.getRouter());
+app.use("/api/notification", notificationRouter.getRouter());
 app.use("/api/auth", authRouter.getRouter());
 app.use("/api/outlet", outletRouter.getRouter());
 app.use("/api/employee", employeeRouter.getRouter());
 app.use("/api/user", userRouter.getRouter());
+app.use("/api/address", addressRouter.getRouter());
+app.use("/api/pickupOrder", pickupOrderRouter.getRouter());
+app.use("/api/payment", paymentRouter.getRouter());
 
 app.listen(PORT, () => {
   console.log(`server running on -> http://localhost:${PORT}/api`);

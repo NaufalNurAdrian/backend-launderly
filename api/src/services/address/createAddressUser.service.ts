@@ -1,41 +1,41 @@
+import { Request, Response } from "express";
 import prisma from "../../prisma";
 
-interface FormUpdateAddressArgs {
-  addressLine: string;
-  city: string;
-  latitude: string;
-  longitude: string;
-  isPrimary: boolean;
-}
-
-export const createUserAddressService = async (
-  id: number,
-  body: FormUpdateAddressArgs,
-) => {
+export const createUserAddressService = async (req: Request, res: Response) => {
   try {
-    const { addressLine } = body;
-
-    const existingAddress = await prisma.address.findFirst({
-      where: { addressLine: { equals: addressLine } },
-    });
-
-    if (existingAddress) {
-      throw new Error('Address already exist !');
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const createUserAddress = await prisma.address.create({
+    const { addressLine, city, isPrimary, latitude, longitude } = req.body;
+
+    if (!addressLine || !city) {
+      return res.status(400).json({ message: "Address line and city are required" });
+    }
+
+    if (isPrimary) {
+      await prisma.address.updateMany({
+        where: { userId, isPrimary: true },
+        data: { isPrimary: false },
+      });
+    }
+
+    // Buat alamat baru
+    const newAddress = await prisma.address.create({
       data: {
-        addressLine: body.addressLine,
-        city: body.city,
-        isPrimary: body.isPrimary,
-        latitude: body.latitude,
-        longitude: body.longitude,
-        userId: id,
+        addressLine,
+        city,
+        isPrimary: isPrimary || false,
+        latitude,
+        longitude,
+        userId,
       },
     });
 
-    return { message: 'Create address success', data: createUserAddress };
+    return res.status(201).json({ message: "Address created successfully", address: newAddress });
   } catch (error) {
-    throw error;
+    console.error("Error creating address:", error);
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
