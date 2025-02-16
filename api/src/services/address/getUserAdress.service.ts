@@ -1,17 +1,21 @@
+import { Request } from "express";
 import prisma from "../../prisma";
 
-export const getUserAddressService = async (id: number) => {
+export const getUserAddressesService = async (req: Request) => {
   try {
-    const address = await prisma.address.findMany({
-      where: { userId: id, isDelete: false },
-    });
-
-    if (!address) {
-      throw new Error("Address not found !");
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new Error("Unauthorized");
     }
 
-    return address;
+    const addresses = await prisma.address.findMany({
+      where: { userId, isDelete: false },
+      orderBy: { isPrimary: "desc" },
+    });
+
+    return { message: "Addresses retrieved successfully", addresses };
   } catch (error) {
-    throw error;
+    console.error("Error retrieving addresses:", error);
+    throw new Error("Failed to retrieve addresses");
   }
 };

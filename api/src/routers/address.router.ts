@@ -19,6 +19,11 @@ export class AddressRouter {
       verifyToken,
       this.addressController.getUserAddressController
     );
+    this.router.post(
+      "/",
+      verifyToken,
+      this.addressController.createUserAddressController
+    );
     this.router.get("/:id", verifyToken, this.addressController.getAddressById);
     this.router.patch(
       "/:id",
@@ -29,11 +34,6 @@ export class AddressRouter {
       "/:id",
       verifyToken,
       this.addressController.deleteUserAddressController
-    );
-    this.router.post(
-      "/",
-      verifyToken,
-      this.addressController.createUserAddressController
     );
   }
 

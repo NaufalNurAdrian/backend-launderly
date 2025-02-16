@@ -31,17 +31,27 @@ export const loginGoogleService = async (idToken: string) => {
     };
 
     // Cek apakah user sudah ada di database
-    const existingUser = await prisma.user.findFirst({
+    let existingUser = await prisma.user.findFirst({
       where: { email: userData.email },
     });
 
-    if (
-      existingUser &&
-      existingUser.avatar?.includes("googleusercontent.com")
-    ) {
-      const token = sign({ id: existingUser.id }, appConfig.jwtSecretKey, {
-        expiresIn: "2h",
-      });
+    if (existingUser) {
+      // Jika user sudah ada tetapi menggunakan email/password, update authProvider ke Google
+      if (existingUser.authProvider !== "google") {
+        existingUser = await prisma.user.update({
+          where: { email: userData.email },
+          data: { authProvider: "google" }, 
+        });
+      }
+
+      // Generate token dengan authProvider yang benar
+      const token = sign(
+        { id: existingUser.id, authProvider: "google" },
+        appConfig.jwtSecretKey,
+        {
+          expiresIn: "2h",
+        }
+      );
 
       return {
         message: "Login by Google Success",
@@ -50,23 +60,24 @@ export const loginGoogleService = async (idToken: string) => {
       };
     }
 
-    if (existingUser?.password) {
-      throw new Error("Please login using email and password");
-    }
-
-    // Buat user baru jika belum ada
+    // Jika user belum ada, buat user baru
     const newUser = await prisma.user.create({
       data: {
         email: userData.email,
         fullName: userData.name,
         avatar: userData.picture,
         isVerify: true,
+        authProvider: "google",
       },
     });
 
-    const token = sign({ id: newUser.id }, appConfig.jwtSecretKey, {
-      expiresIn: "2h",
-    });
+    const token = sign(
+      { id: newUser.id, authProvider: "google" },
+      appConfig.jwtSecretKey,
+      {
+        expiresIn: "2h",
+      }
+    );
 
     return {
       message: "Login by Google Success ✅",

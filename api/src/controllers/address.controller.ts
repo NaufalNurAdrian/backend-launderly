@@ -1,23 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { getUserAddressService } from "../services/address/getUserAdress.service";
 import { getAddressByIdService } from "../services/address/getAdressById.service";
 import { updateUserAddressService } from "../services/address/updateAdressUser.service";
 import { createUserAddressService } from "../services/address/createAddressUser.service";
 import { deleteUserAddressService } from "../services/address/deleteAddressUser.service";
+import { getUserAddressesService } from "../services/address/getUserAdress.service";
 
 export class AddressController {
   async getUserAddressController(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     try {
-      const id = res.locals.user.id;
-
-      const result = await getUserAddressService(id);
+      const result = await getUserAddressesService(req);
 
       res.status(200).send(result);
-      return 
+      return;
     } catch (error) {
       next(error);
     }
@@ -30,7 +28,7 @@ export class AddressController {
       const result = await getAddressByIdService(Number(id));
 
       res.status(200).send(result);
-      return 
+      return;
     } catch (error) {
       next(error);
     }
@@ -39,7 +37,7 @@ export class AddressController {
   async updateUserAddressController(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     try {
       const id = req.params.id;
@@ -47,7 +45,7 @@ export class AddressController {
       const result = await updateUserAddressService(Number(id), req.body);
 
       res.status(200).send(result);
-      return 
+      return;
     } catch (error) {
       next(error);
     }
@@ -56,15 +54,11 @@ export class AddressController {
   async createUserAddressController(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     try {
-      const id = res.locals.user.id;
-
-      const result = await createUserAddressService(id, req.body);
-
-      res.status(200).send(result);
-      return 
+      createUserAddressService(req, res);
+      return;
     } catch (error) {
       next(error);
     }
@@ -73,7 +67,7 @@ export class AddressController {
   async deleteUserAddressController(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     try {
       const id = req.params.id;
@@ -81,7 +75,7 @@ export class AddressController {
       const result = await deleteUserAddressService(Number(id));
 
       res.status(200).send(result);
-      return 
+      return;
     } catch (error) {
       next(error);
     }

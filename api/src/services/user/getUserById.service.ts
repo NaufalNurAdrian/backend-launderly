@@ -8,7 +8,17 @@ export const getUsersIdService = async (req: Request, res: Response) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id }, 
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        authProvider: true,
+        avatar: true,
+        isVerify: true,
+        createdAt: true,
+        isDelete: true,
+      },
     });
 
     if (!user) {
