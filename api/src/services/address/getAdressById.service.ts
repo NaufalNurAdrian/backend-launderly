@@ -13,4 +13,3 @@ export const getAddressByIdService = async (id: number) => {
     throw error;
   }
 };
-
