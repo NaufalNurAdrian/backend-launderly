@@ -1,4 +1,5 @@
 import prisma from "../../../prisma";
+import { createNotificationForNextStation } from "../notifications/createNotification.service";
 
 enum PickupStatus {
   WAITING_FOR_DRIVER = "WAITING_FOR_DRIVER",
@@ -185,7 +186,10 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         },
       });
     }
-
+    if (type === "pickup" && nextStatus === PickupStatus.RECEIVED_BY_OUTLET) {
+      const nextStation = "WASHING"; 
+      await createNotificationForNextStation(requestId, nextStation);
+    }
     return updatedRequest;
   } catch (err) {
     throw err;
