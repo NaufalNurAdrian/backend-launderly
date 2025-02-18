@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { createOrderPickupOrderService } from "../services/pickupOrder/createPickupOrder.service";
-import { getPickupOrderService } from "../services/pickupOrder/getPickupOrder.service";
 import { getPickupOrdersService } from "../services/pickupOrder/getPickupOrders.service";
 import { updatePickupOrderService } from "../services/pickupOrder/updatePickupOrder.service";
+import { getNearbyOutletsService } from "../services/pickupOrder/getNearbyOutletservice";
+import { getUserOrdersService } from "../services/pickupOrder/getUserOrder.service";
 
 export class PickupOrderController {
   async getPickupOrdersController(
@@ -12,7 +13,7 @@ export class PickupOrderController {
   ) {
     try {
       const query = {
-        id: Number(res.locals.user.id), // Pastikan id valid
+        id: req.user?.id!,
         pickupStatus: (req.query.pickupStatus as string) || "all",
         isOrderCreated: Number(req.query.isOrderCreated) || 0,
         isClaimedbyDriver: Number(req.query.isClaimedbyDriver) || 0,
@@ -20,7 +21,7 @@ export class PickupOrderController {
         longitude: req.query.longitude
           ? Number(req.query.longitude)
           : undefined,
-        take: Number(req.query.take) || 10, // Beri batas default yang masuk akal
+        take: Number(req.query.take) || 10,
         page: Number(req.query.page) || 1,
         sortBy: (req.query.sortBy as string) || "createdAt",
         sortOrder: (req.query.sortOrder as string) === "desc" ? "desc" : "asc",
@@ -33,16 +34,15 @@ export class PickupOrderController {
     }
   }
 
-  async getPickupOrderController(
+  async getUserOrdersController(
     req: Request,
     res: Response,
     next: NextFunction
   ) {
     try {
-      const id = req.params.id;
-      const result = await getPickupOrderService(Number(id));
-      res.status(200).send(result);
-      return;
+      const userId = req.user?.id!;
+      const orders = await getUserOrdersService(userId);
+      res.json({ data: orders });
     } catch (error) {
       next(error);
     }
@@ -70,6 +70,45 @@ export class PickupOrderController {
     try {
       const result = await createOrderPickupOrderService(req.body);
       res.status(200).send(result);
+      return;
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getOutletNearbyController(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { latitude, longitude } = req.query;
+
+      if (!latitude || !longitude) {
+        res
+          .status(400)
+          .json({ message: "Latitude and longitude are required" });
+        return;
+      }
+
+      // Pastikan nilai query string diubah ke number
+      const lat = Number(latitude);
+      const lon = Number(longitude);
+
+      if (isNaN(lat) || isNaN(lon)) {
+        res
+          .status(400)
+          .json({ message: "Invalid latitude or longitude format" });
+        return;
+      }
+
+      // Panggil service yang telah diperbaiki
+      const result = await getNearbyOutletsService(lat, lon);
+
+      res.status(200).json({
+        message: "Nearby outlets retrieved successfully",
+        nearbyOutlets: result,
+      });
       return;
     } catch (error) {
       next(error);
