@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { updateRequestStatusService } from "../../../services/driver/process/driverRequest.service";
-import { getDriverHistoryService } from "../../../services/driver/history/getDriverHistory.service";
+import { getDriverHistoryService } from "../../../services/driver/driverHistory/getDriverHistory.service";
 
 export class RequestController {
   async updateRequestStatus(req: Request, res: Response) {

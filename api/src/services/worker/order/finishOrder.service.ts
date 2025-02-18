@@ -50,7 +50,7 @@ export const updateOrderStatus = async (query: updateOrderData) => {
               outletId: true,
               userId: true,
               addressId: true,
-              distance: true
+              distance: true,
             },
           },
         },
@@ -62,7 +62,7 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
       newStatus = order.isPaid ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER : OrderStatus.AWAITING_PAYMENT;
       const deliveryNumber = await generateOrderNumber("DLV");
-     
+
       const deliveryOrder = await prisma.deliveryOrder.create({
         data: {
           orderId: orderId,
@@ -93,35 +93,30 @@ export const updateOrderStatus = async (query: updateOrderData) => {
     });
     const station: string = worker.station as string;
 
-    const nextStation =
-    station === "WASHING"
-      ? "IRONING"
-      : station === "IRONING"
-      ? "PACKING"
-      : null;
+    const nextStation = station === "WASHING" ? "IRONING" : station === "IRONING" ? "PACKING" : null;
 
-  if (nextStation) {
-    const usersInNextStation = await prisma.employee.findMany({
-      where: { station: nextStation },
-      select: { userId: true },
-    });
+    if (nextStation) {
+      const usersInNextStation = await prisma.employee.findMany({
+        where: { station: nextStation },
+        select: { userId: true },
+      });
 
-    const notification = await prisma.notification.create({
-      data: {
-        title: `Order ${orderId} Ready for ${nextStation}`,
-        description: `The order is ready to be processed at the ${nextStation} station.`,
-      },
-    });
-
-    for (const user of usersInNextStation) {
-      await prisma.userNotification.create({
+      const notification = await prisma.notification.create({
         data: {
-          userId: user.userId,
-          notificationId: notification.id,
+          title: `Order ${orderId} Ready for ${nextStation}`,
+          description: `The order is ready to be processed at the ${nextStation} station.`,
         },
       });
+
+      for (const user of usersInNextStation) {
+        await prisma.userNotification.create({
+          data: {
+            userId: user.userId,
+            notificationId: notification.id,
+          },
+        });
+      }
     }
-  }
 
     return { order: completedOrder, detail: updatedWorkerOrder };
   } catch (error) {

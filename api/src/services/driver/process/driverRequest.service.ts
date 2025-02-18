@@ -1,5 +1,5 @@
 import prisma from "../../../prisma";
-import { createNotificationForNextStation } from "../notifications/createNotification.service";
+import { createNotificationForNextStation } from "../../notifications/createNotification.service";
 
 enum PickupStatus {
   WAITING_FOR_DRIVER = "WAITING_FOR_DRIVER",
@@ -64,11 +64,11 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         driverId,
         id: { not: requestId },
         pickupStatus: {
-          in: [ PickupStatus.ON_THE_WAY_TO_CUSTOMER, PickupStatus.ON_THE_WAY_TO_OUTLET],
+          in: [PickupStatus.ON_THE_WAY_TO_CUSTOMER, PickupStatus.ON_THE_WAY_TO_OUTLET],
         },
       },
     });
-    
+
     const isProcessingDelivery = await prisma.deliveryOrder.findFirst({
       where: {
         driverId,
@@ -187,7 +187,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
       });
     }
     if (type === "pickup" && nextStatus === PickupStatus.RECEIVED_BY_OUTLET) {
-      const nextStation = "WASHING"; 
+      const nextStation = "WASHING";
       await createNotificationForNextStation(requestId, nextStation);
     }
     return updatedRequest;

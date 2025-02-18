@@ -3,7 +3,7 @@ import prisma from "../../../prisma";
 
 interface getHistoryData {
   driverId: number;
-  type?: "pickup" | "delivery"; 
+  type?: "pickup" | "delivery";
   sortBy?: "createdAt" | "distance";
   order?: "asc" | "desc";
   page?: number;
@@ -42,7 +42,7 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
         ? await prisma.pickupOrder.findMany({
             where: {
               outletId: driver.outletId,
-              pickupStatus: "RECEIVED_BY_OUTLET", 
+              pickupStatus: "RECEIVED_BY_OUTLET",
               driverId: driver.id,
             },
             include: {
@@ -56,7 +56,7 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
       !type || type === "delivery"
         ? await prisma.deliveryOrder.findMany({
             where: {
-              deliveryStatus: "RECEIVED_BY_CUSTOMER", 
+              deliveryStatus: "RECEIVED_BY_CUSTOMER",
               driverId: driver.id,
             },
             include: {

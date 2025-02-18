@@ -13,7 +13,7 @@ interface getDeliveryData {
 export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
     const { driverId, sortBy, order = "asc", page = 1, pageSize = 3 } = query;
-   
+
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },

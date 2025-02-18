@@ -4,14 +4,14 @@ import prisma from "../../../prisma";
 
 interface getPickupData {
   driverId: number;
-  sortBy?: "createdAt" | "distance";
+  sortBy?: "createdAt" | "distance" | "updatedAt";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-    const { driverId, sortBy, order, page = 1, pageSize = 3 } = query;
+    const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },

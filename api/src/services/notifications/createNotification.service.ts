@@ -1,16 +1,16 @@
 import { EmployeeStation, Prisma } from "@prisma/client";
-import prisma from "../../../prisma"; 
+import prisma from "../../prisma";
 
 export const createNotificationForNextStation = async (orderId: number, nextStation: string) => {
   const usersInNextStation = await prisma.employee.findMany({
     where: {
-        station: {
-          equals: EmployeeStation.WASHING, 
-          not: null,
-        },
+      station: {
+        equals: EmployeeStation.WASHING,
+        not: null,
       },
-      select: { userId: true },
-    });
+    },
+    select: { userId: true },
+  });
 
   if (usersInNextStation.length === 0) {
     console.warn(`No employees found for station: ${nextStation}`);
@@ -19,8 +19,8 @@ export const createNotificationForNextStation = async (orderId: number, nextStat
 
   const notification = await prisma.notification.create({
     data: {
-      title: `Order ${orderId} Ready for ${nextStation}`,
-      description: `The order is ready to be processed at the ${nextStation} station.`,
+      title: `Incoming order`,
+      description: `The order is ready to be processed at the ${(nextStation).toLowerCase()} station.`,
     },
   });
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getDeliveryRequestsService } from "../../../services/driver/delivery/getDeliveryRequests.service";
+import { getDeliveryRequestsService } from "../../../services/driver/deliveryOrder/getDeliveryRequests.service";
 
 export class DeliveryController {
   async getDeliveryRequest(req: Request, res: Response) {
