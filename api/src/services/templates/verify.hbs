@@ -5,39 +5,87 @@
     <title>Email Verification</title>
   </head>
   <body
-    style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f9;"
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e0f7fa;
+    "
   >
     <div
-      style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); text-align: center;"
+      style="
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border: 2px solid #00acc1;
+      "
     >
-      <h1 style="font-size: 24px; color: #6d28d9; margin-bottom: 10px;">Welcome
-        to Launderly 👋</h1>
-      <p style="font-size: 14px; color: #333; margin-top: 0;">Just Sit, and your
-        Laundry will be cleaned!</p>
-      <h2 style="font-size: 20px; color: #333333; margin-top: 0;">Hi
-        {{name}}</h2>
-      <p style="font-size: 16px; color: #666666; margin: 10px 0;">Verify Your
-        Email Account</p>
-      <p style="font-size: 14px; color: #666666; line-height: 1.5;">
-        Thank you for joining Launderly! Click the button below to verify your
-        email and start laundry🧺.
+      <!-- Logo -->
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/2901/2901141.png"
+          alt="Laundry Icon"
+          width="80"
+          style="display: block; margin: 0 auto;"
+        />
+      </div>
+
+      <h1 style="font-size: 24px; color: #00796b; margin-bottom: 10px;">
+        Welcome to Launderly! 🧺
+      </h1>
+      <p style="font-size: 14px; color: #333; margin-top: 0;">
+        Hassle-free laundry services, just for you!
       </p>
+
+      <h2 style="font-size: 20px; color: #333333; margin-top: 0;">
+        Hi {{name}}, let’s get started!
+      </h2>
+      <p style="font-size: 16px; color: #666666; margin: 10px 0;">
+        Verify Your Email to Start Using Launderly
+      </p>
+      <p style="font-size: 14px; color: #666666; line-height: 1.5;">
+        Thank you for signing up with Launderly! Click the button below to
+        verify your email and experience effortless laundry.
+      </p>
+
+      <!-- Button -->
       <div class="button-container" style="margin: 20px 0;">
         <a
-          href={{link}}
+          href="{{link}}"
           class="cta-button"
-          style="text-decoration: none; background-color: #ff9900; color: white; padding: 12px 30px; border-radius: 5px; font-size: 18px; display: inline-block;"
+          style="
+            text-decoration: none;
+            background-color: #00796b;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            display: inline-block;
+          "
         >
-          Click Here to Verify Your Account
+          Verify My Email
         </a>
       </div>
+
+      <!-- Info -->
       <p
-        style="font-size: 12px; color: #999999; line-height: 1.5; margin: 20px 0;"
+        style="
+          font-size: 12px;
+          color: #999999;
+          line-height: 1.5;
+          margin: 20px 0;
+        "
       >
-        If you didn’t sign up for Laundery, you can safely ignore this email.
+        If you didn’t sign up for Launderly, you can safely ignore this email.
       </p>
-      <p style="font-size: 12px; color: #999999; margin: 0;">&copy;Launderly.
-        All rights reserved.</p>
+      <p style="font-size: 12px; color: #999999; margin: 0;">
+        &copy; {{year}} Launderly. All rights reserved.
+      </p>
     </div>
   </body>
 </html>
