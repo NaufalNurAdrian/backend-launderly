@@ -8,9 +8,9 @@ import { getOrderItem } from "../../services/worker/order/getOrderItem";
 export class OrderWorkerController {
   async getOrders(req: Request, res: Response) {
     try {
-      const workerId = req.user?.id!
+      const workerId = req.user?.id!;
       const { order, sortBy, page, pageSize } = req.query;
-      
+
       const result = await getWorkerOrdersService({
         workerId: workerId,
         sortBy: sortBy as "createdAt" | "weight",
@@ -30,15 +30,15 @@ export class OrderWorkerController {
   }
   async getOrderHistory(req: Request, res: Response) {
     try {
-      const workerId = req.user?.id!
-      const {  order, sortBy, page, pageSize } = req.query;
+      const workerId = req.user?.id!;
+      const { order, sortBy, page, pageSize } = req.query;
 
       const result = await getWorkerOrdersHistoryService({
         workerId: workerId,
         sortBy: sortBy as "createdAt",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,
-        pageSize: pageSize ? parseInt(pageSize as string) : 4,
+        pageSize: pageSize ? parseInt(pageSize as string) : 1,
       });
 
       res.status(200).send({
@@ -53,7 +53,7 @@ export class OrderWorkerController {
   async createOrderWorker(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const  workerId  = req.user?.id!;
+      const workerId = req.user?.id!;
 
       const result = await createOrderWorker({
         workerId: workerId,
@@ -68,8 +68,8 @@ export class OrderWorkerController {
   async finishOrderWorker(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const workerId  = req.user?.id!;
-      
+      const workerId = req.user?.id!;
+
       const result = await updateOrderStatus({
         workerId: workerId,
         orderId: parseInt(orderId as string),
@@ -80,7 +80,7 @@ export class OrderWorkerController {
       res.status(400).send({ message: error.message });
     }
   }
-  
+
   async getOrderItem(req: Request, res: Response) {
     try {
       const { orderId } = req.params;

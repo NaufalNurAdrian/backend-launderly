@@ -12,7 +12,7 @@ interface getHistoryData {
 
 export const getDriverHistoryService = async (query: getHistoryData) => {
   try {
-    const { driverId, type, sortBy, order, page = 1, pageSize = 15 } = query;
+    const { driverId, type, sortBy, order, page = 1, pageSize = 5 } = query;
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },

@@ -22,7 +22,7 @@ export class RequestController {
   async getDriverHistory(req: Request, res: Response) {
     try {
       const driverId = req.user?.id!
-      const { type, sortBy, order, page } = req.query;
+      const { type, sortBy, order, page, pageSize } = req.query;
       if (!driverId) {
         res.status(400).json({ message: "Driver ID diperlukan" });
       }
@@ -33,6 +33,7 @@ export class RequestController {
         order: order as "asc" | "desc",
         type: type as "pickup" | "delivery",
         page: page ? parseInt(page as string) : 1,
+        pageSize: parseInt(pageSize as string)
       });
 
       res.status(200).send(driverHistory);
