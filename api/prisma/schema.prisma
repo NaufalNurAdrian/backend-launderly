@@ -105,7 +105,6 @@ model User {
   deliveryOrder        DeliveryOrder[]
   userNotification     UserNotification[]
   Attendance           Attendance[]
-
 }
 
 
