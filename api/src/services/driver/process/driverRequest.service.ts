@@ -1,30 +1,6 @@
+import { createNotificationForNextStation } from "../../../services/notifications/createNotification.service";
 import prisma from "../../../prisma";
-import { createNotificationForNextStation } from "../../notifications/createNotification.service";
-
-enum PickupStatus {
-  WAITING_FOR_DRIVER = "WAITING_FOR_DRIVER",
-  ON_THE_WAY_TO_CUSTOMER = "ON_THE_WAY_TO_CUSTOMER",
-  ON_THE_WAY_TO_OUTLET = "ON_THE_WAY_TO_OUTLET",
-  RECEIVED_BY_OUTLET = "RECEIVED_BY_OUTLET",
-}
-
-enum DeliveryStatus {
-  WAITING_FOR_DELIVERY_DRIVER = "WAITING_FOR_DRIVER",
-  ON_THE_WAY_TO_OUTLET = "ON_THE_WAY_TO_OUTLET",
-  ON_THE_WAY_TO_CUSTOMER = "ON_THE_WAY_TO_CUSTOMER",
-  RECEIVED_BY_CUSTOMER = "RECEIVED_BY_CUSTOMER",
-}
-
-enum OrderStatus {
-  WAITING_FOR_PICKUP_DRIVER = "WAITING_FOR_PICKUP_DRIVER",
-  ON_THE_WAY_TO_CUSTOMER = "ON_THE_WAY_TO_CUSTOMER",
-  ON_THE_WAY_TO_OUTLET = "ON_THE_WAY_TO_OUTLET",
-  ARRIVED_AT_OUTLET = "ARRIVED_AT_OUTLET",
-  WAITING_FOR_DELIVERY_DRIVER = "WAITING_FOR_DELIVERY_DRIVER",
-  BEING_DELIVERED_TO_CUSTOMER = "BEING_DELIVERED_TO_CUSTOMER",
-  RECEIVED_BY_CUSTOMER = "RECEIVED_BY_CUSTOMER",
-  COMPLETED = "COMPLETED",
-}
+import { DeliveryStatus, OrderStatus, PickupStatus } from "@prisma/client";
 
 interface UpdateRequestStatusData {
   driverId: number;
@@ -42,7 +18,7 @@ const mapToOrderStatus = (status: PickupStatus | DeliveryStatus): OrderStatus =>
       return OrderStatus.ON_THE_WAY_TO_OUTLET;
     case PickupStatus.RECEIVED_BY_OUTLET:
       return OrderStatus.ARRIVED_AT_OUTLET;
-    case DeliveryStatus.WAITING_FOR_DELIVERY_DRIVER:
+    case DeliveryStatus.WAITING_FOR_DRIVER:
       return OrderStatus.WAITING_FOR_DELIVERY_DRIVER;
     case DeliveryStatus.ON_THE_WAY_TO_OUTLET:
       return OrderStatus.ON_THE_WAY_TO_OUTLET;
@@ -59,28 +35,37 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
   try {
     const { driverId, requestId, type } = data;
 
-    const isProcessingPickup = await prisma.pickupOrder.findFirst({
+    const driver = await prisma.employee.findUnique({
+      where: { userId: driverId },
+      select: { outletId: true, id: true },
+    });
+
+    if (!driver || !driver.outletId) {
+      throw new Error("Driver have no access to this outlet");
+    }
+
+    const existingPickupOrders = await prisma.pickupOrder.findMany({
       where: {
-        driverId,
+        driverId: driver.id,
         id: { not: requestId },
         pickupStatus: {
-          in: [PickupStatus.ON_THE_WAY_TO_CUSTOMER, PickupStatus.ON_THE_WAY_TO_OUTLET],
+          not: PickupStatus.RECEIVED_BY_OUTLET,
         },
       },
     });
 
-    const isProcessingDelivery = await prisma.deliveryOrder.findFirst({
+    const existingDeliveryOrders = await prisma.deliveryOrder.findMany({
       where: {
-        driverId,
+        driverId: driver.id,
         id: { not: requestId },
         deliveryStatus: {
-          in: [DeliveryStatus.ON_THE_WAY_TO_OUTLET, DeliveryStatus.ON_THE_WAY_TO_CUSTOMER],
+          not: DeliveryStatus.RECEIVED_BY_CUSTOMER,
         },
       },
     });
-
-    if (isProcessingPickup || isProcessingDelivery) {
-      throw new Error("Driver still processing other order");
+    
+    if (existingPickupOrders.length > 0 || existingDeliveryOrders.length > 0) {
+      throw new Error("Driver is currently processing another order");
     }
 
     let request;
@@ -119,7 +104,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
       }
     } else if (type === "delivery" && "deliveryStatus" in request) {
       switch (request.deliveryStatus) {
-        case DeliveryStatus.WAITING_FOR_DELIVERY_DRIVER:
+        case DeliveryStatus.WAITING_FOR_DRIVER:
           nextStatus = DeliveryStatus.ON_THE_WAY_TO_OUTLET;
           break;
         case DeliveryStatus.ON_THE_WAY_TO_OUTLET:
@@ -135,15 +120,6 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
       }
     } else {
       throw new Error("invalid request type");
-    }
-
-    const driver = await prisma.employee.findUnique({
-      where: { userId: driverId },
-      select: { outletId: true, id: true },
-    });
-
-    if (!driver || !driver.outletId) {
-      throw new Error("Driver have no access to this outlet");
     }
 
     let updatedRequest;

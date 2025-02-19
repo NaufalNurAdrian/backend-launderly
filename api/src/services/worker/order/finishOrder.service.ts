@@ -69,7 +69,7 @@ export const updateOrderStatus = async (query: updateOrderData) => {
           deliveryNumber: deliveryNumber,
           deliveryStatus: order.isPaid ? DeliveryStatus.WAITING_FOR_DRIVER : DeliveryStatus.NOT_READY_TO_DELIVER,
           createdAt: new Date(),
-          deliveryPrice: 20000,
+          deliveryPrice: 5000,
           driverId: null,
           userId: order.pickupOrder.userId,
           addressId: order.pickupOrder.addressId,

@@ -44,7 +44,6 @@ export const getPickupRequestsService = async (query: getPickupData) => {
       ],
     };
 
-    console.log("Query:", JSON.stringify(whereClause, null, 2));
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
       include: {
@@ -83,6 +82,18 @@ export const getPickupRequestsService = async (query: getPickupData) => {
     if (sortBy === "distance") {
       pickupRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+      });
+    } else if (sortBy === "createdAt") {
+      pickupRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      });
+    } else {
+      pickupRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.updatedAt).getTime();
+        const dateB = new Date(b.updatedAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
 

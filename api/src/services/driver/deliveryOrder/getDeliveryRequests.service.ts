@@ -4,7 +4,7 @@ import prisma from "../../../prisma";
 
 interface getDeliveryData {
   driverId: number;
-  sortBy?: "createdAt" | "distance";
+  sortBy?: "createdAt" | "distance" | "updatedAt";
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
@@ -12,7 +12,7 @@ interface getDeliveryData {
 
 export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
-    const { driverId, sortBy, order = "asc", page = 1, pageSize = 3 } = query;
+    const { driverId, sortBy = "updatedAt", order = "asc", page = 1, pageSize = 3 } = query;
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
@@ -70,15 +70,26 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
       const deliveryLon = request.address.longitude || 0;
 
       const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
-      return { ...request, distance, deliveryPrice: 20000 };
+      return { ...request, distance, deliveryPrice: 5000 };
     });
 
     if (sortBy === "distance") {
       deliveryRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });
+    } else if (sortBy === "createdAt") {
+      deliveryRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      });
+    } else {
+      deliveryRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.updatedAt).getTime();
+        const dateB = new Date(b.updatedAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      });
     }
-
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedRequests = deliveryRequestsWithDistance.slice(startIndex, endIndex);
