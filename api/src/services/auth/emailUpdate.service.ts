@@ -16,7 +16,7 @@ export const updateEmail = async (req: Request, res: Response) => {
     }
 
     // Cek apakah email sudah digunakan oleh user lain
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { email: newEmail },
     });
 

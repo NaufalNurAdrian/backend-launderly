@@ -35,6 +35,7 @@ export const loginService = async (
     const payload = {
       id: customer.id,
       role: customer.role,
+      authProvider: "email"
     };
     const token = sign(payload, process.env.JWT_KEY!, { expiresIn: "1d" });
 

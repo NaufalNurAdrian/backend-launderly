@@ -2,7 +2,7 @@ import prisma from "../../prisma";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 
-export const resetPasswordUser = async (req: Request, res: Response) => {
+export const resetPasswordUserService = async (req: Request, res: Response) => {
   try {
     const { password, confirmPassword } = req.body;
 

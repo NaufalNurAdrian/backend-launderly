@@ -1,14 +1,24 @@
 import prisma from "../../prisma";
 import { Request, Response } from "express";
 
-export const getUsersId = async (req: Request, res: Response) => {
+export const getUsersIdService = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).send({ message: "Unauthorized" });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id }, 
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        authProvider: true,
+        avatar: true,
+        isVerify: true,
+        createdAt: true,
+        isDelete: true,
+      },
     });
 
     if (!user) {
@@ -21,4 +31,3 @@ export const getUsersId = async (req: Request, res: Response) => {
     res.status(400).send({ message: "An error occurred" });
   }
 };
-
