@@ -4,6 +4,7 @@ import { updateUserAddressService } from "../services/address/updateAdressUser.s
 import { createUserAddressService } from "../services/address/createAddressUser.service";
 import { deleteUserAddressService } from "../services/address/deleteAddressUser.service";
 import { getUserAddressesService } from "../services/address/getUserAdress.service";
+import { getAllOutletsService } from "../services/address/getOutletAddres.service";
 
 export class AddressController {
   async getUserAddressController(
