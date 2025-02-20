@@ -32,6 +32,7 @@ export const createOrderWorker = async (query: CreateOrderWorker) => {
     const station: string = worker.station as string;
     const newStatus = station === "WASHING" ? "BEING_WASHED" : station === "IRONING" ? "BEING_IRONED" : "BEING_PACKED";
 
+
     await prisma.order.update({
       where: { id: orderId },
       data: { orderStatus: newStatus },
@@ -48,4 +49,4 @@ export const createOrderWorker = async (query: CreateOrderWorker) => {
 
     return orderWorker;
   });
-};
+}; 

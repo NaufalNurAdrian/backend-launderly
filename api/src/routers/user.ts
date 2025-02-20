@@ -14,7 +14,6 @@ export class UserRouter {
   }
 
   private initializeRoutes() {
-
     // Get User by ID
     this.router.get("/profile", verifyToken,  this.userController.getUsersId);
 

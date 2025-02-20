@@ -33,12 +33,17 @@ export class AddressController {
       next(error);
     }
   }
+  
+  async getOutletAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await getAllOutletsService();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-  async updateUserAddressController(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  async updateUserAddressController(req: Request,res: Response,next: NextFunction  ) {
     try {
       const id = req.params.id;
 

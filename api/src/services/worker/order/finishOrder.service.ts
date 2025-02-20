@@ -62,7 +62,6 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
       newStatus = order.isPaid ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER : OrderStatus.AWAITING_PAYMENT;
       const deliveryNumber = await generateOrderNumber("DLV");
-
       const deliveryOrder = await prisma.deliveryOrder.create({
         data: {
           orderId: orderId,

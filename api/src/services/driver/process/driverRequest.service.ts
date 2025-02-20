@@ -63,7 +63,7 @@ export const updateRequestStatusService = async (data: UpdateRequestStatusData) 
         },
       },
     });
-    
+
     if (existingPickupOrders.length > 0 || existingDeliveryOrders.length > 0) {
       throw new Error("Driver is currently processing another order");
     }
