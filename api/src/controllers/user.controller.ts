@@ -18,45 +18,6 @@ export class UserController {
   async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
       await resetPasswordUserService(req, res);
-<<<<<<< HEAD
-=======
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async editAvatar(req: Request, res: Response, next: NextFunction) {
-    try {
-      await editAvatarService(req, res);
-    } catch (error) {
-      next(error);
-    }
-  }
-  async updateEmail(req: Request, res: Response, next: NextFunction) {
-    try {
-      await updateEmailService(req, res);
-    } catch (error) {
-      next(error);
-    }
-  }
-  async verifyEmail(req: Request, res: Response, next: NextFunction) {
-    try {
-      await verifyEmailService(req, res);
-    } catch (error) {
-      next(error);
-    }
-  }
-  async requestForgetPassword(req: Request, res: Response, next: NextFunction) {
-    try {
-      await requestForgetPasswordService(req, res);
-    } catch (error) {
-      next(error);
-    }
-  }
-  async confirmForgetPassword(req: Request, res: Response, next: NextFunction) {
-    try {
-      await confirmForgetPasswordService(req, res);
->>>>>>> 743f04f28e6a55c6a915d4401f0ce2d5cbb5999f
     } catch (error) {
       next(error);
     }
