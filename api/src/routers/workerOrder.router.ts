@@ -15,7 +15,7 @@ export class OrderWorkerRouter {
   private initializeRoutes() {
     this.router.get("/",　verifyToken, verifyRoleAndAttendance(["WORKER"]), this.orderWorkerController.getOrders);
     this.router.get("/history", 　verifyToken, verifyRole(["WORKER"]), this.orderWorkerController.getOrderHistory);
-    this.router.get("/orders/:orderId", 　verifyToken, verifyRoleAndAttendance(["WORKER"]), this.orderWorkerController.getOrderItem);
+    this.router.get("/orders/:orderId",  this.orderWorkerController.getOrderItem);
     this.router.post("/create/:orderId",　verifyToken, verifyRoleAndAttendance(["WORKER"]),  this.orderWorkerController.createOrderWorker);
     this.router.patch("/complete/:orderId", 　verifyToken, verifyRoleAndAttendance(["WORKER"]), this.orderWorkerController.finishOrderWorker);
   }

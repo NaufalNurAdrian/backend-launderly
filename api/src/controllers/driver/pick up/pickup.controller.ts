@@ -20,4 +20,3 @@ export class PickupController {
     }
   }
 }
-        // const driverId = req.user?.id!

@@ -15,6 +15,7 @@ export class AddressRouter {
 
   private initializeRoutes(): void {
     this.router.get(
+
       "/user",
       verifyToken,
       this.addressController.getUserAddressController
@@ -26,6 +27,7 @@ export class AddressRouter {
       verifyToken,
       this.addressController.createUserAddressController
     );
+    this.router.get("/:id", verifyToken, this.addressController.getAddressById);
     this.router.patch(
       "/:id",
       verifyToken,
