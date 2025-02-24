@@ -101,10 +101,12 @@ model User {
   authProvider         String             @default("email") 
   employee             Employee?
   address              Address[]
+
   pickupOrder          PickupOrder[]
   deliveryOrder        DeliveryOrder[]
   userNotification     UserNotification[]
   Attendance           Attendance[]
+
 }
 
 
