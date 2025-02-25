@@ -1,21 +1,25 @@
 import prisma from "../../prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, PaymentStatus } from "@prisma/client";
 
 interface UpdatePaymentBody {
   order_id: string;
   transaction_status: string;
-  fraud_status: string;
-  payment_type: string;
-  currency: string;
-  status_code: number;
-  signature_key: string;
+  fraud_status?: string;
+  payment_type?: string;
+  currency?: string;
+  status_code?: number;
+  signature_key?: string;
 }
 
 export const updatePaymentService = async (body: UpdatePaymentBody) => {
   try {
     const { order_id, fraud_status, payment_type, transaction_status } = body;
 
-    const existingInvoice = await prisma.payment.findFirst({
+    if (!order_id || !transaction_status) {
+      throw new Error("Invalid request: order_id and transaction_status are required");
+    }
+
+    const existingInvoice = await prisma.payment.findUnique({
       where: { invoiceNumber: order_id },
       select: {
         id: true,
@@ -25,67 +29,67 @@ export const updatePaymentService = async (body: UpdatePaymentBody) => {
     });
 
     if (!existingInvoice) {
-      throw new Error("Invoice Not Found!");
+      throw new Error(`Invoice Not Found: order_id=${order_id}`);
     }
+    let paymentStatus: PaymentStatus | undefined;
+    let updateOrderStatus = false;
 
-    if (transaction_status == "capture") {
-      if (fraud_status == "accept") {
-        await prisma.payment.update({
-          where: { id: existingInvoice.id },
-          data: { paymentStatus: "SUCCESSED", paymentMethode: payment_type },
-        });
-        const dataInput: Prisma.OrderUpdateInput = {
-          isPaid: true,
-        };
-        if (existingInvoice.order.orderStatus == "AWAITING_PAYMENT") {
-          dataInput.orderStatus = "READY_FOR_DELIVERY";
+    switch (transaction_status) {
+      case "capture":
+        if (fraud_status === "accept") {
+          paymentStatus = PaymentStatus.SUCCESSED;
+          updateOrderStatus = true;
         }
-        await prisma.order.update({
-          where: { id: existingInvoice.orderId },
-          data: dataInput,
-        });
-      }
-    } else if (transaction_status == "settlement") {
-      await prisma.payment.update({
-        where: { id: existingInvoice.id },
-        data: { paymentStatus: "SUCCESSED", paymentMethode: payment_type },
-      });
-      const dataInput: Prisma.OrderUpdateInput = {
-        isPaid: true,
-      };
-      if (existingInvoice.order.orderStatus == "AWAITING_PAYMENT") {
-        dataInput.orderStatus = "READY_FOR_DELIVERY";
-      }
-      await prisma.order.update({
-        where: { id: existingInvoice.orderId },
-        data: dataInput,
-      });
-    } else if (transaction_status == "cancel") {
-      await prisma.payment.update({
-        where: { id: existingInvoice.id },
-        data: { paymentStatus: "CANCELLED", paymentMethode: payment_type },
-      });
-    } else if (transaction_status == "deny") {
-      await prisma.payment.update({
-        where: { id: existingInvoice.id },
-        data: { paymentStatus: "DENIED", paymentMethode: payment_type },
-      });
-    } else if (transaction_status == "expire") {
-      await prisma.payment.update({
-        where: { id: existingInvoice.id },
-        data: { paymentStatus: "EXPIRED", paymentMethode: payment_type },
-      });
-    } else if (transaction_status == "pending") {
-      await prisma.payment.update({
-        where: { id: existingInvoice.id },
-        data: { paymentStatus: "PENDING", paymentMethode: payment_type },
-      });
+        break;
+      case "settlement":
+        paymentStatus = PaymentStatus.SUCCESSED;
+        updateOrderStatus = true;
+        break;
+      case "cancel":
+        paymentStatus = PaymentStatus.CANCELLED;
+        break;
+      case "deny":
+        paymentStatus = PaymentStatus.DENIED;
+        break;
+      case "expire":
+        paymentStatus = PaymentStatus.EXPIRED;
+        break;
+      case "pending":
+        paymentStatus = PaymentStatus.PENDING;
+        break;
+      default:
+        throw new Error(`Invalid transaction_status received: ${transaction_status}`);
     }
 
-    return {
-      message: "OK",
-    };
+    await prisma.$transaction(async (tx) => {
+      if (paymentStatus) {
+        await tx.payment.update({
+          where: { id: existingInvoice.id },
+          data: { 
+            paymentStatus, 
+            paymentMethode: payment_type || null,
+          },
+        });
+      }
+
+      // Update status order jika perlu
+      if (updateOrderStatus) {
+        const orderUpdate: Prisma.OrderUpdateInput = { isPaid: true };
+
+        if (existingInvoice.order.orderStatus === "AWAITING_PAYMENT") {
+          orderUpdate.orderStatus = "READY_FOR_DELIVERY";
+        }
+
+        await tx.order.update({
+          where: { id: existingInvoice.orderId },
+          data: orderUpdate,
+        });
+      }
+    });
+
+    return { message: "Payment updated successfully" };
   } catch (error) {
+    console.error(`Error updating payment for order_id=${body.order_id}:`, error);
     throw error;
   }
 };
