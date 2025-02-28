@@ -1,5 +1,5 @@
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
 interface getHistoryData {
   driverId: number;

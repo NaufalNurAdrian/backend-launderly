@@ -1,5 +1,5 @@
+import { getPickupRequestsService } from "../../../services/driver/getPickupRequests.service.service";
 import { Request, Response } from "express";
-import { getPickupRequestsService } from "../../../services/driver/pickup/getPickupRequests.service.service";
 
 export class PickupController {
   async getPickupRequest(req: Request, res: Response) {
