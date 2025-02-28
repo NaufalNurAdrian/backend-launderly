@@ -10,7 +10,7 @@ export const verifyToken = async (
 ): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    console.log("Received Token:", token); // Debug: Menampilkan token yang diterima
+    console.log("Received Token:", token);
 
     if (!token) {
       res.status(401).send({ message: "Unauthorized! Token not found." });

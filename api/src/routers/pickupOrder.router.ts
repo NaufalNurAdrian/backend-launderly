@@ -19,10 +19,12 @@ export class PickupOrderRouter {
       this.pickupOrderController.getPickupOrdersController
     );
     this.router.get(
-      "/:id",
+
+      "/nearby-outlet",
       verifyToken,
-      this.pickupOrderController.getPickupOrderController
+      this.pickupOrderController.getOutletNearbyController
     );
+    
     this.router.post(
       "/",
       verifyToken,

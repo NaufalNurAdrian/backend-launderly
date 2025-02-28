@@ -1,9 +1,9 @@
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
 interface getHistoryData {
   driverId: number;
-  type?: "pickup" | "delivery"; 
+  type?: "pickup" | "delivery";
   sortBy?: "createdAt" | "distance";
   order?: "asc" | "desc";
   page?: number;
@@ -12,7 +12,7 @@ interface getHistoryData {
 
 export const getDriverHistoryService = async (query: getHistoryData) => {
   try {
-    const { driverId, type, sortBy, order, page = 1, pageSize = 15 } = query;
+    const { driverId, type, sortBy, order, page = 1, pageSize = 5 } = query;
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },
@@ -42,7 +42,7 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
         ? await prisma.pickupOrder.findMany({
             where: {
               outletId: driver.outletId,
-              pickupStatus: "RECEIVED_BY_OUTLET", 
+              pickupStatus: "RECEIVED_BY_OUTLET",
               driverId: driver.id,
             },
             include: {
@@ -56,7 +56,7 @@ export const getDriverHistoryService = async (query: getHistoryData) => {
       !type || type === "delivery"
         ? await prisma.deliveryOrder.findMany({
             where: {
-              deliveryStatus: "RECEIVED_BY_CUSTOMER", 
+              deliveryStatus: "RECEIVED_BY_CUSTOMER",
               driverId: driver.id,
             },
             include: {

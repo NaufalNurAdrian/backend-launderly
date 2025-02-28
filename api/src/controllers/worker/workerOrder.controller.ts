@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getWorkerOrdersService } from "../../services/worker/order/getOrderas.service";
+import { getWorkerOrdersService } from "../../services/worker/order/getOrders.service";
 import { createOrderWorker } from "../../services/worker/order/createOrderWorker.service";
 import { updateOrderStatus } from "../../services/worker/order/finishOrder.service";
 import { getWorkerOrdersHistoryService } from "../../services/worker/order/getOrderHistory.service";
@@ -8,9 +8,8 @@ import { getOrderItem } from "../../services/worker/order/getOrderItem";
 export class OrderWorkerController {
   async getOrders(req: Request, res: Response) {
     try {
-      const workerId = req.user?.id!
+      const workerId = req.user?.id!;
       const { order, sortBy, page, pageSize } = req.query;
-      
       const result = await getWorkerOrdersService({
         workerId: workerId,
         sortBy: sortBy as "createdAt" | "weight",
@@ -30,8 +29,8 @@ export class OrderWorkerController {
   }
   async getOrderHistory(req: Request, res: Response) {
     try {
-      const workerId = req.user?.id!
-      const {  order, sortBy, page, pageSize } = req.query;
+      const workerId = req.user?.id!;
+      const { order, sortBy, page, pageSize } = req.query;
 
       const result = await getWorkerOrdersHistoryService({
         workerId: workerId,
@@ -53,7 +52,7 @@ export class OrderWorkerController {
   async createOrderWorker(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const  workerId  = req.user?.id!;
+      const workerId = req.user?.id!;
 
       const result = await createOrderWorker({
         workerId: workerId,
@@ -68,7 +67,7 @@ export class OrderWorkerController {
   async finishOrderWorker(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const workerId  = req.user?.id!;
+      const workerId = req.user?.id!;
 
       const result = await updateOrderStatus({
         workerId: workerId,

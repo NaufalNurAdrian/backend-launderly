@@ -7,11 +7,9 @@ interface CreatePickupOrderBody {
   pickupPrice: number;
   distance: number;
 }
-export const createOrderPickupOrderService = async (
-  body: CreatePickupOrderBody
-) => {
+export const createOrderPickupOrderService = async (body: CreatePickupOrderBody) => {
   try {
-    const { outletId, userAddressId, userId, distance, pickupPrice } = body;
+    const { outletId, userAddressId, userId, distance, pickupPrice = 5000 } = body;
 
     const existingUser = await prisma.user.findFirst({
       where: { id: userId },
@@ -47,10 +45,7 @@ export const createOrderPickupOrderService = async (
     const lastPickupNumber = await prisma.pickupOrder.findFirst({
       where: {
         pickupNumber: {
-          contains: `PO-${padNumber(existingUser.id, 4)}-${padNumber(
-            outletId,
-            3
-          )}-`,
+          contains: `PO-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-`,
         },
       },
       orderBy: {
@@ -59,18 +54,12 @@ export const createOrderPickupOrderService = async (
     });
 
     const nextPickupNumber = getNextNumber(lastPickupNumber?.pickupNumber);
-    const pickupNumber = `PO-${padNumber(existingUser.id, 4)}-${padNumber(
-      outletId,
-      3
-    )}-${nextPickupNumber}`;
+    const pickupNumber = `PO-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-${nextPickupNumber}`;
 
     const lastOrderNumber = await prisma.order.findFirst({
       where: {
         orderNumber: {
-          contains: `OR-${padNumber(existingUser.id, 4)}-${padNumber(
-            outletId,
-            3
-          )}-`,
+          contains: `OR-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-`,
         },
       },
       orderBy: {
@@ -79,18 +68,12 @@ export const createOrderPickupOrderService = async (
     });
 
     const nextOrderNumber = getNextNumber(lastOrderNumber?.orderNumber);
-    const orderNumber = `OR-${padNumber(existingUser.id, 4)}-${padNumber(
-      outletId,
-      3
-    )}-${nextOrderNumber}`;
+    const orderNumber = `OR-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-${nextOrderNumber}`;
 
     const lastDeliveryNumber = await prisma.deliveryOrder.findFirst({
       where: {
         deliveryNumber: {
-          contains: `DO-${padNumber(existingUser.id, 4)}-${padNumber(
-            outletId,
-            3
-          )}-`,
+          contains: `DO-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-`,
         },
       },
       orderBy: {
@@ -98,13 +81,8 @@ export const createOrderPickupOrderService = async (
       },
     });
 
-    const nextDeliveryNumber = getNextNumber(
-      lastDeliveryNumber?.deliveryNumber
-    );
-    const deliveryNumber = `DO-${padNumber(existingUser.id, 4)}-${padNumber(
-      outletId,
-      3
-    )}-${nextDeliveryNumber}`;
+    const nextDeliveryNumber = getNextNumber(lastDeliveryNumber?.deliveryNumber);
+    const deliveryNumber = `DO-${padNumber(existingUser.id, 4)}-${padNumber(outletId, 3)}-${nextDeliveryNumber}`;
 
     const newPickup = await prisma.$transaction(async (tx) => {
       const createPickupOrder = await tx.pickupOrder.create({

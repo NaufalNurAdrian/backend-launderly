@@ -35,7 +35,7 @@ export const getPickupOrdersService = async (query: GetPickupOrdersQuery) => {
       throw new Error("Unauthorized access!");
     }
 
-    const whereClause: Prisma.PickupOrderWhereInput = {};
+    const whereClause: Prisma.PickupOrderWhereInput = { userId: id };
 
     if (pickupStatus !== "all") {
       whereClause.pickupStatus = pickupStatus as PickupStatus;

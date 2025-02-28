@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
 interface getDeliveryData {
   driverId: number;
@@ -13,7 +13,7 @@ interface getDeliveryData {
 export const getDeliveryRequestsService = async (query: getDeliveryData) => {
   try {
     const { driverId, sortBy, order = "asc", page = 1, pageSize = 3 } = query;
-   
+
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
       select: { outletId: true, id: true },
@@ -22,6 +22,33 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     if (!driver || !driver.outletId) {
       throw new Error("Outlet not found");
     }
+
+    const pickup = await prisma.order.findMany({
+      where: { pickupOrderId: driver.outletId },
+    });
+
+    const outletId = driver.outletId;
+    const whereClause: Prisma.DeliveryOrderWhereInput = {
+      AND: [
+        {
+          OR: [
+            { deliveryStatus: "WAITING_FOR_DRIVER", driverId: null },
+            { deliveryStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
+            { deliveryStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
+          ],
+        },
+        {
+          NOT: { deliveryStatus: "RECEIVED_BY_CUSTOMER" },
+        },
+        {
+          order: {
+            pickupOrder: {
+              outletId: outletId,
+            },
+          },
+        },
+      ],
+    };
 
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
@@ -37,21 +64,6 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     const outletAddress = outlet.address[0];
     const outletLat = outletAddress.latitude || 0;
     const outletLon = outletAddress.longitude || 0;
-
-    const whereClause: Prisma.DeliveryOrderWhereInput = {
-      AND: [
-        {
-          OR: [
-            { deliveryStatus: "WAITING_FOR_DRIVER", driverId: null },
-            { deliveryStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
-            { deliveryStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
-          ],
-        },
-        {
-          NOT: { deliveryStatus: "RECEIVED_BY_CUSTOMER" },
-        },
-      ],
-    };
 
     const deliveryRequests = await prisma.deliveryOrder.findMany({
       where: whereClause,
@@ -70,12 +82,24 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
       const deliveryLon = request.address.longitude || 0;
 
       const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
-      return { ...request, distance, deliveryPrice: 20000 };
+      return { ...request, distance, deliveryPrice: 5000 };
     });
 
     if (sortBy === "distance") {
       deliveryRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+      });
+    } else if (sortBy === "createdAt") {
+      deliveryRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      });
+    } else {
+      deliveryRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.updatedAt).getTime();
+        const dateB = new Date(b.updatedAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
 

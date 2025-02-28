@@ -36,16 +36,12 @@ export const getWorkerOrdersHistoryService = async (query: GetWorkerOrdersData) 
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
-          OR: [
-            { orderStatus: OrderStatus.WASHING_COMPLETED },
-            { orderStatus: OrderStatus.IRONING_COMPLETED },
-            { orderStatus: OrderStatus.AWAITING_PAYMENT },
-          ],
+          OR: [{ orderStatus: OrderStatus.WASHING_COMPLETED }, { orderStatus: OrderStatus.IRONING_COMPLETED }, { orderStatus: OrderStatus.AWAITING_PAYMENT }],
         },
         {
           orderWorker: {
             some: {
-              workerId: workerStation.id, 
+              workerId: workerStation.id,
             },
           },
         },

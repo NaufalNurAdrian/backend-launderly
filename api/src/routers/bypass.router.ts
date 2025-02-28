@@ -1,4 +1,4 @@
-import { verifyRoleAndAttendance } from "../middlewares/verify";
+import { verifyRoleAndAttendance, verifyToken } from "../middlewares/verify";
 import { BypassController } from "../controllers/worker/bypass.controller";
 import { Router } from "express";
 
@@ -13,7 +13,7 @@ export class BypassRouter {
   }
 
   private initializeRoutes() {
-    this.router.patch("/:orderId", verifyRoleAndAttendance(["WORKER"]), this.bypassController.requestBypass);
+    this.router.patch("/:orderId",verifyToken, verifyRoleAndAttendance(["WORKER"]), this.bypassController.requestBypass);
   }
 
   getRouter() {

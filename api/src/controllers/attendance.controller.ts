@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
-import { getAttendanceService } from "../../services/Attendance/getAttendance.service";
-import { getAllAttendancesService } from "../../services/Attendance/getAllAttendances.service";
-import { checkInService } from "../../services/Attendance/checkIn.service";
-import { checkOutService } from "../../services/Attendance/checkout.service";
+import { getAttendancesService } from "../services/Attendance/getAttendance.service";
+import { getAllAttendancesService } from "../services/Attendance/getAllAttendances.service";
+import { checkInService } from "../services/Attendance/checkIn.service";
+import { checkOutService } from "../services/Attendance/checkout.service";
 
 export class AttendanceController {
   async getAttendance(req: Request, res: Response) {
     try {
-      const userId  = req.user?.id!;
+      const userId = req.user?.id!;
       const { sortBy, order, page } = req.query;
-      
-      const attendance = await getAttendanceService({
+
+      const attendance = await getAttendancesService({
         userId: userId,
         sortBy: sortBy as "createdAt" | "workHour",
         order: order as "asc" | "desc",
@@ -25,8 +25,8 @@ export class AttendanceController {
 
   async getAllAttendances(req: Request, res: Response) {
     try {
-      const userId  = req.user?.id!;
-      const { outletId, sortBy, order, page, role} = req.query;
+      const userId = req.user?.id!;
+      const { outletId, sortBy, order, page, role } = req.query;
 
       const attendances = await getAllAttendancesService({
         userId: userId,
@@ -34,7 +34,7 @@ export class AttendanceController {
         sortBy: sortBy as "createdAt" | "workHour",
         order: order as "asc" | "desc",
         page: page ? parseInt(page as string) : 1,
-        role: role as "WORKER" | "DRIVER"
+        role: role as "WORKER" | "DRIVER",
       });
 
       res.status(200).send(attendances);
@@ -45,7 +45,7 @@ export class AttendanceController {
 
   async checkIn(req: Request, res: Response) {
     try {
-      const userId  = req.user?.id!;
+      const userId = req.user?.id!;
       const checkInTime = new Date();
 
       const result = await checkInService({ userId, checkInTime });
@@ -61,7 +61,7 @@ export class AttendanceController {
 
   async checkOut(req: Request, res: Response) {
     try {
-      const  userId  = req.user?.id!;
+      const userId = req.user?.id!;
       const checkOutTime = new Date();
 
       const result = await checkOutService({ userId, checkOutTime });
@@ -70,7 +70,7 @@ export class AttendanceController {
         message: "Check-out berhasil.",
         data: result,
       });
-    } catch (err : any) {
+    } catch (err: any) {
       res.status(400).send({ message: err });
     }
   }
