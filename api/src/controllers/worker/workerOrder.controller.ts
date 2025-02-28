@@ -1,5 +1,5 @@
-import { Request, Response } from "express"
-import { getWorkerOrdersService } from "../../services/worker/order/getOrderas.service";
+import { Request, Response } from "express";
+import { getWorkerOrdersService } from "../../services/worker/order/getOrders.service";
 import { createOrderWorker } from "../../services/worker/order/createOrderWorker.service";
 import { updateOrderStatus } from "../../services/worker/order/finishOrder.service";
 import { getWorkerOrdersHistoryService } from "../../services/worker/order/getOrderHistory.service";
@@ -52,7 +52,7 @@ export class OrderWorkerController {
   async createOrderWorker(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const  workerId  = req.user?.id!;
+      const workerId = req.user?.id!;
 
       const result = await createOrderWorker({
         workerId: workerId,

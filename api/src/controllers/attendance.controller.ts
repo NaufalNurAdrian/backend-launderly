@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getAttendanceService } from "../services/Attendance/getAttendance.service";
+import { getAttendancesService } from "../services/Attendance/getAttendance.service";
 import { getAllAttendancesService } from "../services/Attendance/getAllAttendances.service";
 import { checkInService } from "../services/Attendance/checkIn.service";
 import { checkOutService } from "../services/Attendance/checkout.service";
@@ -10,7 +10,7 @@ export class AttendanceController {
       const userId = req.user?.id!;
       const { sortBy, order, page } = req.query;
 
-      const attendance = await getAttendanceService({
+      const attendance = await getAttendancesService({
         userId: userId,
         sortBy: sortBy as "createdAt" | "workHour",
         order: order as "asc" | "desc",

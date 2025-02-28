@@ -23,7 +23,6 @@ export class NotificationController {
   async markNotificationAsRead(req: Request, res: Response) {
     const userId = req.user?.id!;
     const { notificationId } = req.query;
-
     try {
       const updatedNotification = await markNotificationAsReadService({
         userId: userId,
@@ -33,7 +32,6 @@ export class NotificationController {
         message: "Notification marked as read",
         data: updatedNotification,
       });
-      res.status(200).send({ message: "notification read", updatedNotification });
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }
@@ -47,7 +45,6 @@ export class NotificationController {
         message: "Notification marked as read",
         data: updatedNotification,
       });
-      res.status(200).send({ message: "notification read", updatedNotification });
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }

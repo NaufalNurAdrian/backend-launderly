@@ -9,16 +9,14 @@ interface getPickupData {
   page?: number;
   pageSize?: number;
 }
+
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
     const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
-      select: {
-        outletId: true,
-        id: true,
-      },
+      select: { outletId: true, id: true },
     });
 
     if (!driver || !driver.outletId) {

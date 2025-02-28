@@ -35,7 +35,6 @@ export const getPickupOrdersService = async (query: GetPickupOrdersQuery) => {
       throw new Error("Unauthorized access!");
     }
 
-    // Filter hanya untuk user yang login
     const whereClause: Prisma.PickupOrderWhereInput = { userId: id };
 
     if (pickupStatus !== "all") {

@@ -5,8 +5,8 @@ export class PickupController {
   async getPickupRequest(req: Request, res: Response) {
     try {
       const driverId = req.user?.id!;
-      const {page, sortBy, order } = req.query;
-      
+      const { page, sortBy, order } = req.query;
+
       const pickupRequests = await getPickupRequestsService({
         driverId: driverId,
         sortBy: sortBy as "createdAt" | "distance",
@@ -14,7 +14,7 @@ export class PickupController {
         page: page ? parseInt(page as string) : 1,
       });
 
-      res.status(200).send(pickupRequests );
+      res.status(200).send(pickupRequests);
     } catch (err: any) {
       res.status(400).send({ message: err.message });
     }
