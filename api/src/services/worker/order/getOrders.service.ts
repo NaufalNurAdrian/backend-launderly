@@ -18,7 +18,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     });
 
     if (!worker) {
-      throw new Error("Hanya worker yang dapat mengakses data ini");
+      throw new Error("unauthorized, are you a worker ?");
     }
 
     const today = new Date();
@@ -35,7 +35,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     });
 
     if (!attendance) {
-      throw new Error("Anda belum melakukan absensi hari ini");
+      throw new Error("you haven't check in or you're already checked out");
     }
 
     const workerStation = await prisma.employee.findFirst({
@@ -44,7 +44,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
       },
     });
     if (!workerStation) {
-      throw new Error("Worker tidak memiliki station yang ditetapkan");
+      throw new Error("Worker Station undefied");
     }
 
     const station = workerStation.station;
@@ -57,12 +57,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           orderStatus: orderStatus,
         },
         {
-          orderStatus:
-            station === "WASHING"
-              ? OrderStatus.BEING_WASHED
-              : station === "IRONING"
-              ? OrderStatus.BEING_IRONED
-              : OrderStatus.BEING_PACKED,
+          orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
           orderWorker: {
             some: {
               workerId: workerStation.id,
@@ -70,12 +65,23 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           },
         },
       ],
+      AND: [
+        {
+          orderWorker: {
+            none: {
+              bypassRequest: true,
+              bypassRejected: false,
+              bypassAccepted: true, 
+            },
+          },
+        },
+      ],
     };
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {
-      orderByClause.weight = order; 
+      orderByClause.weight = order;
     } else {
-      orderByClause.createdAt = order; 
+      orderByClause.createdAt = order;
     }
     const orders = await prisma.order.findMany({
       where: whereClause,
@@ -84,8 +90,8 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
         orderWorker: true,
         pickupOrder: {
           include: {
-            user: true
-          }
+            user: true,
+          },
         },
       },
       orderBy: orderByClause,

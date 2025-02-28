@@ -20,7 +20,7 @@ export const createNotificationForNextStation = async (orderId: number, nextStat
   const notification = await prisma.notification.create({
     data: {
       title: `Incoming order`,
-      description: `The order is ready to be processed at the ${(nextStation).toLowerCase()} station.`,
+      description: `The order is ready to be processed at the ${nextStation.toLowerCase()} station.`,
     },
   });
 

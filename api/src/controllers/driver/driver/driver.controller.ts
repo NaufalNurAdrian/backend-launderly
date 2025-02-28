@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { updateRequestStatusService } from "../../../services/driver/process/driverRequest.service";
-import { getDriverHistoryService } from "../../../services/driver/driverHistory/getDriverHistory.service";
+import { updateRequestStatusService } from "../../../services/driver/getDriverRequest.service";
+import { getDriverHistoryService } from "../../../services/driver/getDriverHistory.service";
 export class RequestController {
   async updateRequestStatus(req: Request, res: Response) {
     try {
-      const driverId = req.user?.id!
+      const driverId = req.user?.id!;
       const { requestId, type } = req.body;
 
       const result = await updateRequestStatusService({ driverId, requestId, type });
@@ -20,7 +20,7 @@ export class RequestController {
 
   async getDriverHistory(req: Request, res: Response) {
     try {
-      const driverId = req.user?.id!
+      const driverId = req.user?.id!;
       const { type, sortBy, order, page, pageSize } = req.query;
       if (!driverId) {
         res.status(400).json({ message: "Driver ID diperlukan" });
@@ -32,7 +32,7 @@ export class RequestController {
         order: order as "asc" | "desc",
         type: type as "pickup" | "delivery",
         page: page ? parseInt(page as string) : 1,
-        pageSize: parseInt(pageSize as string)
+        pageSize: parseInt(pageSize as string),
       });
 
       res.status(200).send(driverHistory);

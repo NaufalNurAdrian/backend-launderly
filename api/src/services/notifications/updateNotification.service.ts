@@ -5,7 +5,7 @@ interface editNotificationsQuery {
   notificationId: number;
 }
 
-export const markNotificationAsReadService = async ({userId, notificationId} : editNotificationsQuery) => {
+export const markNotificationAsReadService = async ({ userId, notificationId }: editNotificationsQuery) => {
   try {
     const updatedNotification = await prisma.userNotification.update({
       where: { id: notificationId, userId: userId },
