@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getDeliveryRequestsService } from "../../../services/driver/deliveryOrder/getDeliveryRequests.service";
+import { getDeliveryRequestsService } from "../../../services/driver/getDeliveryRequests.service";
 
 export class DeliveryController {
   async getDeliveryRequest(req: Request, res: Response) {
@@ -17,11 +17,10 @@ export class DeliveryController {
         page: page ? parseInt(page as string) : 1,
       });
 
-      res.status(200).send( deliveryRequests );
+      res.status(200).send(deliveryRequests);
     } catch (err: any) {
       console.log(err);
       res.status(400).send({ message: err.message });
     }
   }
-
 }

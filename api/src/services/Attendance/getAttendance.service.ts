@@ -9,9 +9,9 @@ interface GetAttendanceQuery {
   pageSize?: number;
 }
 
-export const getAttendanceService = async (query: GetAttendanceQuery) => {
+export const getAttendancesService = async (query: GetAttendanceQuery) => {
   try {
-    const { userId, sortBy, order, page = 1, pageSize = 6 } = query;
+    const { userId, sortBy, order, page = 1, pageSize = 5 } = query;
 
     const skip = (page - 1) * pageSize;
     let orderBy: Record<string, "asc" | "desc"> = {};

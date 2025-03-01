@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
-interface getDeliveryData {
+interface getPickupData {
   driverId: number;
   sortBy?: "createdAt" | "distance" | "updatedAt";
   order?: "asc" | "desc";
@@ -10,9 +10,9 @@ interface getDeliveryData {
   pageSize?: number;
 }
 
-export const getDeliveryRequestsService = async (query: getDeliveryData) => {
+export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-    const { driverId, sortBy = "updatedAt", order = "asc", page = 1, pageSize = 3 } = query;
+    const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
@@ -22,6 +22,25 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     if (!driver || !driver.outletId) {
       throw new Error("Outlet not found");
     }
+
+    const outletId = driver.outletId;
+    const whereClause: Prisma.PickupOrderWhereInput = {
+      AND: [
+        {
+          OR: [
+            { pickupStatus: "WAITING_FOR_DRIVER", driverId: null },
+            { pickupStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
+            { pickupStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
+          ],
+        },
+        {
+          NOT: { pickupStatus: "RECEIVED_BY_OUTLET" },
+        },
+        {
+          outletId: outletId,
+        },
+      ],
+    };
 
     const outlet = await prisma.outlet.findUnique({
       where: { id: driver.outletId },
@@ -38,22 +57,7 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
     const outletLat = outletAddress.latitude || 0;
     const outletLon = outletAddress.longitude || 0;
 
-    const whereClause: Prisma.DeliveryOrderWhereInput = {
-      AND: [
-        {
-          OR: [
-            { deliveryStatus: "WAITING_FOR_DRIVER", driverId: null },
-            { deliveryStatus: "ON_THE_WAY_TO_OUTLET", driverId: driver.id },
-            { deliveryStatus: "ON_THE_WAY_TO_CUSTOMER", driverId: driver.id },
-          ],
-        },
-        {
-          NOT: { deliveryStatus: "RECEIVED_BY_CUSTOMER" },
-        },
-      ],
-    };
-
-    const deliveryRequests = await prisma.deliveryOrder.findMany({
+    const pickupRequests = await prisma.pickupOrder.findMany({
       where: whereClause,
       include: {
         address: true,
@@ -61,46 +65,47 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
       },
     });
 
-    const deliveryRequestsWithDistance = deliveryRequests.map((request) => {
+    const pickupRequestsWithDistance = pickupRequests.map((request) => {
       if (!request.address) {
-        throw new Error("Delivery request doesn't have an address");
+        throw new Error("Pickup request doesn't have address");
       }
 
-      const deliveryLat = request.address.latitude || 0;
-      const deliveryLon = request.address.longitude || 0;
+      const pickupLat = request.address.latitude || 0;
+      const pickupLon = request.address.longitude || 0;
 
-      const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
-      return { ...request, distance, deliveryPrice: 5000 };
+      const distance = haversineDistance(outletLat, outletLon, pickupLat, pickupLon);
+      return { ...request, distance };
     });
 
     if (sortBy === "distance") {
-      deliveryRequestsWithDistance.sort((a, b) => {
+      pickupRequestsWithDistance.sort((a, b) => {
         return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });
     } else if (sortBy === "createdAt") {
-      deliveryRequestsWithDistance.sort((a, b) => {
+      pickupRequestsWithDistance.sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
         return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     } else {
-      deliveryRequestsWithDistance.sort((a, b) => {
+      pickupRequestsWithDistance.sort((a, b) => {
         const dateA = new Date(a.updatedAt).getTime();
         const dateB = new Date(b.updatedAt).getTime();
         return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
+
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRequests = deliveryRequestsWithDistance.slice(startIndex, endIndex);
+    const paginatedRequests = pickupRequestsWithDistance.slice(startIndex, endIndex);
 
     return {
       data: paginatedRequests,
       pagination: {
-        total: deliveryRequestsWithDistance.length,
+        total: pickupRequestsWithDistance.length,
         page: page,
         pageSize: pageSize,
-        totalPages: Math.ceil(deliveryRequestsWithDistance.length / pageSize),
+        totalPages: Math.ceil(pickupRequestsWithDistance.length / pageSize),
       },
     };
   } catch (err) {

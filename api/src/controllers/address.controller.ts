@@ -30,7 +30,7 @@ export class AddressController {
       next(error);
     }
   }
-  
+
   async getOutletAddress(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await getAllOutletsService();
@@ -40,7 +40,7 @@ export class AddressController {
     }
   }
 
-  async updateUserAddressController(req: Request,res: Response,next: NextFunction  ) {
+  async updateUserAddressController(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id;
 

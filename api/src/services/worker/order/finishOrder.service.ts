@@ -1,7 +1,6 @@
 import { generateOrderNumber } from "../../../helpers/numberGenerator";
 import prisma from "../../../prisma";
 import { OrderStatus, DeliveryStatus } from ".prisma/client";
-import haversineDistance from "../../../helpers/haversine";
 
 interface updateOrderData {
   workerId: number;
@@ -31,8 +30,13 @@ export const updateOrderStatus = async (query: updateOrderData) => {
       throw new Error("No active order found for this worker");
     }
 
-    if (orderWorker.bypassRequest && !orderWorker.bypassAccepted) {
-      throw new Error("Bypass request is still pending or rejected");
+    if (orderWorker.bypassRequest) {
+      if (orderWorker.bypassAccepted === null) {
+        throw new Error("Bypass request is still pending");
+      } else if (orderWorker.bypassAccepted === true) {
+        throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
+      } else if (orderWorker.bypassAccepted === false) {
+      }
     }
 
     let newStatus: OrderStatus;
@@ -62,21 +66,20 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
       newStatus = order.isPaid ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER : OrderStatus.AWAITING_PAYMENT;
       const deliveryNumber = await generateOrderNumber("DLV");
+
       const deliveryOrder = await prisma.deliveryOrder.create({
         data: {
           orderId: orderId,
           deliveryNumber: deliveryNumber,
           deliveryStatus: order.isPaid ? DeliveryStatus.WAITING_FOR_DRIVER : DeliveryStatus.NOT_READY_TO_DELIVER,
           createdAt: new Date(),
-          deliveryPrice: 5000,
+          deliveryPrice: 20000,
           driverId: null,
           userId: order.pickupOrder.userId,
           addressId: order.pickupOrder.addressId,
           distance: order.pickupOrder.distance,
         },
       });
-
-      console.log("Delivery Order Created:", deliveryOrder);
     } else {
       throw new Error("Invalid worker station");
     }
@@ -86,8 +89,10 @@ export const updateOrderStatus = async (query: updateOrderData) => {
       data: { orderStatus: newStatus },
     });
 
-    const updatedWorkerOrder = await prisma.orderWorker.updateMany({
-      where: { orderId: orderId, workerId: worker.id },
+    const updatedWorkerOrder = await prisma.orderWorker.update({
+      where: {
+        id: orderWorker.id,
+      },
       data: { isComplete: true },
     });
     const station: string = worker.station as string;
@@ -102,8 +107,8 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
       const notification = await prisma.notification.create({
         data: {
-          title: `Order ${orderId} Ready for ${nextStation}`,
-          description: `The order is ready to be processed at the ${nextStation} station.`,
+          title: `Incoming order`,
+          description: `The order is ready to be processed at the ${nextStation.toLowerCase()} station.`,
         },
       });
 

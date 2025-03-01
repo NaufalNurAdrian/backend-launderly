@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { addEmployeeService } from "../services/employee/addEmployee.service";
 import { getAllEmployeeService } from "../services/employee/getAllEmployee.service";
-import { UpdateEmployeeInput, updateEmployeeService } from"../services/employee/updateEmployee.service";
+import { UpdateEmployeeInput, updateEmployeeService } from "../services/employee/updateEmployee.service";
 
 export class EmployeeController {
   async addEmployee(req: Request, res: Response) {
     try {
-      const { fullName, email, password, outletId, role} = req.body;
+      const { fullName, email, password, outletId, role } = req.body;
 
       if (!fullName || !email || !password || !outletId || !role) {
         res.status(400).send({ message: "Missing required fields" });
@@ -27,9 +27,9 @@ export class EmployeeController {
     } catch (error: any) {
       res.status(500).send({ message: error.message });
     }
-  } 
+  }
 
-  async updateEmployee(req: Request, res: Response) { 
+  async updateEmployee(req: Request, res: Response) {
     try {
       const { workShift, station, outletId } = req.body;
       const id = Number(req.params.id);
@@ -41,20 +41,18 @@ export class EmployeeController {
       const updateData: UpdateEmployeeInput = {
         workShift,
         station,
-        outletId: outletId ? Number(outletId) : undefined
+        outletId: outletId ? Number(outletId) : undefined,
       };
 
       const result = await updateEmployeeService(updateData, id);
-      res.status(200).send({ 
-        message: "Employee updated successfully", 
-        result 
+      res.status(200).send({
+        message: "Employee updated successfully",
+        result,
       });
-      
     } catch (error: any) {
-      res.status(500).send({ 
-        message: error.message || "Failed to update employee"
+      res.status(500).send({
+        message: error.message || "Failed to update employee",
       });
     }
   }
-
 }

@@ -1,5 +1,5 @@
-import { createNotificationForNextStation } from "../../../services/notifications/createNotification.service";
-import prisma from "../../../prisma";
+import { createNotificationForNextStation } from "../notifications/createNotification.service";
+import prisma from "../../prisma";
 import { DeliveryStatus, OrderStatus, PickupStatus } from "@prisma/client";
 
 interface UpdateRequestStatusData {

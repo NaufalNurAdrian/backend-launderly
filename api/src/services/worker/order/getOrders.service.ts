@@ -18,7 +18,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     });
 
     if (!worker) {
-      throw new Error("Hanya worker yang dapat mengakses data ini");
+      throw new Error("unauthorized, are you a worker ?");
     }
 
     const today = new Date();
@@ -35,7 +35,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     });
 
     if (!attendance) {
-      throw new Error("Anda belum melakukan absensi hari ini");
+      throw new Error("you haven't check in or you're already checked out");
     }
 
     const workerStation = await prisma.employee.findFirst({
@@ -44,38 +44,67 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
       },
     });
     if (!workerStation) {
-      throw new Error("Worker tidak memiliki station yang ditetapkan");
+      throw new Error("Worker Station undefied");
     }
 
     const station = workerStation.station;
-
     const orderStatus: OrderStatus = station === "WASHING" ? OrderStatus.READY_FOR_WASHING : station === "IRONING" ? OrderStatus.WASHING_COMPLETED : OrderStatus.IRONING_COMPLETED;
 
     const whereClause: Prisma.OrderWhereInput = {
-      OR: [
+      AND: [
         {
-          orderStatus: orderStatus,
-        },
-        {
-          orderStatus:
-            station === "WASHING"
-              ? OrderStatus.BEING_WASHED
-              : station === "IRONING"
-              ? OrderStatus.BEING_IRONED
-              : OrderStatus.BEING_PACKED,
-          orderWorker: {
-            some: {
-              workerId: workerStation.id,
+          OR: [
+            {
+              orderStatus: orderStatus,
             },
-          },
+            {
+              orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
+              orderWorker: {
+                some: {
+                  workerId: workerStation.id,
+                },
+              },
+            },
+          ],
         },
-      ],
+          {
+            OR: [
+              {
+                orderWorker: {
+                  some: {
+                    bypassAccepted: true,
+                    bypassRequest: false, 
+                    station: station, 
+                  },
+                },
+              },
+              {
+                orderWorker: {
+                  some: {
+                    bypassRejected: true,
+                    station: station,
+                  },
+                },
+              },
+              {
+                orderWorker: {
+                  none: {
+                    bypassRequest: true,
+                    bypassAccepted: false, 
+                    station: station,
+                  },
+                },
+              },
+            ],
+          },
+        ],
     };
+
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {
-      orderByClause.weight = order; 
+      orderByClause.weight = order;
     } else {
-      orderByClause.createdAt = order; 
+      orderByClause.createdAt = order;
     }
     const orders = await prisma.order.findMany({
       where: whereClause,
@@ -84,8 +113,8 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
         orderWorker: true,
         pickupOrder: {
           include: {
-            user: true
-          }
+            user: true,
+          },
         },
       },
       orderBy: orderByClause,

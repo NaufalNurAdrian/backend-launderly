@@ -29,11 +29,7 @@ export class AuthController {
     }
   }
 
-  async getGoogleTokenController(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  async getGoogleTokenController(req: Request, res: Response, next: NextFunction) {
     try {
       const { code } = req.body;
       const result = await loginGoogleService(code);
