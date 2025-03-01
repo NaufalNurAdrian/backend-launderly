@@ -98,13 +98,17 @@ model User {
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
   emailVerifyToken     String?
+  authProvider         String             @default("email") 
   employee             Employee?
   address              Address[]
+
   pickupOrder          PickupOrder[]
   deliveryOrder        DeliveryOrder[]
   userNotification     UserNotification[]
   Attendance           Attendance[]
+
 }
+
 
 model Employee {
   id           Int                @id @default(autoincrement())

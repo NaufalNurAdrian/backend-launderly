@@ -33,6 +33,7 @@
     "kill-port": "^2.0.1",
     "luxon": "^3.5.0",
     "midtrans-client": "^1.4.2",
+    "midtrans-node-client": "^0.0.6",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.16",
     "prisma": "^6.0.0",

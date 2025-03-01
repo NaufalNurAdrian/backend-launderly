@@ -1,4 +1,3 @@
-
 import bcrypt from "bcrypt";
 import prisma from "../../prisma";
 import { transporter } from "../../libs/nodemailer";
@@ -45,8 +44,13 @@ export const addEmployeeService = async (data: AddEmployeeInput, req: Request) =
     const employee = await prisma.employee.create({
       data: {
         userId: user.id,
+<<<<<<< HEAD
         outletId: Number(data.outletId),
         workShift: data.workShift,
+=======
+        outletId: data.outletId,
+        // workShift: data.workShift,
+>>>>>>> f4e245107b518e906d0cc98fa8b9c7a2e3d7f718
         station: data.station,
       },
     });
