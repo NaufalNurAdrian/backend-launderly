@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import prisma from "../../prisma";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+import Handlebars from "handlebars";
+import { transporter } from "../../libs/nodemailer";
 
 export const requestForgetPasswordService = async (req: Request, res: Response) => {
   try {
@@ -23,31 +26,30 @@ export const requestForgetPasswordService = async (req: Request, res: Response) 
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = await bcrypt.hash(resetToken, 10);
 
-    // Simpan token baru
+    // Simpan token di database
     await prisma.user.update({
       where: { id: user.id },
       data: {
         resetPasswordToken: hashedToken,
-        resetPasswordExpires: new Date(Date.now() + 3600000),
+        resetPasswordExpires: new Date(Date.now() + 3600000), // Token berlaku 1 jam
       },
     });
 
-    // Kirim email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-
+    // Buat link reset password
     const resetLink = `${process.env.BASE_URL_FE}/reset-password/${resetToken}`;
 
+    // Baca template email
+    const templatePath = path.join(__dirname, "../templates", "resetPassword.hbs");
+    const templateSource = fs.readFileSync(templatePath, "utf-8");
+    const compiledTemplate = Handlebars.compile(templateSource);
+    const html = compiledTemplate({ name: user.fullName, resetLink });
+
+    // Kirim email dengan template
     await transporter.sendMail({
-      from: "admin",
+      from: `"Admin" <${process.env.GMAIL_EMAIL}>`,
       to: email,
-      subject: "Reset Password Request",
-      text: `Click the following link to reset your password: ${resetLink}`,
+      subject: "Reset Your Password",
+      html,
     });
 
     return res.status(200).json({ message: "If the email exists, a reset link will be sent." });
