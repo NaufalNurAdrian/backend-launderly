@@ -14,15 +14,14 @@ export class PaymentRouter {
   }
 
   private initializeRoutes(): void {
-    this.router.get('/',verifyToken, this.paymentController.getPaymentsController);
     this.router.get('/order',verifyToken, this.paymentController.getPaymentController);
     this.router.get('/report-chart',verifyToken, this.paymentController.getPaymentChartController);
     this.router.get('/:userId',verifyToken, this.paymentController.getUserPaymentByIdController)
 
 
     this.router.post('/',verifyToken, this.paymentController.createPaymentController);
-    this.router.post('/midtrans-callback', this.paymentController.updatePaymentController);
-    this.router.post('/webhook/midtrans', this.paymentController.handlePaymentWebhook)
+    this.router.post('/webhook/midtrans', this.paymentController.updatePaymentController);
+    this.router.post('/midtrans-callback', this.paymentController.handlePaymentWebhook)
   }
 
   getRouter(): Router {

@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { createPaymentService } from '../services/payment/createPayment.service';
 import { getPaymentService } from '../services/payment/getPayment.service';
 import { getPaymentChartService } from '../services/payment/getPaymentChart.service';
-import { getPaymentsService } from '../services/payment/getPayments.service';
 import { updatePaymentService } from '../services/payment/updatePayment.service';
 import { getUserPaymentsService } from "../services/payment/getPaymentById.service";
 import { updatePaymentStatus } from "../services/payment/updateHook.service";
@@ -32,26 +31,6 @@ export class PaymentController {
     }
   }
   
-  async getPaymentsController(req: Request, res: Response, next: NextFunction) {
-    try {
-      const query = {
-        id: parseInt(res.locals.user.id),
-        filterOutlet: parseInt(req.query.filterOutlet as string) || 'all',
-        filterMonth: req.query.filterMonth as string,
-        filterYear: req.query.filterYear as string,
-        take: parseInt(req.query.take as string) || 1000000,
-        page: parseInt(req.query.page as string) || 1,
-        sortBy: parseInt(req.query.sortBy as string) || 'id',
-        sortOrder: req.query.sortOrder as string || 'asc',     
-      };
-      const result = await getPaymentsService(query);
-      res.status(200).send(result);
-      return 
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async getPaymentChartController(req: Request, res: Response, next: NextFunction) {
     try {
       const query = {
@@ -130,7 +109,7 @@ export class PaymentController {
         return 
       }
   
-      await updatePaymentStatus(order_id, transaction_status);
+      await updatePaymentStatus(order_id);
   
       res.status(200).json({ message: "Payment status updated successfully" });
     } catch (error) {

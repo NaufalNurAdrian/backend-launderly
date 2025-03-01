@@ -14,6 +14,7 @@ interface createPaymentArgs {
 export const createPaymentService = async (body: createPaymentArgs) => {
   try {
     const { orderId } = body;
+    if (!orderId) throw new Error("Order ID is required");
 
     const existingOrder = await prisma.order.findFirst({
       where: { id: orderId },
@@ -21,8 +22,13 @@ export const createPaymentService = async (body: createPaymentArgs) => {
     });
 
     if (!existingOrder) throw new Error("Order Not Found!");
-    if (!existingOrder.laundryPrice) throw new Error("Order Not Yet Processed by Admin");
-    if (!existingOrder.deliveryOrder[0]?.deliveryPrice) throw new Error("No Delivery Order Found!");
+    if (!existingOrder.laundryPrice)
+      throw new Error("Order Not Yet Processed by Admin");
+    if (!existingOrder.pickupOrder) throw new Error("No Pickup Order Found!");
+    if (!existingOrder.deliveryOrder.length)
+      throw new Error("No Delivery Order Found!");
+    if (!existingOrder.deliveryOrder[0].deliveryPrice)
+      throw new Error("Delivery Price Missing!");
 
     if (existingOrder.isPaid) {
       return await prisma.payment.findFirst({
@@ -40,9 +46,9 @@ export const createPaymentService = async (body: createPaymentArgs) => {
     if (outstandingPayment) return outstandingPayment;
 
     const amount =
-      existingOrder.laundryPrice +
-      existingOrder.pickupOrder.pickupPrice +
-      existingOrder.deliveryOrder[0].deliveryPrice;
+      (existingOrder.laundryPrice || 0) +
+      (existingOrder.pickupOrder.pickupPrice || 0) +
+      (existingOrder.deliveryOrder[0]?.deliveryPrice || 0);
 
     const padNumber = (num: number, size: number): string => {
       let s = num.toString();
@@ -51,27 +57,38 @@ export const createPaymentService = async (body: createPaymentArgs) => {
     };
 
     const orderNumberParts = existingOrder.orderNumber.split("-");
+    if (orderNumberParts.length < 2)
+      throw new Error("Invalid order number format");
     const orderNumberPart = orderNumberParts.pop();
-    if (!orderNumberPart) throw new Error("Invalid order number format");
 
     const lastInvoice = await prisma.payment.findFirst({
       where: {
         invoiceNumber: {
-          contains: `INV-${padNumber(existingOrder.pickupOrder.userId, 4)}-${orderNumberPart}-`,
+          contains: `INV-${padNumber(
+            existingOrder.pickupOrder.userId,
+            4
+          )}-${orderNumberPart}-`,
         },
       },
       orderBy: { invoiceNumber: "desc" },
     });
 
-    const getNextInvoiceNumber = (lastInvoice: { invoiceNumber: string } | null): string => {
+    const getNextInvoiceNumber = (
+      lastInvoice: { invoiceNumber: string } | null
+    ): string => {
       if (!lastInvoice) return padNumber(1, 4);
       const invoiceParts = lastInvoice.invoiceNumber.split("-");
       const lastPart = invoiceParts.pop();
-      return lastPart && !isNaN(Number(lastPart)) ? padNumber(Number(lastPart) + 1, 4) : padNumber(1, 4);
+      return lastPart && !isNaN(Number(lastPart))
+        ? padNumber(Number(lastPart) + 1, 4)
+        : padNumber(1, 4);
     };
 
     const nextIncrement = getNextInvoiceNumber(lastInvoice);
-    const invoiceNumber = `INV-${padNumber(existingOrder.pickupOrder.userId, 4)}-${orderNumberPart}-${nextIncrement}`;
+    const invoiceNumber = `INV-${padNumber(
+      existingOrder.pickupOrder.userId,
+      4
+    )}-${orderNumberPart}-${nextIncrement}`;
 
     const createPayment = await prisma.payment.create({
       data: {
@@ -101,10 +118,10 @@ export const createPaymentService = async (body: createPaymentArgs) => {
         snapRedirectUrl: transaction.redirect_url,
       },
     });
-    
+
     return updatePaymentToken;
   } catch (error) {
     console.error("Error in createPaymentService:", error);
-    throw error;
+    return { success: false, message: "ada error" };
   }
 };
