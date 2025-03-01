@@ -99,7 +99,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           },
         ],
     };
-    
+
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {
       orderByClause.weight = order;
