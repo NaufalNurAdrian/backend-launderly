@@ -57,6 +57,20 @@ export const checkOutletAdmin = (
   if (req.user?.role == "OUTLET_ADMIN") {
     next();
   } else {
+    res.status(400).send({ message: "Unauthorize, Outlet Admin only!" });
+  }
+};
+
+export const checkOutletSuper = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role == "OUTLET_ADMIN" || req.user?.role == "SUPER_ADMIN") {
+    next();
+  } else {
     res.status(400).send({ message: "Unauthorize, Admin only!" });
   }
 };
+
+

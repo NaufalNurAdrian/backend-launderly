@@ -20,6 +20,7 @@ export class OutletRouter {
       this.outletController.createOutletController
     );
     this.router.get("/", verifyToken, checkSuperAdmin, this.outletController.getAllOutlet)
+    this.router.get("/:id", this.outletController.getOutletById)
   }
   
 

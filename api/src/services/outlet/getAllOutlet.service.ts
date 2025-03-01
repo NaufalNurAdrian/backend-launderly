@@ -1,8 +1,11 @@
 import prisma from "../../prisma";
 
-export const getAllOutletService = async () => {
+export const getAllOutletService = async (page: number, limit: number) => {
   try {
-    const result = prisma.outlet.findMany({
+    const skip = (page - 1) * limit; // Hitung offset
+    const outlets = await prisma.outlet.findMany({
+      skip,
+      take: limit,
       select: {
         id: true,
         outletName: true,
@@ -10,7 +13,10 @@ export const getAllOutletService = async () => {
         address: true,
       },
     });
-    return result;
+
+    const totalCount = await prisma.outlet.count(); // Hitung total data
+
+    return { outlets, totalCount };
   } catch (error: any) {
     throw new Error(error.message);
   }
