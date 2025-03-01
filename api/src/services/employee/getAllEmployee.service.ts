@@ -29,4 +29,17 @@ export const getAllEmployeeService = async (page: number = 1, pageSize: number =
     } catch (error: any) {
         throw new Error(error.message || "Failed to get employee");
     }
+
+export const getAllEmployeeService = async () => {
+  try {
+    const employee = await prisma.employee.findFirst({
+      include: {
+        user: true,
+        outlet: true,
+      },
+    });
+    return employee;
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to get employee");
+  }
 };

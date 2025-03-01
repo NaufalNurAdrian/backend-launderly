@@ -74,6 +74,9 @@ export const checkOutletSuper = (
   }
 };
 
+<<<<<<< HEAD
+
+=======
 export const verifyRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const userRole = req.user?.role;
@@ -122,3 +125,4 @@ export const verifyRoleAndAttendance = (allowedRoles: string[]) => {
     next();
   };
 };
+>>>>>>> f4e245107b518e906d0cc98fa8b9c7a2e3d7f718
