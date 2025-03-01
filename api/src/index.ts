@@ -16,6 +16,9 @@ import { BypassRouter } from "./routers/bypass.router";
 import { AddressRouter } from "./routers/address.router";
 import { PickupOrderRouter } from "./routers/pickupOrder.router";
 import { PaymentRouter } from "./routers/payment.router";
+import { ReportRouter } from "./routers/report.router";
+import { OrderRouter } from "./routers/order.router";
+import { ItemRouter } from "./routers/item.router";
 
 const PORT: number = 8000;
 
@@ -47,6 +50,9 @@ const userRouter = new UserRouter();
 const addressRouter = new AddressRouter();
 const pickupOrderRouter = new PickupOrderRouter();
 const paymentRouter = new PaymentRouter();
+const reportRouter = new ReportRouter();
+const orderAdminRouter = new OrderRouter();
+const itemRouter = new ItemRouter();
 
 app.use("/api/attendance", attendanceRouter.getRouter());
 app.use("/api/pickup", pickupRouter.getRouter());
@@ -62,6 +68,9 @@ app.use("/api/user", userRouter.getRouter());
 app.use("/api/address", addressRouter.getRouter());
 app.use("/api/pickupOrder", pickupOrderRouter.getRouter());
 app.use("/api/payment", paymentRouter.getRouter());
+app.use("/api/report", reportRouter.getRouter());
+app.use("/api/orders", orderAdminRouter.getRouter());
+app.use("/api/item", itemRouter.getRouter());
 
 app.listen(PORT, () => {
   console.log(`server running on -> http://localhost:${PORT}/api`);
