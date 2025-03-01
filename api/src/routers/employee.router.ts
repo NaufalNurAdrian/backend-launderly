@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { EmployeeController } from "../controllers/employee.controller";
+import { checkSuperAdmin, verifyToken } from "../middlewares/verify";
 
 export class EmployeeRouter {
   private employeeController: EmployeeController;
@@ -11,12 +12,27 @@ export class EmployeeRouter {
     this.initializeRoutes();
   }
 
-    private initializeRoutes() {
-        this.router.post("/create", this.employeeController.addEmployee);
-        this.router.get("/", this.employeeController.getAllEmployee);
+  private initializeRoutes() {
+    this.router.post(
+      "/create",
+      verifyToken,
+      checkSuperAdmin,
+      this.employeeController.addEmployee
+    );
+    this.router.get(
+      "/",
+      verifyToken,
+      checkSuperAdmin,
+      this.employeeController.getAllEmployee
+    );
 
-        this.router.patch("/update/:id", this.employeeController.updateEmployee)
-    }
+    this.router.patch(
+      "/update/:id",
+      verifyToken,
+      checkSuperAdmin,
+      this.employeeController.updateEmployee
+    );
+  }
 
   getRouter() {
     return this.router;

@@ -58,10 +58,25 @@ export const checkOutletAdmin = (
   if (req.user?.role == "OUTLET_ADMIN") {
     next();
   } else {
+    res.status(400).send({ message: "Unauthorize, Outlet Admin only!" });
+  }
+};
+
+export const checkOutletSuper = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role == "OUTLET_ADMIN" || req.user?.role == "SUPER_ADMIN") {
+    next();
+  } else {
     res.status(400).send({ message: "Unauthorize, Admin only!" });
   }
 };
 
+<<<<<<< HEAD
+
+=======
 export const verifyRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const userRole = req.user?.role;
@@ -110,3 +125,4 @@ export const verifyRoleAndAttendance = (allowedRoles: string[]) => {
     next();
   };
 };
+>>>>>>> f4e245107b518e906d0cc98fa8b9c7a2e3d7f718
