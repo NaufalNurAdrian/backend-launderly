@@ -1,6 +1,5 @@
 import prisma from "../../prisma";
 
-<<<<<<< HEAD
 export const getAllEmployeeService = async (page: number = 1, pageSize: number = 5) => {
     try {
         const offset = (page - 1) * pageSize;
@@ -30,18 +29,4 @@ export const getAllEmployeeService = async (page: number = 1, pageSize: number =
     } catch (error: any) {
         throw new Error(error.message || "Failed to get employee");
     }
-=======
-export const getAllEmployeeService = async () => {
-  try {
-    const employee = await prisma.employee.findFirst({
-      include: {
-        user: true,
-        outlet: true,
-      },
-    });
-    return employee;
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to get employee");
-  }
->>>>>>> f4e245107b518e906d0cc98fa8b9c7a2e3d7f718
 };
