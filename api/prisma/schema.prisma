@@ -200,7 +200,7 @@ model OrderItem {
   qty           Int
   orderId       Int
   laundryItemId Int
-  isDelete      Boolean @default(false)
+  isDelete      Boolean @default(false) 
 
   laundryItem LaundryItem @relation(fields: [laundryItemId], references: [id])
   order       Order       @relation(fields: [orderId], references: [id])
