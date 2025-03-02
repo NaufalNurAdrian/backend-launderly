@@ -195,6 +195,7 @@ model Order {
   payment       Payment[]
 }
 
+
 model OrderItem {
   id            Int     @id @default(autoincrement())
   qty           Int
