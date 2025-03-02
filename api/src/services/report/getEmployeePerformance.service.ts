@@ -1,10 +1,11 @@
 import prisma from "../../prisma";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { Prisma } from "@prisma/client";
 
 interface GetEmployeePerformanceQuery {
-  filterOutlet?: number | string; // Opsional, default "all"
-  filterMonth?: string; // Opsional
-  filterYear?: string; // Opsional
+  filterOutlet?: number | string;
+  filterMonth?: string;
+  filterYear?: string;
   id: number;
 }
 
@@ -20,13 +21,18 @@ export const getEmployeePerformanceService = async (query: GetEmployeePerformanc
 
     if (!existingUser) throw new Error("User not found!");
 
-    const whereClause: any = {};
+    // Definisi tipe `whereClause`
+    const whereClause: Prisma.OrderWorkerWhereInput = {};
 
     // Outlet Admin hanya bisa melihat outletnya sendiri
     if (existingUser.role !== "SUPER_ADMIN") {
-      whereClause.outletId = existingUser.employee?.outletId;
+      whereClause.worker = {
+        outletId: existingUser.employee?.outletId ?? undefined,
+      };
     } else if (filterOutlet !== "all") {
-      whereClause.outletId = Number(filterOutlet);
+      whereClause.worker = {
+        outletId: Number(filterOutlet),
+      };
     }
 
     // Gunakan bulan & tahun saat ini jika tidak diberikan
@@ -68,39 +74,37 @@ export const getEmployeePerformanceService = async (query: GetEmployeePerformanc
     });
 
     // Hitung jumlah pekerjaan per karyawan
-    const performanceMap: Record<number, { count: number; data: any }> = {};
+    const performanceMap = new Map<number, { count: number; data: any }>();
 
     employeePerformances.forEach((record) => {
       const worker = record.worker;
-      if (!worker) return;
+      if (!worker || !worker.user) return;
 
-      const userId = worker.user?.id || 0;
-      if (!performanceMap[userId]) {
-        performanceMap[userId] = {
+      const userId = worker.user.id;
+      if (!performanceMap.has(userId)) {
+        performanceMap.set(userId, {
           count: 0,
           data: {
             userId,
-            fullName: worker.user?.fullName || "Unknown",
-            email: worker.user?.email || "Unknown",
+            fullName: worker.user.fullName || "Unknown",
+            email: worker.user.email || "Unknown",
             outlet: worker.outlet?.outletName || "No Outlet",
-            shift: worker.workShift || "Unknown",
           },
-        };
+        });
       }
-      performanceMap[userId].count += 1;
+
+      performanceMap.get(userId)!.count += 1;
     });
 
     // Konversi ke array
-    const performanceReport = Object.values(performanceMap).map((item) => ({
+    const performanceReport = Array.from(performanceMap.values()).map((item) => ({
       ...item.data,
       taskCompleted: item.count,
     }));
 
     return {
       message: "Successfully fetched employee performance",
-      result: {
-        performanceReport,
-      },
+      result: { performanceReport },
     };
   } catch (error) {
     console.error("Error fetching employee performance:", error);
