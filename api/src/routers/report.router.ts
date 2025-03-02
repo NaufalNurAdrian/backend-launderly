@@ -1,0 +1,34 @@
+import { Router } from "express";
+import { checkOutletSuper, checkSuperAdmin, verifyToken } from "../middlewares/verify";
+import { ReportController } from "../controllers/report.controller";
+
+export class ReportRouter {
+  private reportController: ReportController;
+  private router: Router;
+
+  constructor() {
+    this.reportController = new ReportController();
+    this.router = Router();
+    this.initializeRoutes();
+  }
+
+  private initializeRoutes() {
+    this.router.get(
+      "/employee-performance",
+      verifyToken,
+      checkOutletSuper,
+      this.reportController.getEmployeePerformanceController
+    );
+    this.router.get(
+      "/sales-report",
+      verifyToken,
+      checkOutletSuper,
+      this.reportController.getSalesReportController
+    );
+  }
+  
+
+  getRouter() {
+    return this.router;
+  }
+}
