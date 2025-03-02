@@ -186,13 +186,17 @@ model Order {
   updatedAt     DateTime    @updatedAt
   pickupOrderId Int         @unique
   isPaid        Boolean     @default(false)
-
+  isConfirm     Boolean     @default(false)
+  receivedAt    DateTime?   
+  confirmedAt   DateTime?   
+  
   pickupOrder   PickupOrder     @relation(fields: [pickupOrderId], references: [id])
   orderItem     OrderItem[]
   deliveryOrder DeliveryOrder[]
   orderWorker   OrderWorker[]
   payment       Payment[]
 }
+
 
 model OrderItem {
   id            Int @id @default(autoincrement())
