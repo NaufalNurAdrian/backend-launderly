@@ -7,20 +7,18 @@ export class ReportController {
     try {
       const { filterOutlet, filterMonth, filterYear } = req.query;
       const result = await getEmployeePerformanceService({
-        id: Number(req.user?.id),
         filterOutlet: filterOutlet as string,
         filterMonth: filterMonth as string,
         filterYear: filterYear as string,
+        id: Number(req.user?.id),
       });
       res
         .status(200)
         .send({ message: "Successfully fetched employee performance", result });
     } catch (error: any) {
-      res
-        .status(500)
-        .send({
-          message: error.message || "Failed to get employee performance",
-        });
+      res.status(500).send({
+        message: error.message || "Failed to get employee performance",
+      });
     }
   }
 

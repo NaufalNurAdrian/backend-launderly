@@ -186,6 +186,7 @@ model Order {
   updatedAt     DateTime    @updatedAt
   pickupOrderId Int         @unique
   isPaid        Boolean     @default(false)
+  isConfirm Boolean @default(false)
 
   pickupOrder   PickupOrder     @relation(fields: [pickupOrderId], references: [id])
   orderItem     OrderItem[]
@@ -199,6 +200,7 @@ model OrderItem {
   qty           Int
   orderId       Int
   laundryItemId Int
+  isDelete      Boolean @default(false) 
 
   laundryItem LaundryItem @relation(fields: [laundryItemId], references: [id])
   order       Order       @relation(fields: [orderId], references: [id])
@@ -240,6 +242,7 @@ model OrderWorker {
   bypassNote     String?
   bypassAccepted Boolean          @default(false)
   bypassRejected Boolean          @default(false)
+  createdAt      DateTime         @default(now())
 
   order  Order    @relation(fields: [orderId], references: [id])
   worker Employee @relation(fields: [workerId], references: [id])
