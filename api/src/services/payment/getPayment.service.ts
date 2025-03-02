@@ -11,14 +11,14 @@ export const getPaymentService = async (query: GetPaymentQuery) => {
 
     const payment = await prisma.payment.findFirst({
       where: !isNaN(id) ? { id } : { orderId },
-      orderBy: !isNaN(orderId) ? { invoiceNumber: 'desc' } : undefined,
+      orderBy: !isNaN(orderId) ? { invoiceNumber: "desc" } : undefined,
       include: {
         order: { include: { pickupOrder: { include: { user: true } } } },
       },
     });
 
     if (!payment) {
-      throw new Error('Transaction not found');
+      throw new Error("Transaction not found");
     }
 
     return payment;

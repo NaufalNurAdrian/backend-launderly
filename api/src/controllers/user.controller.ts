@@ -6,6 +6,7 @@ import { updateEmailService } from "../services/user/emailUpdate.service";
 import { verifyEmailService } from "../services/user/emailVerify.service";
 import { requestForgetPasswordService } from "../services/user/forgetRequestPassword.service";
 import { confirmForgetPasswordService } from "../services/user/forgetConfirmPassword.service";
+import { confirmOrderService } from "../services/user/confirmOrder.service";
 
 export class UserController {
   async getUsersId(req: Request, res: Response, next: NextFunction) {
@@ -54,6 +55,13 @@ export class UserController {
   async confirmForgetPassword(req: Request, res: Response, next: NextFunction) {
     try {
       await confirmForgetPasswordService(req, res);
+    } catch (error) {
+      next(error);
+    }
+  }
+  async confirmOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      await confirmOrderService(req, res);
     } catch (error) {
       next(error);
     }

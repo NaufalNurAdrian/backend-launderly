@@ -32,6 +32,12 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
     if (orderWorker.bypassRequest) {
       if (orderWorker.bypassAccepted === null) {
+<<<<<<< HEAD
+        throw new Error("Bypass request is still pending");
+      } else if (orderWorker.bypassAccepted === true) {
+        throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
+      } else if (orderWorker.bypassAccepted === false) {
+=======
         console.log("Bypass request pending");
         throw new Error("Bypass request is still pending");
       } else if (orderWorker.bypassAccepted === true) {
@@ -39,6 +45,7 @@ export const updateOrderStatus = async (query: updateOrderData) => {
         throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
       } else if (orderWorker.bypassAccepted === false) {
         console.log("Bypass request was rejected. Continuing process...");
+>>>>>>> 6c7961c117a36183acead19e5590fafa7249e7d3
       }
     }
 

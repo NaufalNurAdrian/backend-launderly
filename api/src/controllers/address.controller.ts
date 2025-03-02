@@ -7,7 +7,7 @@ import { getUserAddressesService } from "../services/address/getUserAdress.servi
 import { getAllOutletsService } from "../services/address/getOutletAddres.service";
 
 export class AddressController {
-  async getUserAddressController(req: Request, res: Response, next: NextFunction) {
+  async getUserAddressController(req: Request,res: Response,next: NextFunction) {
     try {
       const result = await getUserAddressesService(req);
 
@@ -53,7 +53,7 @@ export class AddressController {
     }
   }
 
-  async createUserAddressController(req: Request, res: Response, next: NextFunction) {
+  async createUserAddressController(req: Request,res: Response,next: NextFunction  ) {
     try {
       createUserAddressService(req, res);
       return;
@@ -62,7 +62,7 @@ export class AddressController {
     }
   }
 
-  async deleteUserAddressController(req: Request, res: Response, next: NextFunction) {
+  async deleteUserAddressController(req: Request,res: Response,  next: NextFunction) {
     try {
       const id = req.params.id;
 

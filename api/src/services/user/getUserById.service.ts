@@ -19,7 +19,7 @@ export const getUsersIdService = async (req: Request, res: Response) => {
         createdAt: true,
         isDelete: true,
         role: true,
-        employee : true
+        employee: true
       },
     });
 

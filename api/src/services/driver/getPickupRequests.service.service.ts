@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
 interface getPickupData {
   driverId: number;
