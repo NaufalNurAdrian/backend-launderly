@@ -25,11 +25,13 @@ export class UserRouter {
     this.router.patch("/update-email", verifyToken, this.userController.updateEmail);
     // Confirm Email User
     this.router.patch("/verify-email", verifyToken, this.userController.verifyEmail);
+    // Confirm Order
+    this.router.patch("/confirm-order", verifyToken, this.userController.confirmOrder);
+    // Confirm Forget Password
+    this.router.patch("/confirm-forget-password", this.userController.confirmForgetPassword);
 
     // Request Forget Password
     this.router.post("/request-forget-password", this.userController.requestForgetPassword);
-    // Confirm Forget Password
-    this.router.post("/confirm-forget-password", this.userController.confirmForgetPassword);
   }
 
   getRouter() {
