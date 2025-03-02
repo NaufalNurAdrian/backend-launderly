@@ -18,6 +18,8 @@ export const getUsersIdService = async (req: Request, res: Response) => {
         isVerify: true,
         createdAt: true,
         isDelete: true,
+        role: true,
+        employee: true
       },
     });
 
