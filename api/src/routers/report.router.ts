@@ -25,6 +25,30 @@ export class ReportRouter {
       checkOutletSuper,
       this.reportController.getSalesReportController
     );
+    this.router.get(
+      "/generate", 
+      verifyToken, 
+      checkSuperAdmin, 
+      this.reportController.generateOutletReport.bind(this.reportController)
+    );
+    this.router.get(
+      "/compare", 
+      verifyToken, 
+      checkSuperAdmin, 
+      this.reportController.compareOutlets.bind(this.reportController)
+    );
+    this.router.get(
+      "/trends", 
+      verifyToken, 
+      checkSuperAdmin, 
+      this.reportController.getTransactionTrends.bind(this.reportController)
+    );
+    this.router.get(
+      "/customers", 
+      verifyToken, 
+      checkSuperAdmin, 
+      this.reportController.getCustomerAnalytics.bind(this.reportController)
+    );
   }
   
 
