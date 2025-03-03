@@ -53,25 +53,10 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
-<<<<<<< HEAD
+
           OR: [
             {
               orderStatus: orderStatus,
-=======
-<<<<<<< HEAD
-          OR: [
-            {
-              orderStatus: orderStatus,
-=======
-          orderStatus: orderStatus,
-        },
-        {
-          orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
-          orderWorker: {
-            some: {
-              workerId: workerStation.id,
->>>>>>> 6c7961c117a36183acead19e5590fafa7249e7d3
->>>>>>> 39f13b9ad2459764a638079a7b6a81a76501631a
             },
             {
               orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
@@ -83,10 +68,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
             },
           ],
         },
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 39f13b9ad2459764a638079a7b6a81a76501631a
           {
             OR: [
               {
@@ -118,23 +99,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
             ],
           },
         ],
-<<<<<<< HEAD
-=======
-=======
-      ],
-      AND: [
-        {
-          orderWorker: {
-            none: {
-              bypassRequest: true,
-              bypassRejected: false,
-              bypassAccepted: true, 
-            },
-          },
-        },
-      ],
->>>>>>> 6c7961c117a36183acead19e5590fafa7249e7d3
->>>>>>> 39f13b9ad2459764a638079a7b6a81a76501631a
     };
 
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
