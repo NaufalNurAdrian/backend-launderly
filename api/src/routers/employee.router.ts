@@ -25,7 +25,7 @@ export class EmployeeRouter {
       checkSuperAdmin,
       this.employeeController.getAllEmployee
     );
-
+    this.router.get("/:id", verifyToken, checkSuperAdmin, this.employeeController.getEmployeeById);
     this.router.patch(
       "/update/:id",
       verifyToken,

@@ -62,15 +62,16 @@ export class OutletController {
       if (!id) {
         res.status(400).send({ message: "Outlet ID is required" });
       }
+  
       const result = await updateOutletService(req.body);
-
+      console.log("Data yang diterima di backend:", req.body);
+  
       res.status(200).send({ message: "Outlet updated successfully", result });
     } catch (error: any) {
-      res
-        .status(500)
-        .send({ message: error.message || "Cannot update outlet" });
+      res.status(500).send({ message: error.message || "Cannot update outlet" });
     }
   }
+  
 
   async deleteOutlet(req: Request, res: Response) {
     try {

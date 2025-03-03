@@ -2,7 +2,7 @@ import { Address } from "@prisma/client";
 import prisma from "../../prisma";
 
 interface UpdateOutletInput {
-  id: number;
+  id: string;
   outletName?: string;
   outletType?: "MAIN" | "BRANCH";
   address?: Address[];
@@ -13,63 +13,85 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
     const { id, outletName, outletType, address } = body;
 
     const existingOutlet = await prisma.outlet.findUnique({
-      where: { id },
+      where: { id: parseInt(id) },
+      include: { address: true }, // Ambil alamat yang sudah ada
     });
 
     if (!existingOutlet) {
       throw new Error("Outlet not found");
     }
 
-    if (outletName) {
-      const existingName = await prisma.outlet.findFirst({
-        where: {
-          outletName,
-          id: { not: id },
+    // Cek alamat yang ada di database
+    const existingAddresses = Array.isArray(existingOutlet.address)
+  ? existingOutlet.address
+  : existingOutlet.address
+  ? [existingOutlet.address]
+  : [];
+
+
+    // Mapping ID alamat yang dikirim di request
+    const requestAddressIds = Array.isArray(address)
+  ? address.map((addr) => addr.id).filter(Boolean)
+  : [];
+
+
+    // Set alamat lama yang tidak ada di request menjadi isDelete: true
+    await prisma.address.updateMany({
+      where: {
+        id: {
+          in: existingAddresses.map((addr) => addr.id),
+          notIn: requestAddressIds, // Alamat yang tidak ada di request
         },
-      });
-      if (existingName) {
-        throw new Error("Outlet name already exists");
-      }
-    }
+      },
+      data: { isDelete: true },
+    });
 
-    if (outletType) {
-      const existingType = await prisma.outlet.findFirst({
-        where: {
-          outletType,
-          id ,
-        },
-      });
-      if (existingType) {
-        throw new Error("Outlet type already exists");
-      }
-    }
+    // Proses alamat baru dan update alamat lama
+    const updatedAddresses = await Promise.all(
+      Array.isArray(address)
+        ? address.map(async (addr) => {
+            if (addr.id) {
+              return prisma.address.update({
+                where: { id: addr.id },
+                data: {
+                  addressLine: addr.addressLine,
+                  city: addr.city,
+                  latitude: addr.latitude,
+                  longitude: addr.longitude,
+                  isDelete: false,
+                },
+              });
+            } else {
+              return prisma.address.create({
+                data: {
+                  addressLine: addr.addressLine,
+                  city: addr.city,
+                  latitude: addr.latitude,
+                  longitude: addr.longitude,
+                  isDelete: false,
+                  outletId: parseInt(id),
+                },
+              });
+            }
+          })
+        : [] // Jika address bukan array, kosongkan prosesnya
+    );
+    
 
-    if (address && address.length > 0) {
-      for (const addr of address) {
-        const existingAddress = await prisma.address.findFirst({
-          where: {
-            addressLine: addr.addressLine,
-            city: addr.city,
-            isDelete: false,
-          },
-        });
-
-        if (existingAddress) {
-          throw new Error(`Address ${addr.addressLine}, ${addr.city} already exists`);
-        }
-      }
-    }
-
+    // Update Outlet
     const updatedOutlet = await prisma.outlet.update({
-      where: { id },
+      where: { id: parseInt(id) },
       data: {
         ...(outletName && { outletName }),
         ...(outletType && { outletType }),
-        ...(address && { address: { set: address } }),
       },
+      include: { address: true }, // Ambil alamat yang sudah diperbarui
     });
 
-    return updatedOutlet;
+    return {
+      message: "Outlet updated successfully",
+      result: updatedOutlet,
+    };
   } catch (error: any) {
     throw new Error(error.message);
   }
