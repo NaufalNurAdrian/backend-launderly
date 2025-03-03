@@ -2,13 +2,12 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "build": "tsc && cp -rv public dist && cp -rv src/templates dist",
-    "start": "npm run build && node dist/index.ts",
-    "dev": "ts-node-dev src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+"scripts": {
+    "build": "tsc && cp -rv public dist/public",
+    "start": "nodemon src/index.ts",
+    "dev": "nodemon src/index.ts",
     "postinstall": "prisma generate"
-  },
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
