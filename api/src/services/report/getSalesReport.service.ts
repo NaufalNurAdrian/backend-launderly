@@ -36,6 +36,17 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
       };
     }
 
+    const orders = await prisma.order.findMany({
+      where: whereClause.order,
+    });
+
+    let totalOrders = orders.length;
+    let receivedAtOutlet = orders.filter(order => order.orderStatus === "ARRIVED_AT_OUTLET").length;
+    let onProgress = orders.filter(order =>
+      ["READY_FOR_WASHING", "BEING_WASHED", "WASHING_COMPLETED", "BEING_IRONED", "IRONING_COMPLETED", "BEING_PACKED"].includes(order.orderStatus)
+    ).length;
+    let completed = orders.filter(order => order.orderStatus === "COMPLETED").length;
+
     const now = new Date();
     const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
     const year = filterYear ? Number(filterYear) : now.getFullYear();
@@ -132,6 +143,10 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
       result: {
         totalIncome,
         totalTransaction,
+        totalOrders,
+        receivedAtOutlet,
+        onProgress,
+        completed,
         totalWeight,
         incomeDaily,
         transactionDaily,
