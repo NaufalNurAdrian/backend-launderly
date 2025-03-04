@@ -61,7 +61,7 @@ export const getAllAttendancesService = async (query: GetAllAttendancesQuery) =>
                     include: {
                         employee: {
                             select: {
-                                outletId: true, 
+                                outletId: true,
                             },
                         },
                     },

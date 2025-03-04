@@ -1,6 +1,5 @@
 import prisma from "../../prisma";
 
-
 export const getOutletByIdService = async (id: string) => {
   try {
     const numericId = Number(id);
@@ -14,10 +13,12 @@ export const getOutletByIdService = async (id: string) => {
         id: true,
         outletName: true,
         outletType: true,
-        address: { select: { id: true, addressLine: true, city: true } },
+        address: {
+          where: { isDelete: false },
+          select: { id: true, addressLine: true, city: true },
+        },
       },
     });
-    
 
     if (!result) {
       throw new Error("Outlet not found");

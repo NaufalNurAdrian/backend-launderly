@@ -15,6 +15,8 @@ export class ItemRouter {
   private initializeRoutes() {
     this.router.post("/create", verifyToken, checkSuperAdmin, this.itemController.createItemController)
     this.router.get("/", verifyToken, checkSuperAdmin, this.itemController.getItemController)
+    this.router.patch("/update", verifyToken, checkSuperAdmin, this.itemController.updateItemController)
+    this.router.patch("/delete", verifyToken, checkSuperAdmin, this.itemController.deleteItemController)
   }
 
   getRouter() {

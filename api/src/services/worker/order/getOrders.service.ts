@@ -71,7 +71,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           OR: [
             {
               orderWorker: {
-                some: {
+                none: {
                   bypassAccepted: true,
                   bypassRequest: false,
                   station: station,
