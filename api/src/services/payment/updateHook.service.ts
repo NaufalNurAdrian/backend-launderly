@@ -7,7 +7,7 @@ interface UpdatePaymentBody {
   payment_type?: string;
 }
 
-export const updatePaymentStatus = async (body: UpdatePaymentBody) => {
+export const updateHooktStatus = async (body: UpdatePaymentBody) => {
   try {
     const { order_id, transaction_status, payment_type } = body;
 
@@ -50,25 +50,44 @@ export const updatePaymentStatus = async (body: UpdatePaymentBody) => {
       return { message: "Invoice not found", success: false };
     }
 
-    // Cek apakah order status perlu diupdate
     const updateOrderStatus =
       paymentStatus === PaymentStatus.SUCCESSED &&
-      existingInvoice.order.orderStatus === OrderStatus.AWAITING_PAYMENT;
+      existingInvoice.order.orderStatus !== OrderStatus.COMPLETED; 
 
-    // Jalankan transaksi Prisma
-    await prisma.$transaction(async (tx) => {
-      await tx.payment.update({
+    // Jalankan transaksi Prisma dengan array (lebih optimal)
+    const transactionQueries = [
+      prisma.payment.update({
         where: { id: existingInvoice.id },
         data: { paymentStatus, paymentMethode: payment_type || null },
-      });
+      }),
+    ];
 
-      if (updateOrderStatus) {
-        await tx.order.update({
-          where: { id: existingInvoice.orderId },
-          data: { orderStatus: OrderStatus.READY_FOR_DELIVERY, isPaid: true },
-        });
-      }
+    await prisma.$transaction([
+      prisma.payment.update({
+        where: { id: existingInvoice.id },
+        data: { paymentStatus, paymentMethode: payment_type || null },
+      }),
+
+      ...(updateOrderStatus
+        ? [
+            prisma.order.update({
+              where: { id: existingInvoice.orderId },
+              data: {
+                orderStatus: OrderStatus.READY_FOR_DELIVERY,
+                isPaid: true,
+              },
+            }),
+          ]
+        : []),
+    ]);
+
+    // **Verifikasi hasil update**
+    const updatedOrder = await prisma.order.findUnique({
+      where: { id: existingInvoice.orderId },
+      select: { orderStatus: true, isPaid: true },
     });
+
+    console.log("Updated order details:", updatedOrder);
 
     return { message: "Payment updated successfully" };
   } catch (error) {

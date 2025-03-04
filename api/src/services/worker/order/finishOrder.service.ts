@@ -1,6 +1,6 @@
 import { generateOrderNumber } from "../../../helpers/numberGenerator";
 import prisma from "../../../prisma";
-import { OrderStatus, DeliveryStatus } from ".prisma/client";
+import { OrderStatus, DeliveryStatus } from "@prisma/client";
 
 interface updateOrderData {
   workerId: number;
@@ -64,14 +64,18 @@ export const updateOrderStatus = async (query: updateOrderData) => {
         throw new Error("Order not found");
       }
 
-      newStatus = order.isPaid ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER : OrderStatus.AWAITING_PAYMENT;
+      newStatus = order.isPaid
+        ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER
+        : OrderStatus.AWAITING_PAYMENT;
       const deliveryNumber = await generateOrderNumber("DLV");
 
       const deliveryOrder = await prisma.deliveryOrder.create({
         data: {
           orderId: orderId,
           deliveryNumber: deliveryNumber,
-          deliveryStatus: order.isPaid ? DeliveryStatus.WAITING_FOR_DRIVER : DeliveryStatus.NOT_READY_TO_DELIVER,
+          deliveryStatus: order.isPaid
+            ? DeliveryStatus.WAITING_FOR_DRIVER
+            : DeliveryStatus.NOT_READY_TO_DELIVER,
           createdAt: new Date(),
           deliveryPrice: 20000,
           driverId: null,
@@ -97,7 +101,12 @@ export const updateOrderStatus = async (query: updateOrderData) => {
     });
     const station: string = worker.station as string;
 
-    const nextStation = station === "WASHING" ? "IRONING" : station === "IRONING" ? "PACKING" : null;
+    const nextStation =
+      station === "WASHING"
+        ? "IRONING"
+        : station === "IRONING"
+        ? "PACKING"
+        : null;
 
     if (nextStation) {
       const usersInNextStation = await prisma.employee.findMany({

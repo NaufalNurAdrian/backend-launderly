@@ -20,7 +20,6 @@ export class PaymentRouter {
 
 
     this.router.post('/',verifyToken, this.paymentController.createPaymentController);
-    this.router.post('/webhook/midtrans', this.paymentController.updatePaymentController);
     this.router.post('/midtrans-callback', this.paymentController.handlePaymentWebhook)
   }
 

@@ -9,7 +9,9 @@ interface GetUserNotificationsQuery {
   pageSize?: number;
 }
 
-export const getUserNotificationsService = async (query: GetUserNotificationsQuery) => {
+export const getUserNotificationsService = async (
+  query: GetUserNotificationsQuery
+) => {
   try {
     const { userId, sortBy, order, page = 1, pageSize = 10 } = query;
 
