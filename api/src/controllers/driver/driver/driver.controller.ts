@@ -40,4 +40,4 @@ export class RequestController {
       res.status(400).json({ message: err.message });
     }
   }
-}
+};

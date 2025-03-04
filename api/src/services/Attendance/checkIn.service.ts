@@ -31,11 +31,9 @@ export const checkInService = async (data: CheckInData) => {
     let todayEnd: Date;
 
     if (user.employee.workShift === "DAY") {
-      // Shift DAY: 06:00 - 15:00
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
     } else if (user.employee.workShift === "NIGHT") {
-      // Shift NIGHT: 13:00 - 24:00
       todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
     } else {
