@@ -72,6 +72,14 @@ export class PaymentController {
       res.status(200).json({ success: true, payments });
       return;
     } catch (error) {
+      console.error("Error in updatePaymentController:", error);
+      if (error instanceof Error && error.message.includes("Not Found")) {
+        res.status(404).json({
+          status: "fail",
+          message: error.message,
+        });
+        return 
+      }
       next(error);
     }
   }

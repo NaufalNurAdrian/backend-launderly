@@ -34,6 +34,7 @@ export class EmployeeController {
       res.status(500).send({ message: error.message });
     }
   }
+  
 
   async updateEmployee(req: Request, res: Response) {
     try {
