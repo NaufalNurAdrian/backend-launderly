@@ -21,39 +21,42 @@ const getPaymentChartService = (query) => __awaiter(void 0, void 0, void 0, func
         const { id, filterMonth, filterOutlet, filterYear } = query;
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id: id },
-            select: { employee: { select: { outlet: { select: { id: true } } } }, role: true }
+            select: {
+                employee: { select: { outlet: { select: { id: true } } } },
+                role: true,
+            },
         });
         if (!existingUser) {
-            throw new Error('User not Found!');
+            throw new Error("User not Found!");
         }
         const whereClause = {
-            paymentStatus: "SUCCESSED"
+            paymentStatus: "SUCCESSED",
         };
         if (existingUser.role != "SUPER_ADMIN") {
             const pickupOrders = yield prisma_1.default.pickupOrder.findMany({
                 where: { outletId: (_b = (_a = existingUser.employee) === null || _a === void 0 ? void 0 : _a.outlet) === null || _b === void 0 ? void 0 : _b.id },
-                select: { id: true }
+                select: { id: true },
             });
-            const pickupOrderIds = pickupOrders.map(pickup => pickup.id);
+            const pickupOrderIds = pickupOrders.map((pickup) => pickup.id);
             const orders = yield prisma_1.default.order.findMany({
                 where: { pickupOrderId: { in: pickupOrderIds } },
-                select: { id: true }
+                select: { id: true },
             });
-            const orderIds = orders.map(order => order.id);
+            const orderIds = orders.map((order) => order.id);
             whereClause.orderId = { in: orderIds };
         }
         else {
             if (filterOutlet != "all") {
                 const pickupOrders = yield prisma_1.default.pickupOrder.findMany({
                     where: { outletId: Number(filterOutlet) },
-                    select: { id: true }
+                    select: { id: true },
                 });
-                const pickupOrderIds = pickupOrders.map(pickup => pickup.id);
+                const pickupOrderIds = pickupOrders.map((pickup) => pickup.id);
                 const orders = yield prisma_1.default.order.findMany({
                     where: { pickupOrderId: { in: pickupOrderIds } },
-                    select: { id: true }
+                    select: { id: true },
                 });
-                const orderIds = orders.map(order => order.id);
+                const orderIds = orders.map((order) => order.id);
                 whereClause.orderId = { in: orderIds };
             }
         }
@@ -79,7 +82,7 @@ const getPaymentChartService = (query) => __awaiter(void 0, void 0, void 0, func
                     } });
                 const dailyPayments = yield prisma_1.default.payment.findMany({
                     where: dailyWhereClause,
-                    include: { order: true }
+                    include: { order: true },
                 });
                 let totalIncome = 0;
                 let totalTransaction = 0;
@@ -110,7 +113,7 @@ const getPaymentChartService = (query) => __awaiter(void 0, void 0, void 0, func
                     } });
                 const monthlyPayments = yield prisma_1.default.payment.findMany({
                     where: monthlyWhereClause,
-                    include: { order: true }
+                    include: { order: true },
                 });
                 let totalIncome = 0;
                 let totalTransaction = 0;
@@ -135,7 +138,7 @@ const getPaymentChartService = (query) => __awaiter(void 0, void 0, void 0, func
         };
         const payments = yield prisma_1.default.payment.findMany({
             where: whereClause,
-            include: { order: true }
+            include: { order: true },
         });
         let totalIncome = 0;
         let totalTransaction = 0;
@@ -157,7 +160,7 @@ const getPaymentChartService = (query) => __awaiter(void 0, void 0, void 0, func
                 incomeDaily: incomeDaily,
                 transactionDaily: transactionDaily,
                 weightDaily: weightDaily,
-            }
+            },
         };
     }
     catch (error) {

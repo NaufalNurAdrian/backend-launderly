@@ -48,18 +48,27 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     }
 
     const station = workerStation.station;
-    const orderStatus: OrderStatus = station === "WASHING" ? OrderStatus.READY_FOR_WASHING : station === "IRONING" ? OrderStatus.WASHING_COMPLETED : OrderStatus.IRONING_COMPLETED;
+    const orderStatus: OrderStatus =
+      station === "WASHING"
+        ? OrderStatus.READY_FOR_WASHING
+        : station === "IRONING"
+        ? OrderStatus.WASHING_COMPLETED
+        : OrderStatus.IRONING_COMPLETED;
 
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
-
           OR: [
             {
               orderStatus: orderStatus,
             },
             {
-              orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
+              orderStatus:
+                station === "WASHING"
+                  ? OrderStatus.BEING_WASHED
+                  : station === "IRONING"
+                  ? OrderStatus.BEING_IRONED
+                  : OrderStatus.BEING_PACKED,
               orderWorker: {
                 some: {
                   workerId: workerStation.id,
@@ -68,37 +77,37 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
             },
           ],
         },
-          {
-            OR: [
-              {
-                orderWorker: {
-                  some: {
-                    bypassAccepted: true,
-                    bypassRequest: false, 
-                    station: station, 
-                  },
+        {
+          OR: [
+            {
+              orderWorker: {
+                some: {
+                  bypassAccepted: true,
+                  bypassRequest: false,
+                  station: station,
                 },
               },
-              {
-                orderWorker: {
-                  some: {
-                    bypassRejected: true,
-                    station: station,
-                  },
+            },
+            {
+              orderWorker: {
+                some: {
+                  bypassRejected: true,
+                  station: station,
                 },
               },
-              {
-                orderWorker: {
-                  none: {
-                    bypassRequest: true,
-                    bypassAccepted: false, 
-                    station: station,
-                  },
+            },
+            {
+              orderWorker: {
+                none: {
+                  bypassRequest: true,
+                  bypassAccepted: false,
+                  station: station,
                 },
               },
-            ],
-          },
-        ],
+            },
+          ],
+        },
+      ],
     };
 
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};

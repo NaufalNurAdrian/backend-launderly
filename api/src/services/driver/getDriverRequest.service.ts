@@ -8,7 +8,9 @@ interface UpdateRequestStatusData {
   type: "pickup" | "delivery";
 }
 
-const mapToOrderStatus = (status: PickupStatus | DeliveryStatus): OrderStatus => {
+const mapToOrderStatus = (
+  status: PickupStatus | DeliveryStatus
+): OrderStatus => {
   switch (status) {
     case PickupStatus.WAITING_FOR_DRIVER:
       return OrderStatus.WAITING_FOR_PICKUP_DRIVER;
@@ -31,7 +33,9 @@ const mapToOrderStatus = (status: PickupStatus | DeliveryStatus): OrderStatus =>
   }
 };
 
-export const updateRequestStatusService = async (data: UpdateRequestStatusData) => {
+export const updateRequestStatusService = async (
+  data: UpdateRequestStatusData
+) => {
   try {
     const { driverId, requestId, type } = data;
 

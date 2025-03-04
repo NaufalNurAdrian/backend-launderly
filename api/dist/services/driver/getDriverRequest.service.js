@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateRequestStatusService = void 0;
 const createNotification_service_1 = require("../notifications/createNotification.service");
 const prisma_1 = __importDefault(require("../../prisma"));
-const client_1 = require("@prisma/client");
+const client_1 = require("prisma/generated/client");
 const mapToOrderStatus = (status) => {
     switch (status) {
         case client_1.PickupStatus.WAITING_FOR_DRIVER:

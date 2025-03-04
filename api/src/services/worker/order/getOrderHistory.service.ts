@@ -9,7 +9,9 @@ interface GetWorkerOrdersData {
   pageSize?: number;
 }
 
-export const getWorkerOrdersHistoryService = async (query: GetWorkerOrdersData) => {
+export const getWorkerOrdersHistoryService = async (
+  query: GetWorkerOrdersData
+) => {
   try {
     const { workerId, order, page = 1, pageSize = 4 } = query;
 
@@ -36,7 +38,11 @@ export const getWorkerOrdersHistoryService = async (query: GetWorkerOrdersData) 
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
-          OR: [{ orderStatus: OrderStatus.WASHING_COMPLETED }, { orderStatus: OrderStatus.IRONING_COMPLETED }, { orderStatus: OrderStatus.AWAITING_PAYMENT }],
+          OR: [
+            { orderStatus: OrderStatus.WASHING_COMPLETED },
+            { orderStatus: OrderStatus.IRONING_COMPLETED },
+            { orderStatus: OrderStatus.AWAITING_PAYMENT },
+          ],
         },
         {
           orderWorker: {

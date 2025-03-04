@@ -22,7 +22,10 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
         // Cek User
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id },
-            select: { employee: { select: { outlet: { select: { id: true } } } }, role: true },
+            select: {
+                employee: { select: { outlet: { select: { id: true } } } },
+                role: true,
+            },
         });
         if (!existingUser)
             throw new Error("User not found!");
@@ -44,9 +47,16 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
             where: whereClause.order,
         });
         let totalOrders = orders.length;
-        let receivedAtOutlet = orders.filter(order => order.orderStatus === "ARRIVED_AT_OUTLET").length;
-        let onProgress = orders.filter(order => ["READY_FOR_WASHING", "BEING_WASHED", "WASHING_COMPLETED", "BEING_IRONED", "IRONING_COMPLETED", "BEING_PACKED"].includes(order.orderStatus)).length;
-        let completed = orders.filter(order => order.orderStatus === "COMPLETED").length;
+        let receivedAtOutlet = orders.filter((order) => order.orderStatus === "ARRIVED_AT_OUTLET").length;
+        let onProgress = orders.filter((order) => [
+            "READY_FOR_WASHING",
+            "BEING_WASHED",
+            "WASHING_COMPLETED",
+            "BEING_IRONED",
+            "IRONING_COMPLETED",
+            "BEING_PACKED",
+        ].includes(order.orderStatus)).length;
+        let completed = orders.filter((order) => order.orderStatus === "COMPLETED").length;
         const now = new Date();
         const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
         const year = filterYear ? Number(filterYear) : now.getFullYear();
