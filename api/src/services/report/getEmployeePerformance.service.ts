@@ -9,7 +9,9 @@ interface GetEmployeePerformanceQuery {
   id: number;
 }
 
-export const getEmployeePerformanceService = async (query: GetEmployeePerformanceQuery) => {
+export const getEmployeePerformanceService = async (
+  query: GetEmployeePerformanceQuery
+) => {
   try {
     const { id, filterOutlet = "all", filterMonth, filterYear } = query;
 
@@ -97,10 +99,12 @@ export const getEmployeePerformanceService = async (query: GetEmployeePerformanc
     });
 
     // Konversi ke array
-    const performanceReport = Array.from(performanceMap.values()).map((item) => ({
-      ...item.data,
-      taskCompleted: item.count,
-    }));
+    const performanceReport = Array.from(performanceMap.values()).map(
+      (item) => ({
+        ...item.data,
+        taskCompleted: item.count,
+      })
+    );
 
     return {
       message: "Successfully fetched employee performance",
