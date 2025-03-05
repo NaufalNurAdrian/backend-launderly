@@ -21,7 +21,7 @@ const createItemService = (body) => __awaiter(void 0, void 0, void 0, function* 
             where: { itemName, isDelete: false },
         });
         if (existingItem) {
-            throw new Error('Item already exist');
+            throw new Error("Item already exist");
         }
         const deletedItem = yield prisma_1.default.laundryItem.findFirst({
             where: { itemName, isDelete: true },

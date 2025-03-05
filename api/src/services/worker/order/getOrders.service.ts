@@ -68,37 +68,39 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           ],
         },
         {
-          OR: [
-            {
-              orderWorker: {
-                none: {
-                  bypassAccepted: true,
-                  bypassRequest: false,
-                  station: station,
-                },
-              },
-            },
-            {
+            NOT: {
               orderWorker: {
                 some: {
-                  bypassRejected: true,
-                  station: station,
-                },
-              },
-            },
-            {
-              orderWorker: {
-                none: {
                   bypassRequest: true,
                   bypassAccepted: false,
+                  bypassRejected: false,
                   station: station,
                 },
               },
             },
-          ],
-        },
-      ],
-    };
+          },
+          {
+            OR: [
+              {
+                orderWorker: {
+                  none: {
+                    bypassAccepted: true,
+                    station: station,
+                  },
+                },
+              },
+              {
+                orderWorker: {
+                  some: {
+                    bypassRejected: true,
+                    station: station,
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      };
 
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {

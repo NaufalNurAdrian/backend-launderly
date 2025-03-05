@@ -9,7 +9,9 @@ interface GetWorkerOrdersData {
   pageSize?: number;
 }
 
-export const getWorkerOrdersHistoryService = async (query: GetWorkerOrdersData) => {
+export const getWorkerOrdersHistoryService = async (
+  query: GetWorkerOrdersData
+) => {
   try {
     const { workerId, order, page = 1, pageSize = 4 } = query;
 

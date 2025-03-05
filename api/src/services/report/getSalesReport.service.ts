@@ -1,6 +1,12 @@
 import prisma from "../../prisma";
 import { Prisma } from "@prisma/client";
-import { endOfMonth, startOfMonth, getDaysInMonth, startOfYear, endOfYear } from "date-fns";
+import {
+  endOfMonth,
+  startOfMonth,
+  getDaysInMonth,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 
 interface GetSalesReportQuery {
   filterOutlet: number | string;
@@ -16,7 +22,10 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
     // Cek User
     const existingUser = await prisma.user.findFirst({
       where: { id },
-      select: { employee: { select: { outlet: { select: { id: true } } } }, role: true },
+      select: {
+        employee: { select: { outlet: { select: { id: true } } } },
+        role: true,
+      },
     });
 
     if (!existingUser) throw new Error("User not found!");
@@ -41,11 +50,22 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
     });
 
     let totalOrders = orders.length;
-    let receivedAtOutlet = orders.filter(order => order.orderStatus === "ARRIVED_AT_OUTLET").length;
-    let onProgress = orders.filter(order =>
-      ["READY_FOR_WASHING", "BEING_WASHED", "WASHING_COMPLETED", "BEING_IRONED", "IRONING_COMPLETED", "BEING_PACKED"].includes(order.orderStatus)
+    let receivedAtOutlet = orders.filter(
+      (order) => order.orderStatus === "ARRIVED_AT_OUTLET"
     ).length;
-    let completed = orders.filter(order => order.orderStatus === "COMPLETED").length;
+    let onProgress = orders.filter((order) =>
+      [
+        "READY_FOR_WASHING",
+        "BEING_WASHED",
+        "WASHING_COMPLETED",
+        "BEING_IRONED",
+        "IRONING_COMPLETED",
+        "BEING_PACKED",
+      ].includes(order.orderStatus)
+    ).length;
+    let completed = orders.filter(
+      (order) => order.orderStatus === "COMPLETED"
+    ).length;
 
     const now = new Date();
     const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
@@ -93,7 +113,10 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
 
     // Inisialisasi array untuk data tahunan (5 tahun terakhir)
     const currentYear = new Date().getFullYear();
-    const pastYears = Array.from({ length: 5 }, (_, i) => currentYear - i).reverse();
+    const pastYears = Array.from(
+      { length: 5 },
+      (_, i) => currentYear - i
+    ).reverse();
     const incomeYearly = new Array(5).fill(0);
     const transactionYearly = new Array(5).fill(0);
     const weightYearly = new Array(5).fill(0);
