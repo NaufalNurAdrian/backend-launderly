@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { PaymentStatus, OrderStatus, DeliveryStatus } from "@prisma/client";
+import { PaymentStatus, OrderStatus } from "@prisma/client";
 
 interface UpdatePaymentBody {
   order_id: string;
@@ -52,9 +52,8 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
 
     const updateOrderStatus =
       paymentStatus === PaymentStatus.SUCCESSED &&
-      existingInvoice.order.orderStatus !== OrderStatus.READY_FOR_DELIVERY; 
+      existingInvoice.order.orderStatus !== OrderStatus.COMPLETED; 
 
-    // Jalankan transaksi Prisma dengan array (lebih optimal)
     const transactionQueries = [
       prisma.payment.update({
         where: { id: existingInvoice.id },
@@ -75,11 +74,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
               data: {
                 orderStatus: OrderStatus.WAITING_FOR_DELIVERY_DRIVER,
                 isPaid: true,
-              },
-            }), prisma.deliveryOrder.update({
-              where: { id: existingInvoice.orderId },
-              data: {
-                deliveryStatus: DeliveryStatus.WAITING_FOR_DRIVER,
               },
             }),
           ]
