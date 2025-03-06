@@ -71,7 +71,6 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
           })
         : [] 
     );
-    
 
     const updatedOutlet = await prisma.outlet.update({
       where: { id: parseInt(id) },

@@ -18,7 +18,10 @@ interface UserUpdateInput {
   role?: Role;
 }
 
-export const updateEmployeeService = async (data: UpdateEmployeeInput, id: string) => {
+export const updateEmployeeService = async (
+  data: UpdateEmployeeInput,
+  id: string
+) => {
   try {
     const employeeId = parseInt(id);
     if (isNaN(employeeId)) throw new Error("Invalid employee ID");
@@ -74,7 +77,7 @@ export const updateEmployeeService = async (data: UpdateEmployeeInput, id: strin
 
     if (hasUserUpdates) {
       updateData.user = {
-        update: userUpdate
+        update: userUpdate,
       };
     }
 
