@@ -1,4 +1,3 @@
-
 import { Prisma } from "@prisma/client";
 import haversineDistance from "../../helpers/haversine";
 import prisma from "../../prisma";
@@ -82,20 +81,13 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
       const deliveryLat = request.address.latitude || 0;
       const deliveryLon = request.address.longitude || 0;
 
-      const distance = haversineDistance(
-        outletLat,
-        outletLon,
-        deliveryLat,
-        deliveryLon
-      );
-      return { ...request, distance, deliveryPrice: 2500 };
+      const distance = haversineDistance(outletLat, outletLon, deliveryLat, deliveryLon);
+      return { ...request, distance, deliveryPrice: 5000 };
     });
 
     if (sortBy === "distance") {
       deliveryRequestsWithDistance.sort((a, b) => {
-        return order === "asc"
-          ? a.distance - b.distance
-          : b.distance - a.distance;
+        return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
       });
     } else if (sortBy === "createdAt") {
       deliveryRequestsWithDistance.sort((a, b) => {
@@ -113,10 +105,7 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
 
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRequests = deliveryRequestsWithDistance.slice(
-      startIndex,
-      endIndex
-    );
+    const paginatedRequests = deliveryRequestsWithDistance.slice(startIndex, endIndex);
 
     return {
       data: paginatedRequests,

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrderStatus = void 0;
 const numberGenerator_1 = require("../../../helpers/numberGenerator");
 const prisma_1 = __importDefault(require("../../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require(".prisma/client");
 const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const { workerId, orderId } = query;
     try {

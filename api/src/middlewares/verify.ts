@@ -1,4 +1,4 @@
-import { UserPayload } from "@/custom";
+import { Role, UserPayload } from "@/custom";
 import prisma from "../prisma";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
@@ -10,6 +10,7 @@ export const verifyToken = async (
 ): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
+    console.log("Received Token:", token);
 
     if (!token) {
       res.status(401).send({ message: "Unauthorized! Token not found." });

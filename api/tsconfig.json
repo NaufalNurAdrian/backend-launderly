@@ -14,8 +14,8 @@
     }
   },
   "include": [
-    "src/**/*",
-    "**/*.ts"    
+    "src/**/*", // pastikan folder src/ termasuk
+    "**/*.ts"    // dan mencakup file .ts di seluruh proyek
   ],
   "exclude": ["node_modules"]
 }

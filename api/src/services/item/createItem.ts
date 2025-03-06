@@ -1,5 +1,5 @@
-import prisma from "../../prisma";
-import { LaundryItem } from "@prisma/client";
+import prisma from '../../prisma';
+import { LaundryItem } from '@prisma/client';
 
 export const createItemService = async (body: LaundryItem) => {
   try {
@@ -9,7 +9,7 @@ export const createItemService = async (body: LaundryItem) => {
     });
 
     if (existingItem) {
-      throw new Error("Item already exist");
+      throw new Error('Item already exist');
     }
 
     const deletedItem = await prisma.laundryItem.findFirst({
@@ -26,6 +26,7 @@ export const createItemService = async (body: LaundryItem) => {
         data: { ...body },
       });
     }
+
   } catch (error) {
     throw error;
   }

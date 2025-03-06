@@ -14,22 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateOrderService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require("@prisma/client");
 const UpdateOrderService = (body) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { weight, orderNumber, orderItem } = body;
         const existingOrder = yield prisma_1.default.order.findFirst({
             where: { orderNumber: orderNumber },
-            select: {
-                id: true,
-                pickupOrder: { select: { outletId: true, pickupNumber: true } },
-            },
+            select: { id: true, pickupOrder: { select: { outletId: true, pickupNumber: true } } }
         });
         if (!existingOrder) {
-            throw new Error("Order Not Found!");
+            throw new Error('Order Not Found!');
         }
         if (!weight) {
-            throw new Error("Weight is required");
+            throw new Error('Weight is required');
         }
         const updatedOrder = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b;
@@ -40,7 +37,7 @@ const UpdateOrderService = (body) => __awaiter(void 0, void 0, void 0, function*
                 data: {
                     weight: Number(weight),
                     laundryPrice: Number(weight * 6000),
-                    orderStatus: client_1.OrderStatus.READY_FOR_WASHING,
+                    orderStatus: client_1.OrderStatus.READY_FOR_WASHING
                 },
             });
             const addDataOrderItems = yield Promise.all(orderItem.map((item) => __awaiter(void 0, void 0, void 0, function* () {
@@ -56,7 +53,7 @@ const UpdateOrderService = (body) => __awaiter(void 0, void 0, void 0, function*
                 where: { pickupNumber: (_a = existingOrder.pickupOrder) === null || _a === void 0 ? void 0 : _a.pickupNumber },
                 data: {
                     isOrderCreated: true,
-                },
+                }
             });
             const now = new Date();
             const currentHour = now.getUTCHours() + 7;
@@ -67,23 +64,23 @@ const UpdateOrderService = (body) => __awaiter(void 0, void 0, void 0, function*
                 data: {
                     title: "Incoming Laundry Task",
                     description: "New laundry arrived at washing station",
-                },
+                }
             });
             const getUserId = yield tx.employee.findMany({
                 where: {
                     outletId: (_b = existingOrder.pickupOrder) === null || _b === void 0 ? void 0 : _b.outletId,
                     workShift: setWorkShift,
-                    station: "WASHING",
+                    station: "WASHING"
                 },
-                select: { userId: true },
+                select: { userId: true }
             });
-            const userIds = getUserId.map((user) => user.userId);
+            const userIds = getUserId.map(user => user.userId);
             const createUserNotification = yield Promise.all(userIds.map((userId) => __awaiter(void 0, void 0, void 0, function* () {
                 yield tx.userNotification.create({
                     data: {
                         notificationId: createNotification.id,
-                        userId: userId,
-                    },
+                        userId: userId
+                    }
                 });
             })));
             return {

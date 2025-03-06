@@ -14,24 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updatePickupOrderService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require("@prisma/client");
 const updatePickupOrderService = (body) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const { driverId, shipmentOrderId, status } = body;
         const existingPickupOrder = yield prisma_1.default.pickupOrder.findFirst({
             where: { id: shipmentOrderId },
-            select: { pickupStatus: true },
+            select: { pickupStatus: true }
         });
         if (!existingPickupOrder) {
-            throw new Error("Pickup Order not Found!");
+            throw new Error('Pickup Order not Found!');
         }
         const existingEmployee = yield prisma_1.default.user.findFirst({
             where: { id: driverId },
-            select: { employee: { select: { id: true } } },
+            select: { employee: { select: { id: true } } }
         });
         if (!existingEmployee) {
-            throw new Error("Employee not Found!");
+            throw new Error('Employee not Found!');
         }
         let orderStatus;
         if (status == String(client_1.PickupStatus.ON_THE_WAY_TO_CUSTOMER)) {
@@ -45,18 +45,18 @@ const updatePickupOrderService = (body) => __awaiter(void 0, void 0, void 0, fun
         }
         const updateOrder = yield prisma_1.default.order.update({
             where: { pickupOrderId: shipmentOrderId },
-            data: { orderStatus: orderStatus },
+            data: { orderStatus: orderStatus }
         });
         const updatePickupOrder = yield prisma_1.default.pickupOrder.update({
             where: { id: shipmentOrderId },
             data: {
                 pickupStatus: status,
-                driverId: (_a = existingEmployee.employee) === null || _a === void 0 ? void 0 : _a.id,
+                driverId: (_a = existingEmployee.employee) === null || _a === void 0 ? void 0 : _a.id
             },
         });
         return {
             pickupOrder: updatePickupOrder,
-            order: updateOrder,
+            order: updateOrder
         };
     }
     catch (error) {

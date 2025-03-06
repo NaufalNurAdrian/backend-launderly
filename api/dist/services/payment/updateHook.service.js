@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updatePaymentStatus = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require("@prisma/client");
 const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { order_id, transaction_status, payment_type } = body;

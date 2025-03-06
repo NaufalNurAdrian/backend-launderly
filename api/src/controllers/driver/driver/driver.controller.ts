@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { updateRequestStatusService } from "../../../services/driver/updateDriverRequest.service";
+import { updateRequestStatusService } from "../../../services/driver/getDriverRequest.service";
 import { getDriverHistoryService } from "../../../services/driver/getDriverHistory.service";
 export class RequestController {
   async updateRequestStatus(req: Request, res: Response) {
@@ -40,4 +40,4 @@ export class RequestController {
       res.status(400).json({ message: err.message });
     }
   }
-};
+}

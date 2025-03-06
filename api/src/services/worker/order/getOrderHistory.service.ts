@@ -9,9 +9,7 @@ interface GetWorkerOrdersData {
   pageSize?: number;
 }
 
-export const getWorkerOrdersHistoryService = async (
-  query: GetWorkerOrdersData
-) => {
+export const getWorkerOrdersHistoryService = async (query: GetWorkerOrdersData) => {
   try {
     const { workerId, order, page = 1, pageSize = 4 } = query;
 
@@ -20,7 +18,7 @@ export const getWorkerOrdersHistoryService = async (
     });
 
     if (!worker) {
-      throw new Error("only worker can access this data");
+      throw new Error("Hanya worker yang dapat mengakses data ini");
     }
 
     const workerStation = await prisma.employee.findFirst({
@@ -30,18 +28,24 @@ export const getWorkerOrdersHistoryService = async (
     });
 
     if (!workerStation) {
-      throw new Error("worker station undefined");
+      throw new Error("Worker tidak memiliki station yang ditetapkan");
     }
 
     const station = workerStation.station;
- 
+
     const whereClause: Prisma.OrderWhereInput = {
-      orderWorker: {
-        some: {
-          workerId: workerStation.id,
-          isComplete: true
+      AND: [
+        {
+          OR: [{ orderStatus: OrderStatus.WASHING_COMPLETED }, { orderStatus: OrderStatus.IRONING_COMPLETED }, { orderStatus: OrderStatus.AWAITING_PAYMENT }],
         },
-      },
+        {
+          orderWorker: {
+            some: {
+              workerId: workerStation.id,
+            },
+          },
+        },
+      ],
     };
 
     const orders = await prisma.order.findMany({
