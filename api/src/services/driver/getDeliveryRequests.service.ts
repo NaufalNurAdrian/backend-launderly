@@ -88,7 +88,7 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
         deliveryLat,
         deliveryLon
       );
-      return { ...request, distance, deliveryPrice: 2500 };
+      return { ...request, distance, deliveryPrice:2500 };
     });
 
     if (sortBy === "distance") {
