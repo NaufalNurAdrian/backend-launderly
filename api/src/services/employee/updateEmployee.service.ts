@@ -19,7 +19,14 @@ interface UserUpdateInput {
   role?: Role;
 }
 
+<<<<<<< HEAD
 export const updateEmployeeService = async (data: UpdateEmployeeInput, id: string) => {
+=======
+export const updateEmployeeService = async (
+  data: UpdateEmployeeInput,
+  id: string
+) => {
+>>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
   try {
     const employeeId = parseInt(id);
     if (isNaN(employeeId)) throw new Error("Invalid employee ID");
@@ -77,7 +84,11 @@ export const updateEmployeeService = async (data: UpdateEmployeeInput, id: strin
     // Siapkan data update untuk user jika ada perubahan
     if (hasUserUpdates) {
       updateData.user = {
+<<<<<<< HEAD
         update: userUpdate
+=======
+        update: userUpdate,
+>>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
       };
     }
 

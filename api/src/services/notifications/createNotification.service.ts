@@ -1,7 +1,10 @@
 import { EmployeeStation, Prisma } from "@prisma/client";
 import prisma from "../../prisma";
 
-export const createNotificationForNextStation = async (orderId: number, nextStation: string) => {
+export const createNotificationForNextStation = async (
+  orderId: number,
+  nextStation: string
+) => {
   const usersInNextStation = await prisma.employee.findMany({
     where: {
       station: {

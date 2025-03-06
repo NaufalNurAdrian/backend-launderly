@@ -12,7 +12,13 @@ interface getPickupData {
 
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-    const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
+    const {
+      driverId,
+      sortBy = "updatedAt",
+      order = "desc",
+      page = 1,
+      pageSize = 3,
+    } = query;
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
@@ -73,13 +79,20 @@ export const getPickupRequestsService = async (query: getPickupData) => {
       const pickupLat = request.address.latitude || 0;
       const pickupLon = request.address.longitude || 0;
 
-      const distance = haversineDistance(outletLat, outletLon, pickupLat, pickupLon);
+      const distance = haversineDistance(
+        outletLat,
+        outletLon,
+        pickupLat,
+        pickupLon
+      );
       return { ...request, distance };
     });
 
     if (sortBy === "distance") {
       pickupRequestsWithDistance.sort((a, b) => {
-        return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+        return order === "asc"
+          ? a.distance - b.distance
+          : b.distance - a.distance;
       });
     } else if (sortBy === "createdAt") {
       pickupRequestsWithDistance.sort((a, b) => {
@@ -97,7 +110,10 @@ export const getPickupRequestsService = async (query: getPickupData) => {
 
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRequests = pickupRequestsWithDistance.slice(startIndex, endIndex);
+    const paginatedRequests = pickupRequestsWithDistance.slice(
+      startIndex,
+      endIndex
+    );
 
     return {
       data: paginatedRequests,

@@ -34,7 +34,10 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
   ? address.map((addr) => addr.id).filter(Boolean)
   : [];
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
     // Set alamat lama yang tidak ada di request menjadi isDelete: true
     await prisma.address.updateMany({
       where: {
@@ -76,7 +79,10 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
           })
         : [] // Jika address bukan array, kosongkan prosesnya
     );
+<<<<<<< HEAD
     
+=======
+>>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
 
     // Update Outlet
     const updatedOutlet = await prisma.outlet.update({

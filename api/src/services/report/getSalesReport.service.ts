@@ -1,6 +1,12 @@
 import prisma from "../../prisma";
 import { Prisma } from "@prisma/client";
-import { endOfMonth, startOfMonth, getDaysInMonth, startOfYear, endOfYear } from "date-fns";
+import {
+  endOfMonth,
+  startOfMonth,
+  getDaysInMonth,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 
 interface GetSalesReportQuery {
   filterOutlet: number | string;
@@ -15,7 +21,10 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
 
     const existingUser = await prisma.user.findFirst({
       where: { id },
-      select: { employee: { select: { outlet: { select: { id: true } } } }, role: true },
+      select: {
+        employee: { select: { outlet: { select: { id: true } } } },
+        role: true,
+      },
     });
 
     if (!existingUser) throw new Error("User not found!");
@@ -84,7 +93,10 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
     const weightMonthly = new Array(12).fill(0);
 
     const currentYear = new Date().getFullYear();
-    const pastYears = Array.from({ length: 5 }, (_, i) => currentYear - i).reverse();
+    const pastYears = Array.from(
+      { length: 5 },
+      (_, i) => currentYear - i
+    ).reverse();
     const incomeYearly = new Array(5).fill(0);
     const transactionYearly = new Array(5).fill(0);
     const weightYearly = new Array(5).fill(0);

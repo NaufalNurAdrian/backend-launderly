@@ -9,7 +9,9 @@ interface GetEmployeePerformanceQuery {
   id: number;
 }
 
-export const getEmployeePerformanceService = async (query: GetEmployeePerformanceQuery) => {
+export const getEmployeePerformanceService = async (
+  query: GetEmployeePerformanceQuery
+) => {
   try {
     const { id, filterOutlet = "all", filterMonth, filterYear } = query;
 
