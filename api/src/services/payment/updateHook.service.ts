@@ -67,7 +67,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
     const existingDeliveryOrder = await prisma.deliveryOrder.findUnique({
       where: { orderId: existingInvoice.orderId }, // Fix: gunakan orderId
     });
-
     if (!existingDeliveryOrder) {
       console.warn(
         `No delivery order found for orderId: ${existingInvoice.orderId}, skipping update`
