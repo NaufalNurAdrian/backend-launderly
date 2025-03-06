@@ -67,21 +67,15 @@ export const updateOrderStatus = async (query: updateOrderData) => {
       newStatus = order.isPaid
         ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER
         : OrderStatus.AWAITING_PAYMENT;
-      const deliveryNumber = await generateOrderNumber("DLV");
 
-      const deliveryOrder = await prisma.deliveryOrder.create({
+      const deliveryOrder = await prisma.deliveryOrder.update({
+        where: {orderId: orderId},
         data: {
           orderId: orderId,
-          deliveryNumber: deliveryNumber,
           deliveryStatus: order.isPaid
             ? DeliveryStatus.WAITING_FOR_DRIVER
             : DeliveryStatus.NOT_READY_TO_DELIVER,
-          createdAt: new Date(),
-          deliveryPrice: 20000,
           driverId: null,
-          userId: order.pickupOrder.userId,
-          addressId: order.pickupOrder.addressId,
-          distance: order.pickupOrder.distance,
         },
       });
     } else {
