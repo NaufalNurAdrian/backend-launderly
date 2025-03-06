@@ -53,7 +53,6 @@ export const checkInService = async (data: CheckInData) => {
         },
       },
     });
-    
     if (existingAttendance) {
       throw new Error("You are already checked In today.");
     }
