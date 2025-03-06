@@ -7,9 +7,8 @@ interface UpdateItemInput {
 
 export const updateItemService = async (body: UpdateItemInput) => {
   try {
-    const { itemName } = body;
     const existingItem = await prisma.laundryItem.findFirst({
-      where: { itemName },
+      where: { itemName: body.itemName },
     });
 
     if (existingItem) {
@@ -17,8 +16,8 @@ export const updateItemService = async (body: UpdateItemInput) => {
     }
 
     const updatedItem = await prisma.laundryItem.update({
-      where: { id: body.id },
-      data: { itemName },
+      where: { id: Number(body.id) },
+      data: { itemName: body.itemName },
     });
     return updatedItem;
   } catch (error: any) {
