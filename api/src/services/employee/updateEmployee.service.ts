@@ -11,7 +11,6 @@ export interface UpdateEmployeeInput {
   role?: Role;
 }
 
-// Interface untuk user update
 interface UserUpdateInput {
   fullName?: string;
   email?: string;
@@ -19,14 +18,7 @@ interface UserUpdateInput {
   role?: Role;
 }
 
-<<<<<<< HEAD
 export const updateEmployeeService = async (data: UpdateEmployeeInput, id: string) => {
-=======
-export const updateEmployeeService = async (
-  data: UpdateEmployeeInput,
-  id: string
-) => {
->>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
   try {
     const employeeId = parseInt(id);
     if (isNaN(employeeId)) throw new Error("Invalid employee ID");
@@ -58,7 +50,6 @@ export const updateEmployeeService = async (
       updateData.outletId = data.outletId;
     }
 
-    // Persiapkan objek untuk user update dengan tipe yang tepat
     const userUpdate: UserUpdateInput = {};
 
     if (data.fullName && data.fullName !== employee.user.fullName) {
@@ -81,18 +72,12 @@ export const updateEmployeeService = async (
       hasUserUpdates = true;
     }
 
-    // Siapkan data update untuk user jika ada perubahan
     if (hasUserUpdates) {
       updateData.user = {
-<<<<<<< HEAD
         update: userUpdate
-=======
-        update: userUpdate,
->>>>>>> 61033c123996b9f5e12fc8ca849b5eafb694105f
       };
     }
 
-    // Periksa apakah ada perubahan pada level atas ATAU pada level user
     if (Object.keys(updateData).length === 0) {
       throw new Error("No changes detected");
     }
