@@ -17,13 +17,21 @@ const prisma_1 = __importDefault(require("../../prisma"));
 const deleteItemService = (id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const existingItem = yield prisma_1.default.laundryItem.findFirst({
+<<<<<<< HEAD
             where: { id },
+=======
+            where: { id: Number(id) },
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         });
         if (!existingItem) {
             throw new Error("Item not exist!");
         }
         const deleteItem = yield prisma_1.default.laundryItem.update({
+<<<<<<< HEAD
             where: { id },
+=======
+            where: { id: Number(id) },
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
             data: { isDelete: true },
         });
         return deleteItem;

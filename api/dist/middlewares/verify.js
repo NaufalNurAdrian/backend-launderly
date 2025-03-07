@@ -19,7 +19,10 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     var _a;
     try {
         const token = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
+<<<<<<< HEAD
         console.log("Received Token:", token);
+=======
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         if (!token) {
             res.status(401).send({ message: "Unauthorized! Token not found." });
             return;

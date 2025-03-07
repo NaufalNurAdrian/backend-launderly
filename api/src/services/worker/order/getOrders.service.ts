@@ -1,4 +1,4 @@
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../../../prisma/generated/client";
 import prisma from "../../../prisma";
 
 interface GetWorkerOrdersData {
@@ -68,28 +68,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
           ],
         },
         {
-<<<<<<< HEAD
-          orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
-          orderWorker: {
-            some: {
-              workerId: workerStation.id,
-            },
-          },
-        },
-      ],
-      AND: [
-        {
-          orderWorker: {
-            none: {
-              bypassRequest: true,
-              bypassRejected: false,
-              bypassAccepted: true, 
-            },
-          },
-        },
-      ],
-    };
-=======
             NOT: {
               orderWorker: {
                 some: {
@@ -101,30 +79,9 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
               },
             },
           },
-          {
-            OR: [
-              {
-                orderWorker: {
-                  none: {
-                    bypassAccepted: true,
-                    station: station,
-                  },
-                },
-              },
-              {
-                orderWorker: {
-                  some: {
-                    bypassRejected: true,
-                    station: station,
-                  },
-                },
-              },
-            ],
-          },
         ],
       };
 
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {
       orderByClause.weight = order;

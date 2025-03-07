@@ -1,11 +1,6 @@
 import { generateOrderNumber } from "../../../helpers/numberGenerator";
 import prisma from "../../../prisma";
-<<<<<<< HEAD
-import { OrderStatus, DeliveryStatus } from ".prisma/client";
-=======
-import { OrderStatus, DeliveryStatus } from "@prisma/client";
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
-
+import { OrderStatus, DeliveryStatus } from "../../../../prisma/generated/client";
 interface updateOrderData {
   workerId: number;
   orderId: number;
@@ -36,20 +31,10 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
     if (orderWorker.bypassRequest) {
       if (orderWorker.bypassAccepted === null) {
-<<<<<<< HEAD
-        console.log("Bypass request pending");
-        throw new Error("Bypass request is still pending");
-      } else if (orderWorker.bypassAccepted === true) {
-        console.log("Bypass request accepted");
-        throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
-      } else if (orderWorker.bypassAccepted === false) {
-        console.log("Bypass request was rejected. Continuing process...");
-=======
         throw new Error("Bypass request is still pending");
       } else if (orderWorker.bypassAccepted === true) {
         throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
       } else if (orderWorker.bypassAccepted === false) {
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
       }
     }
 
@@ -78,19 +63,12 @@ export const updateOrderStatus = async (query: updateOrderData) => {
         throw new Error("Order not found");
       }
 
-<<<<<<< HEAD
-      newStatus = order.isPaid ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER : OrderStatus.AWAITING_PAYMENT;
-      const deliveryNumber = await generateOrderNumber("DLV");
-
-      const deliveryOrder = await prisma.deliveryOrder.create({
-=======
       newStatus = order.isPaid
         ? OrderStatus.WAITING_FOR_DELIVERY_DRIVER
         : OrderStatus.AWAITING_PAYMENT;
 
       const deliveryOrder = await prisma.deliveryOrder.update({
         where: {orderId: orderId},
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
         data: {
           orderId: orderId,
           deliveryStatus: order.isPaid
@@ -116,16 +94,12 @@ export const updateOrderStatus = async (query: updateOrderData) => {
     });
     const station: string = worker.station as string;
 
-<<<<<<< HEAD
-    const nextStation = station === "WASHING" ? "IRONING" : station === "IRONING" ? "PACKING" : null;
-=======
     const nextStation =
       station === "WASHING"
         ? "IRONING"
         : station === "IRONING"
         ? "PACKING"
         : null;
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
     if (nextStation) {
       const usersInNextStation = await prisma.employee.findMany({

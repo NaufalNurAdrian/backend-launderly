@@ -104,6 +104,7 @@ model User {
   address              Address[]
 <<<<<<< HEAD
 
+<<<<<<< HEAD
   pickupOrder          PickupOrder[]
   deliveryOrder        DeliveryOrder[]
   userNotification     UserNotification[]
@@ -111,6 +112,8 @@ model User {
 =======
 >>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
+=======
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
   pickupOrder      PickupOrder[]
   deliveryOrder    DeliveryOrder[]
   userNotification UserNotification[]

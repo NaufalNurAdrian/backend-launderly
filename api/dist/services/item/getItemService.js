@@ -17,10 +17,18 @@ const prisma_1 = __importDefault(require("../../prisma"));
 const getItemService = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = prisma_1.default.laundryItem.findMany({
+<<<<<<< HEAD
             select: {
                 id: true,
                 itemName: true,
             }
+=======
+            where: { isDelete: false },
+            select: {
+                id: true,
+                itemName: true,
+            },
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         });
         return response;
     }

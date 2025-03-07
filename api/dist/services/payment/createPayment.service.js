@@ -54,9 +54,13 @@ const createPaymentService = (body) => __awaiter(void 0, void 0, void 0, functio
         });
         if (outstandingPayment)
             return outstandingPayment;
+<<<<<<< HEAD
         const amount = (existingOrder.laundryPrice || 0) +
             (existingOrder.pickupOrder.pickupPrice || 0) +
             (((_a = existingOrder.deliveryOrder[0]) === null || _a === void 0 ? void 0 : _a.deliveryPrice) || 0);
+=======
+        const amount = (existingOrder.laundryPrice || 0) + (existingOrder.pickupOrder.pickupPrice || 0) + (((_a = existingOrder.deliveryOrder[0]) === null || _a === void 0 ? void 0 : _a.deliveryPrice) || 0);
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         const padNumber = (num, size) => {
             let s = num.toString();
             while (s.length < size)
@@ -80,9 +84,13 @@ const createPaymentService = (body) => __awaiter(void 0, void 0, void 0, functio
                 return padNumber(1, 4);
             const invoiceParts = lastInvoice.invoiceNumber.split("-");
             const lastPart = invoiceParts.pop();
+<<<<<<< HEAD
             return lastPart && !isNaN(Number(lastPart))
                 ? padNumber(Number(lastPart) + 1, 4)
                 : padNumber(1, 4);
+=======
+            return lastPart && !isNaN(Number(lastPart)) ? padNumber(Number(lastPart) + 1, 4) : padNumber(1, 4);
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         };
         const nextIncrement = getNextInvoiceNumber(lastInvoice);
         const invoiceNumber = `INV-${padNumber(existingOrder.pickupOrder.userId, 4)}-${orderNumberPart}-${nextIncrement}`;

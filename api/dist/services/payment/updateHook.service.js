@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+<<<<<<< HEAD
 exports.updatePaymentStatus = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 const client_1 = require("prisma/generated/client");
@@ -19,6 +20,17 @@ const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function
     try {
         const { order_id, transaction_status, payment_type } = body;
         if (!order_id || !transaction_status) {
+=======
+exports.updateHooktStatus = void 0;
+const prisma_1 = __importDefault(require("../../prisma"));
+const client_1 = require("../../../prisma/generated/client");
+const updateHooktStatus = (body) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("Received webhook payload:", JSON.stringify(body, null, 2));
+        const { order_id, transaction_status, payment_type } = body;
+        if (!order_id || !transaction_status) {
+            console.error("Invalid request: order_id and transaction_status are required");
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
             throw new Error("Invalid request: order_id and transaction_status are required");
         }
         // Mapping status Midtrans ke sistem internal
@@ -34,7 +46,13 @@ const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function
             console.warn(`Received an unknown transaction_status: ${transaction_status}`);
             return { message: `Unknown transaction_status: ${transaction_status}` };
         }
+<<<<<<< HEAD
         // Cari invoice berdasarkan order_id
+=======
+        console.log(`Mapped payment status: ${paymentStatus}`);
+        // Cari invoice berdasarkan order_id
+        console.log(`Searching for invoice with order_id: ${order_id}`);
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         const existingInvoice = yield prisma_1.default.payment.findUnique({
             where: { invoiceNumber: order_id },
             select: {
@@ -47,6 +65,7 @@ const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function
             console.warn(`Invoice Not Found: ${order_id}`);
             return { message: "Invoice not found", success: false };
         }
+<<<<<<< HEAD
         // Cek apakah order status perlu diupdate
         const updateOrderStatus = paymentStatus === client_1.PaymentStatus.SUCCESSED &&
             existingInvoice.order.orderStatus === client_1.OrderStatus.AWAITING_PAYMENT;
@@ -63,6 +82,52 @@ const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function
                 });
             }
         }));
+=======
+        console.log("Found invoice:", existingInvoice);
+        // Cari apakah ada delivery order yang sesuai dengan orderId
+        console.log(`Checking if delivery order exists for orderId: ${existingInvoice.orderId}`);
+        const existingDeliveryOrder = yield prisma_1.default.deliveryOrder.findUnique({
+            where: { orderId: existingInvoice.orderId }, // Fix: gunakan orderId
+        });
+        if (!existingDeliveryOrder) {
+            console.warn(`No delivery order found for orderId: ${existingInvoice.orderId}, skipping update`);
+        }
+        let newOrderStatus;
+        let newDeliveryStatus;
+        if (paymentStatus === client_1.PaymentStatus.SUCCESSED) {
+            console.log(`Checking order status for payment success: ${existingInvoice.order.orderStatus}`);
+            if (existingInvoice.order.orderStatus === client_1.OrderStatus.AWAITING_PAYMENT) {
+                console.log("Updating order status to READY_FOR_DELIVERY and delivery status to WAITING_FOR_DRIVER");
+                newOrderStatus = client_1.OrderStatus.READY_FOR_DELIVERY;
+                newDeliveryStatus = client_1.DeliveryStatus.WAITING_FOR_DRIVER;
+            }
+            else {
+                console.log("Order status is not AWAITING_PAYMENT, no order status change");
+            }
+        }
+        console.log("Updating database with new statuses...");
+        yield prisma_1.default.$transaction([
+            prisma_1.default.payment.update({
+                where: { id: existingInvoice.id },
+                data: { paymentStatus, paymentMethode: payment_type || null },
+            }),
+            prisma_1.default.order.update({
+                where: { id: existingInvoice.orderId },
+                data: Object.assign(Object.assign({}, (newOrderStatus ? { orderStatus: newOrderStatus } : {})), (paymentStatus === client_1.PaymentStatus.SUCCESSED
+                    ? { isPaid: true }
+                    : {})),
+            }),
+            ...(newDeliveryStatus
+                ? [
+                    prisma_1.default.deliveryOrder.update({
+                        where: { orderId: existingInvoice.orderId },
+                        data: { deliveryStatus: newDeliveryStatus },
+                    }),
+                ]
+                : []),
+        ]);
+        console.log(`Payment updated for order ${order_id}. New status: ${newOrderStatus}, Delivery: ${newDeliveryStatus}`);
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         return { message: "Payment updated successfully" };
     }
     catch (error) {
@@ -70,4 +135,8 @@ const updatePaymentStatus = (body) => __awaiter(void 0, void 0, void 0, function
         throw error;
     }
 });
+<<<<<<< HEAD
 exports.updatePaymentStatus = updatePaymentStatus;
+=======
+exports.updateHooktStatus = updateHooktStatus;
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db

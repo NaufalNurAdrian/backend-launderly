@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/client";
 import haversineDistance from "../../helpers/haversine";
 import prisma from "../../prisma";
 
@@ -12,9 +12,6 @@ interface getPickupData {
 
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
-<<<<<<< HEAD
-    const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
-=======
     const {
       driverId,
       sortBy = "updatedAt",
@@ -22,7 +19,6 @@ export const getPickupRequestsService = async (query: getPickupData) => {
       page = 1,
       pageSize = 3,
     } = query;
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
@@ -97,18 +93,6 @@ export const getPickupRequestsService = async (query: getPickupData) => {
         return order === "asc"
           ? a.distance - b.distance
           : b.distance - a.distance;
-      });
-    } else if (sortBy === "createdAt") {
-      pickupRequestsWithDistance.sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return order === "asc" ? dateA - dateB : dateB - dateA;
-      });
-    } else {
-      pickupRequestsWithDistance.sort((a, b) => {
-        const dateA = new Date(a.updatedAt).getTime();
-        const dateB = new Date(b.updatedAt).getTime();
-        return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     } else if (sortBy === "createdAt") {
       pickupRequestsWithDistance.sort((a, b) => {

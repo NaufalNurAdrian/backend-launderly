@@ -13,9 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrderStatus = void 0;
+<<<<<<< HEAD
 const numberGenerator_1 = require("../../../helpers/numberGenerator");
 const prisma_1 = __importDefault(require("../../../prisma"));
 const client_1 = require("prisma/generated/client");
+=======
+const prisma_1 = __importDefault(require("../../../prisma"));
+const client_1 = require("../../../../prisma/generated/client");
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
 const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const { workerId, orderId } = query;
     try {
@@ -73,6 +78,7 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
             if (!order) {
                 throw new Error("Order not found");
             }
+<<<<<<< HEAD
             newStatus = order.isPaid ? client_1.OrderStatus.WAITING_FOR_DELIVERY_DRIVER : client_1.OrderStatus.AWAITING_PAYMENT;
             const deliveryNumber = yield (0, numberGenerator_1.generateOrderNumber)("DLV");
             const deliveryOrder = yield prisma_1.default.deliveryOrder.create({
@@ -86,6 +92,19 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
                     userId: order.pickupOrder.userId,
                     addressId: order.pickupOrder.addressId,
                     distance: order.pickupOrder.distance,
+=======
+            newStatus = order.isPaid
+                ? client_1.OrderStatus.WAITING_FOR_DELIVERY_DRIVER
+                : client_1.OrderStatus.AWAITING_PAYMENT;
+            const deliveryOrder = yield prisma_1.default.deliveryOrder.update({
+                where: { orderId: orderId },
+                data: {
+                    orderId: orderId,
+                    deliveryStatus: order.isPaid
+                        ? client_1.DeliveryStatus.WAITING_FOR_DRIVER
+                        : client_1.DeliveryStatus.NOT_READY_TO_DELIVER,
+                    driverId: null,
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
                 },
             });
         }
@@ -103,7 +122,15 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
             data: { isComplete: true },
         });
         const station = worker.station;
+<<<<<<< HEAD
         const nextStation = station === "WASHING" ? "IRONING" : station === "IRONING" ? "PACKING" : null;
+=======
+        const nextStation = station === "WASHING"
+            ? "IRONING"
+            : station === "IRONING"
+                ? "PACKING"
+                : null;
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         if (nextStation) {
             const usersInNextStation = yield prisma_1.default.employee.findMany({
                 where: { station: nextStation },

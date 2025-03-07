@@ -23,7 +23,7 @@ export class EmployeeController {
       const page = parseInt(req.query.page as string) || 1;
       const pageSize = parseInt(req.query.pageSize as string) || 5;
 
-      const result = await getAllEmployeeService();
+      const result = await getAllEmployeeService(page, pageSize);
 
       res.status(200).send({
         message: "Employee fetched successfully",
@@ -54,7 +54,7 @@ export class EmployeeController {
         role,
       };
 
-      const result = await updateEmployeeService(updateData, Number(id));
+      const result = await updateEmployeeService(updateData, id);
       res.status(200).send({
         message: "Employee updated successfully",
         result,

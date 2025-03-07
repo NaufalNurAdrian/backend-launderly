@@ -1,6 +1,6 @@
 import prisma from "../../prisma";
 import { startOfMonth, endOfMonth } from "date-fns";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface GetEmployeePerformanceQuery {
   filterOutlet?: number | string;
@@ -15,7 +15,6 @@ export const getEmployeePerformanceService = async (
   try {
     const { id, filterOutlet = "all", filterMonth, filterYear } = query;
 
-    // Cek apakah user ada
     const existingUser = await prisma.user.findFirst({
       where: { id },
       select: { employee: { select: { outletId: true } }, role: true },
@@ -23,10 +22,8 @@ export const getEmployeePerformanceService = async (
 
     if (!existingUser) throw new Error("User not found!");
 
-    // Definisi tipe `whereClause`
     const whereClause: Prisma.OrderWorkerWhereInput = {};
 
-    // Outlet Admin hanya bisa melihat outletnya sendiri
     if (existingUser.role !== "SUPER_ADMIN") {
       whereClause.worker = {
         outletId: existingUser.employee?.outletId ?? undefined,
@@ -37,12 +34,10 @@ export const getEmployeePerformanceService = async (
       };
     }
 
-    // Gunakan bulan & tahun saat ini jika tidak diberikan
     const now = new Date();
     const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
     const year = filterYear ? Number(filterYear) : now.getFullYear();
 
-    // Filter berdasarkan tanggal jika ada
     if (filterMonth || filterYear) {
       whereClause.createdAt = {
         gte: startOfMonth(new Date(year, month)),
@@ -52,7 +47,6 @@ export const getEmployeePerformanceService = async (
 
     console.log("whereClause:", JSON.stringify(whereClause, null, 2));
 
-    // Ambil data performa karyawan
     const employeePerformances = await prisma.orderWorker.findMany({
       where: whereClause,
       include: {
@@ -75,7 +69,6 @@ export const getEmployeePerformanceService = async (
       },
     });
 
-    // Hitung jumlah pekerjaan per karyawan
     const performanceMap = new Map<number, { count: number; data: any }>();
 
     employeePerformances.forEach((record) => {
@@ -98,13 +91,10 @@ export const getEmployeePerformanceService = async (
       performanceMap.get(userId)!.count += 1;
     });
 
-    // Konversi ke array
-    const performanceReport = Array.from(performanceMap.values()).map(
-      (item) => ({
-        ...item.data,
-        taskCompleted: item.count,
-      })
-    );
+    const performanceReport = Array.from(performanceMap.values()).map((item) => ({
+      ...item.data,
+      taskCompleted: item.count,
+    }));
 
     return {
       message: "Successfully fetched employee performance",

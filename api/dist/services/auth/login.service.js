@@ -30,6 +30,15 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         if (!customer)
             throw { message: "Customer account not found!" };
+<<<<<<< HEAD
+=======
+        // Cek apakah user mendaftar dengan Google
+        if (!customer.password) {
+            throw {
+                message: "This email is registered via Google. Please log in using Google.",
+            };
+        }
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         const isValidPass = yield bcrypt_1.default.compare(password, customer.password);
         if (!isValidPass)
             throw { message: "Incorrect Password!" };
@@ -41,6 +50,7 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const payload = {
             id: customer.id,
             role: customer.role,
+<<<<<<< HEAD
             authProvider: "email"
         };
         const token = (0, jsonwebtoken_1.sign)(payload, process.env.JWT_KEY, { expiresIn: "1d" });
@@ -52,6 +62,17 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     catch (err) {
         console.error("Error during login:", err);
         res.status(400).send(err);
+=======
+            authProvider: "email",
+        };
+        const token = (0, jsonwebtoken_1.sign)(payload, process.env.JWT_KEY, { expiresIn: "1d" });
+        console.log("Generated Token:", token);
+        res.status(200).send({ message: "Login Successfully", customer, token });
+    }
+    catch (err) {
+        console.error("Error during login:", err);
+        res.status(400).send("This email is registered via Google. Please log in using Google.");
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
     }
 });
 exports.loginService = loginService;

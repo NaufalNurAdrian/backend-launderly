@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { EmployeeWorkShift, Order, OrderStatus } from "@prisma/client";
+import { EmployeeWorkShift, Order, OrderStatus } from "../../../prisma/generated/client";
 
 interface UpdateOrderBody extends Pick<Order, "weight"> {
   orderItem: { qty: string; laundryItemId: string }[];

@@ -41,7 +41,10 @@ const updateEmployeeService = (data, id) => __awaiter(void 0, void 0, void 0, fu
                 throw new Error("Outlet not found");
             updateData.outletId = data.outletId;
         }
+<<<<<<< HEAD
         // Persiapkan objek untuk user update dengan tipe yang tepat
+=======
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         const userUpdate = {};
         if (data.fullName && data.fullName !== employee.user.fullName) {
             userUpdate.fullName = data.fullName;
@@ -59,6 +62,7 @@ const updateEmployeeService = (data, id) => __awaiter(void 0, void 0, void 0, fu
             userUpdate.role = data.role;
             hasUserUpdates = true;
         }
+<<<<<<< HEAD
         // Siapkan data update untuk user jika ada perubahan
         if (hasUserUpdates) {
             updateData.user = {
@@ -66,6 +70,13 @@ const updateEmployeeService = (data, id) => __awaiter(void 0, void 0, void 0, fu
             };
         }
         // Periksa apakah ada perubahan pada level atas ATAU pada level user
+=======
+        if (hasUserUpdates) {
+            updateData.user = {
+                update: userUpdate,
+            };
+        }
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         if (Object.keys(updateData).length === 0) {
             throw new Error("No changes detected");
         }

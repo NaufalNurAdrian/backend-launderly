@@ -1,10 +1,17 @@
 import prisma from "../../prisma";
-import { EmployeeWorkShift, EmployeeStation, Role } from "@prisma/client";
+import { EmployeeWorkShift, EmployeeStation, Role } from "../../../prisma/generated/client";
 
 export interface UpdateEmployeeInput {
   workShift?: EmployeeWorkShift;
   station?: EmployeeStation;
   outletId?: number;
+  fullName?: string;
+  email?: string;
+  password?: string;
+  role?: Role;
+}
+
+interface UserUpdateInput {
   fullName?: string;
   email?: string;
   password?: string;
@@ -19,14 +26,10 @@ interface UserUpdateInput {
   role?: Role;
 }
 
-<<<<<<< HEAD
-export const updateEmployeeService = async (data: UpdateEmployeeInput, id: number) => {
-=======
 export const updateEmployeeService = async (
   data: UpdateEmployeeInput,
   id: string
 ) => {
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
   try {
     const employeeId = parseInt(id);
     if (isNaN(employeeId)) throw new Error("Invalid employee ID");
@@ -38,14 +41,6 @@ export const updateEmployeeService = async (
 
     if (!employee) throw new Error("Employee not found");
 
-<<<<<<< HEAD
-    const updateData: any = {
-      workShift: data.workShift,
-      station: data.station,
-    };
-
-    if (data.outletId) {
-=======
     const updateData: any = {};
     let hasUserUpdates = false;
 
@@ -58,7 +53,6 @@ export const updateEmployeeService = async (
     }
 
     if (data.outletId && data.outletId !== employee.outletId) {
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
       const outlet = await prisma.outlet.findUnique({
         where: { id: data.outletId },
       });
@@ -67,7 +61,6 @@ export const updateEmployeeService = async (
       updateData.outletId = data.outletId;
     }
 
-    // Persiapkan objek untuk user update dengan tipe yang tepat
     const userUpdate: UserUpdateInput = {};
 
     if (data.fullName && data.fullName !== employee.user.fullName) {
@@ -90,14 +83,12 @@ export const updateEmployeeService = async (
       hasUserUpdates = true;
     }
 
-    // Siapkan data update untuk user jika ada perubahan
     if (hasUserUpdates) {
       updateData.user = {
         update: userUpdate,
       };
     }
 
-    // Periksa apakah ada perubahan pada level atas ATAU pada level user
     if (Object.keys(updateData).length === 0) {
       throw new Error("No changes detected");
     }
@@ -105,11 +96,7 @@ export const updateEmployeeService = async (
     return await prisma.employee.update({
       where: { id: employeeId },
       data: updateData,
-<<<<<<< HEAD
-      include: { outlet: true },
-=======
       include: { outlet: true, user: true },
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
     });
   } catch (error) {
     console.error("Update Employee Error:", error);

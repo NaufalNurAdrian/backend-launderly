@@ -1,14 +1,10 @@
-import { EmployeeStation, Prisma } from "@prisma/client";
+import { EmployeeStation, Prisma } from "../../../prisma/generated/client";
 import prisma from "../../prisma";
 
-<<<<<<< HEAD
-export const createNotificationForNextStation = async (orderId: number, nextStation: string) => {
-=======
 export const createNotificationForNextStation = async (
   orderId: number,
   nextStation: string
 ) => {
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
   const usersInNextStation = await prisma.employee.findMany({
     where: {
       station: {

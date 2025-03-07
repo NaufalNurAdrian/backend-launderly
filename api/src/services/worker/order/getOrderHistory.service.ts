@@ -36,27 +36,12 @@ export const getWorkerOrdersHistoryService = async (
     const station = workerStation.station;
  
     const whereClause: Prisma.OrderWhereInput = {
-<<<<<<< HEAD
-      AND: [
-        {
-          OR: [{ orderStatus: OrderStatus.WASHING_COMPLETED }, { orderStatus: OrderStatus.IRONING_COMPLETED }, { orderStatus: OrderStatus.AWAITING_PAYMENT }],
-        },
-        {
-          orderWorker: {
-            some: {
-              workerId: workerStation.id,
-            },
-          },
-        },
-      ],
-=======
       orderWorker: {
         some: {
           workerId: workerStation.id,
           isComplete: true
         },
       },
->>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
     };
 
     const orders = await prisma.order.findMany({

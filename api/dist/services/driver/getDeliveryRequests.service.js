@@ -76,11 +76,21 @@ const getDeliveryRequestsService = (query) => __awaiter(void 0, void 0, void 0, 
             const deliveryLat = request.address.latitude || 0;
             const deliveryLon = request.address.longitude || 0;
             const distance = (0, haversine_1.default)(outletLat, outletLon, deliveryLat, deliveryLon);
+<<<<<<< HEAD
             return Object.assign(Object.assign({}, request), { distance, deliveryPrice: 5000 });
         });
         if (sortBy === "distance") {
             deliveryRequestsWithDistance.sort((a, b) => {
                 return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+=======
+            return Object.assign(Object.assign({}, request), { distance, deliveryPrice: 2500 });
+        });
+        if (sortBy === "distance") {
+            deliveryRequestsWithDistance.sort((a, b) => {
+                return order === "asc"
+                    ? a.distance - b.distance
+                    : b.distance - a.distance;
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
             });
         }
         else if (sortBy === "createdAt") {

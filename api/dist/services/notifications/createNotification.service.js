@@ -13,7 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createNotificationForNextStation = void 0;
+<<<<<<< HEAD
 const client_1 = require("prisma/generated/client");
+=======
+const client_1 = require("../../../prisma/generated/client");
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
 const prisma_1 = __importDefault(require("../../prisma"));
 const createNotificationForNextStation = (orderId, nextStation) => __awaiter(void 0, void 0, void 0, function* () {
     const usersInNextStation = yield prisma_1.default.employee.findMany({

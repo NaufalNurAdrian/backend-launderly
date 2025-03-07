@@ -10,7 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestController = void 0;
+<<<<<<< HEAD
 const getDriverRequest_service_1 = require("../../../services/driver/getDriverRequest.service");
+=======
+const updateDriverRequest_service_1 = require("../../../services/driver/updateDriverRequest.service");
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
 const getDriverHistory_service_1 = require("../../../services/driver/getDriverHistory.service");
 class RequestController {
     updateRequestStatus(req, res) {
@@ -19,7 +23,11 @@ class RequestController {
             try {
                 const driverId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { requestId, type } = req.body;
+<<<<<<< HEAD
                 const result = yield (0, getDriverRequest_service_1.updateRequestStatusService)({ driverId, requestId, type });
+=======
+                const result = yield (0, updateDriverRequest_service_1.updateRequestStatusService)({ driverId, requestId, type });
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
                 res.status(200).json({
                     message: "status updated",
                     data: result,
@@ -56,3 +64,7 @@ class RequestController {
     }
 }
 exports.RequestController = RequestController;
+<<<<<<< HEAD
+=======
+;
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
