@@ -14,11 +14,7 @@ class OrderRouter {
     initializeRoutes() {
         this.router.post("/create", verify_1.verifyToken, verify_1.checkSuperAdmin, (0, asyncMiddleware_1.asyncMiddleware)(this.orderController.createOrderController.bind(this.orderController)));
         this.router.get("/", verify_1.verifyToken, verify_1.checkOutletSuper, (0, asyncMiddleware_1.asyncMiddleware)(this.orderController.getOrdersController.bind(this.orderController)));
-<<<<<<< HEAD
         this.router.post("/bypass", verify_1.verifyToken, verify_1.checkSuperAdmin, this.orderController.bypassOrderController);
-=======
-        this.router.post("/bypass", verify_1.verifyToken, this.orderController.bypassOrderController);
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
     }
     getRouter() {
         return this.router;

@@ -16,11 +16,7 @@ exports.createOrderPickupOrderService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 const createOrderPickupOrderService = (body) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-<<<<<<< HEAD
-        const { outletId, userAddressId, userId, distance, pickupPrice = 5000 } = body;
-=======
         const { outletId, userAddressId, userId, distance, pickupPrice = 2500 } = body;
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id: userId },
             select: { id: true },

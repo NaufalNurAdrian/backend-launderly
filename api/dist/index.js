@@ -32,10 +32,7 @@ app.use((0, cors_1.default)({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));
-<<<<<<< HEAD
-=======
 console.log("Allowed origin:", process.env.BASE_URL_FE);
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
 app.get("/api", (req, res) => {
     res.status(200).send("Welcome to my Launderly API");
 });

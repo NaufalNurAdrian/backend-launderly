@@ -23,11 +23,7 @@ class UserRouter {
         // Confirm Email User
         this.router.patch("/verify-email", verify_1.verifyToken, this.userController.verifyEmail);
         // Confirm Order
-<<<<<<< HEAD
-        this.router.patch("/confirm-order", verify_1.verifyToken, this.userController.confirmOrder);
-=======
         this.router.patch("/confirm-order", this.userController.confirmOrder);
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         // Confirm Forget Password
         this.router.patch("/confirm-forget-password", this.userController.confirmForgetPassword);
         // Request Forget Password

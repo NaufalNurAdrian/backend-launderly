@@ -64,11 +64,7 @@ class ItemController {
                 if (!id) {
                     res.status(400).send({ message: "Invalid item ID" });
                 }
-<<<<<<< HEAD
                 const deleteItem = yield (0, deleteItem_1.deleteItemService)(req.body);
-=======
-                const deleteItem = yield (0, deleteItem_1.deleteItemService)(id);
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
                 res.status(200).send({ message: "delete item laundry", deleteItem });
             }
             catch (error) {

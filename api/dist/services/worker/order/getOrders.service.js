@@ -13,11 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getWorkerOrdersService = void 0;
-<<<<<<< HEAD
-const client_1 = require("prisma/generated/client");
-=======
 const client_1 = require("../../../../prisma/generated/client");
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
 const prisma_1 = __importDefault(require("../../../prisma"));
 const getWorkerOrdersService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -70,36 +66,6 @@ const getWorkerOrdersService = (query) => __awaiter(void 0, void 0, void 0, func
                     ],
                 },
                 {
-<<<<<<< HEAD
-                    OR: [
-                        {
-                            orderWorker: {
-                                some: {
-                                    bypassAccepted: true,
-                                    bypassRequest: false,
-                                    station: station,
-                                },
-                            },
-                        },
-                        {
-                            orderWorker: {
-                                some: {
-                                    bypassRejected: true,
-                                    station: station,
-                                },
-                            },
-                        },
-                        {
-                            orderWorker: {
-                                none: {
-                                    bypassRequest: true,
-                                    bypassAccepted: false,
-                                    station: station,
-                                },
-                            },
-                        },
-                    ],
-=======
                     NOT: {
                         orderWorker: {
                             some: {
@@ -110,7 +76,6 @@ const getWorkerOrdersService = (query) => __awaiter(void 0, void 0, void 0, func
                             },
                         },
                     },
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
                 },
             ],
         };

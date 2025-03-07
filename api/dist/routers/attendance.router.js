@@ -12,11 +12,7 @@ class AttendanceRouter {
     }
     initializeRoutes() {
         this.router.get("/history", verify_1.verifyToken, (0, verify_1.verifyRole)(["DRIVER", "WORKER"]), this.attendanceController.getAttendance);
-<<<<<<< HEAD
-        this.router.get("/all-history", verify_1.verifyToken, (0, verify_1.verifyRole)(["DRIVER", "WORKER"]), this.attendanceController.getAllAttendances);
-=======
         this.router.get("/all-history", verify_1.verifyToken, this.attendanceController.getAllAttendances);
->>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
         this.router.post("/check-in", verify_1.verifyToken, (0, verify_1.verifyRole)(["DRIVER", "WORKER"]), this.attendanceController.checkIn);
         this.router.patch("/check-out", verify_1.verifyToken, (0, verify_1.verifyRole)(["DRIVER", "WORKER"]), this.attendanceController.checkOut);
     }
