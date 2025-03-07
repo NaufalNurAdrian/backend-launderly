@@ -32,6 +32,9 @@ app.use(
   })
 );
 
+console.log("Allowed origin:", process.env.BASE_URL_FE);
+
+
 app.get("/api", (req: Request, res: Response) => {
   res.status(200).send("Welcome to my Launderly API");
 });

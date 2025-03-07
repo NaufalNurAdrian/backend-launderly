@@ -1,4 +1,4 @@
-import { EmployeeStation, Prisma } from "@prisma/client";
+import { EmployeeStation, Prisma } from "../../../prisma/generated/client";
 import prisma from "../../prisma";
 
 export const createNotificationForNextStation = async (

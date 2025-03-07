@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { OrderStatus, PickupStatus } from "@prisma/client";
+import { OrderStatus, PickupStatus } from "../../../prisma/generated/client";
 
 interface UpdatePickupOrderBody {
   shipmentOrderId: number;

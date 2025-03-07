@@ -1,4 +1,4 @@
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../../../prisma/generated/client";
 import prisma from "../../../prisma";
 
 interface GetWorkerOrdersData {
@@ -78,26 +78,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
                 },
               },
             },
-          },
-          {
-            OR: [
-              {
-                orderWorker: {
-                  none: {
-                    bypassAccepted: true,
-                    station: station,
-                  },
-                },
-              },
-              {
-                orderWorker: {
-                  some: {
-                    bypassRejected: true,
-                    station: station,
-                  },
-                },
-              },
-            ],
           },
         ],
       };

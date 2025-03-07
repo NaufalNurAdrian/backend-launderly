@@ -23,7 +23,16 @@ export const loginService = async (
     });
 
     if (!customer) throw { message: "Customer account not found!" };
-    const isValidPass = await bcrypt.compare(password, customer.password!);
+
+    // Cek apakah user mendaftar dengan Google
+    if (!customer.password) {
+      throw {
+        message:
+          "This email is registered via Google. Please log in using Google.",
+      };
+    }
+
+    const isValidPass = await bcrypt.compare(password, customer.password);
     if (!isValidPass) throw { message: "Incorrect Password!" };
     if (!customer.isVerify)
       throw {
@@ -35,17 +44,15 @@ export const loginService = async (
     const payload = {
       id: customer.id,
       role: customer.role,
-      authProvider: "email"
+      authProvider: "email",
     };
     const token = sign(payload, process.env.JWT_KEY!, { expiresIn: "1d" });
 
     console.log("Generated Token:", token);
 
-    res
-      .status(200)
-      .send({ message: "Login Successfully", customer, token })
+    res.status(200).send({ message: "Login Successfully", customer, token });
   } catch (err) {
     console.error("Error during login:", err);
-    res.status(400).send(err);
+    res.status(400).send("This email is registered via Google. Please log in using Google.");
   }
 };

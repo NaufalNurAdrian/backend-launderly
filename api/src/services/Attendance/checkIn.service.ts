@@ -22,7 +22,6 @@ export const checkInService = async (data: CheckInData) => {
     if (!user.employee || !user.employee.workShift) {
       throw new Error("Employee shift not found.");
     }
-
     const now = DateTime.now();
     let todayStart: Date;
     let todayEnd: Date;
@@ -54,7 +53,6 @@ export const checkInService = async (data: CheckInData) => {
         },
       },
     });
-
     if (existingAttendance) {
       throw new Error("You are already checked In today.");
     }

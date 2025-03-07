@@ -1,7 +1,7 @@
 import prisma from "../../prisma";
 import { PaginationQueryParams } from "@/types/pagination.type";
 
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../../prisma/generated/client";
 
 interface GetOrdersQuery extends PaginationQueryParams {
   id: number;
