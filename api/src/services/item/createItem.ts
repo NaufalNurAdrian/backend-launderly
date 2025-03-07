@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { LaundryItem } from "@prisma/client";
+import { LaundryItem } from "../../../prisma/generated/client";
 
 export const createItemService = async (body: LaundryItem) => {
   try {

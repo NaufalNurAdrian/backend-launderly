@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { EmployeeWorkShift, EmployeeStation, Role } from "@prisma/client";
+import { EmployeeWorkShift, EmployeeStation, Role } from "../../../prisma/generated/client";
 
 export interface UpdateEmployeeInput {
   workShift?: EmployeeWorkShift;
