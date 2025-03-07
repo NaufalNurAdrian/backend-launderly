@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { OutletController } from "../controllers/outlet.controller";
+import { checkSuperAdmin, verifyToken } from "../middlewares/verify";
 
 export class OutletRouter {
   private outletController: OutletController;
@@ -12,8 +13,18 @@ export class OutletRouter {
   }
 
   private initializeRoutes() {
-    this.router.post("/create", this.outletController.createOutletController);
+    this.router.post(
+      "/create",
+      verifyToken,
+      checkSuperAdmin,
+      this.outletController.createOutletController
+    );
+    this.router.get("/", verifyToken, checkSuperAdmin, this.outletController.getAllOutlet)
+    this.router.patch("/update/", verifyToken, checkSuperAdmin, this.outletController.updateOutlet)
+    this.router.patch("/delete", verifyToken, checkSuperAdmin, this.outletController.deleteOutlet)
+    this.router.get("/:id", this.outletController.getOutletById)
   }
+  
 
   getRouter() {
     return this.router;

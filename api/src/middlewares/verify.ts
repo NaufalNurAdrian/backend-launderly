@@ -1,4 +1,4 @@
-import { Role, UserPayload } from "@/custom";
+import { UserPayload } from "@/custom";
 import prisma from "../prisma";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
@@ -10,7 +10,10 @@ export const verifyToken = async (
 ): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
+<<<<<<< HEAD
     console.log("Received Token:", token);
+=======
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
     if (!token) {
       res.status(401).send({ message: "Unauthorized! Token not found." });
@@ -56,6 +59,18 @@ export const checkOutletAdmin = (
   next: NextFunction
 ) => {
   if (req.user?.role == "OUTLET_ADMIN") {
+    next();
+  } else {
+    res.status(400).send({ message: "Unauthorize, Outlet Admin only!" });
+  }
+};
+
+export const checkOutletSuper = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role == "OUTLET_ADMIN" || req.user?.role == "SUPER_ADMIN") {
     next();
   } else {
     res.status(400).send({ message: "Unauthorize, Admin only!" });

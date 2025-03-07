@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
+
 import { getAttendancesService } from "../services/Attendance/getAttendance.service";
 import { getAllAttendancesService } from "../services/Attendance/getAllAttendances.service";
 import { checkInService } from "../services/Attendance/checkIn.service";
 import { checkOutService } from "../services/Attendance/checkout.service";
+import { Request, Response } from "express";
 
 export class AttendanceController {
   async getAttendance(req: Request, res: Response) {

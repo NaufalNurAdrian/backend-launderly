@@ -19,7 +19,11 @@ export const getUsersIdService = async (req: Request, res: Response) => {
         createdAt: true,
         isDelete: true,
         role: true,
+<<<<<<< HEAD
         employee : true
+=======
+        employee: true
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
       },
     });
 

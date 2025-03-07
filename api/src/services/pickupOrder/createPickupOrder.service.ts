@@ -9,7 +9,11 @@ interface CreatePickupOrderBody {
 }
 export const createOrderPickupOrderService = async (body: CreatePickupOrderBody) => {
   try {
+<<<<<<< HEAD
     const { outletId, userAddressId, userId, distance, pickupPrice = 5000 } = body;
+=======
+    const { outletId, userAddressId, userId, distance, pickupPrice = 2500 } = body;
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
     const existingUser = await prisma.user.findFirst({
       where: { id: userId },

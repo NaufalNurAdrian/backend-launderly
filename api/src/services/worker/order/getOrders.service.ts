@@ -48,15 +48,27 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     }
 
     const station = workerStation.station;
-
     const orderStatus: OrderStatus = station === "WASHING" ? OrderStatus.READY_FOR_WASHING : station === "IRONING" ? OrderStatus.WASHING_COMPLETED : OrderStatus.IRONING_COMPLETED;
 
     const whereClause: Prisma.OrderWhereInput = {
-      OR: [
+      AND: [
         {
-          orderStatus: orderStatus,
+          OR: [
+            {
+              orderStatus: orderStatus,
+            },
+            {
+              orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
+              orderWorker: {
+                some: {
+                  workerId: workerStation.id,
+                },
+              },
+            },
+          ],
         },
         {
+<<<<<<< HEAD
           orderStatus: station === "WASHING" ? OrderStatus.BEING_WASHED : station === "IRONING" ? OrderStatus.BEING_IRONED : OrderStatus.BEING_PACKED,
           orderWorker: {
             some: {
@@ -77,6 +89,42 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
         },
       ],
     };
+=======
+            NOT: {
+              orderWorker: {
+                some: {
+                  bypassRequest: true,
+                  bypassAccepted: false,
+                  bypassRejected: false,
+                  station: station,
+                },
+              },
+            },
+          },
+          {
+            OR: [
+              {
+                orderWorker: {
+                  none: {
+                    bypassAccepted: true,
+                    station: station,
+                  },
+                },
+              },
+              {
+                orderWorker: {
+                  some: {
+                    bypassRejected: true,
+                    station: station,
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
     const orderByClause: Prisma.OrderOrderByWithRelationInput = {};
     if (sortBy === "weight") {
       orderByClause.weight = order;

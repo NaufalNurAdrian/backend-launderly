@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
-import haversineDistance from "../../../helpers/haversine";
-import prisma from "../../../prisma";
+import haversineDistance from "../../helpers/haversine";
+import prisma from "../../prisma";
 
 interface getPickupData {
   driverId: number;
@@ -12,7 +12,17 @@ interface getPickupData {
 
 export const getPickupRequestsService = async (query: getPickupData) => {
   try {
+<<<<<<< HEAD
     const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
+=======
+    const {
+      driverId,
+      sortBy = "updatedAt",
+      order = "desc",
+      page = 1,
+      pageSize = 3,
+    } = query;
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
 
     const driver = await prisma.employee.findUnique({
       where: { userId: driverId },
@@ -73,13 +83,32 @@ export const getPickupRequestsService = async (query: getPickupData) => {
       const pickupLat = request.address.latitude || 0;
       const pickupLon = request.address.longitude || 0;
 
-      const distance = haversineDistance(outletLat, outletLon, pickupLat, pickupLon);
+      const distance = haversineDistance(
+        outletLat,
+        outletLon,
+        pickupLat,
+        pickupLon
+      );
       return { ...request, distance };
     });
 
     if (sortBy === "distance") {
       pickupRequestsWithDistance.sort((a, b) => {
-        return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+        return order === "asc"
+          ? a.distance - b.distance
+          : b.distance - a.distance;
+      });
+    } else if (sortBy === "createdAt") {
+      pickupRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      });
+    } else {
+      pickupRequestsWithDistance.sort((a, b) => {
+        const dateA = new Date(a.updatedAt).getTime();
+        const dateB = new Date(b.updatedAt).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
       });
     } else if (sortBy === "createdAt") {
       pickupRequestsWithDistance.sort((a, b) => {
@@ -97,7 +126,10 @@ export const getPickupRequestsService = async (query: getPickupData) => {
 
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRequests = pickupRequestsWithDistance.slice(startIndex, endIndex);
+    const paginatedRequests = pickupRequestsWithDistance.slice(
+      startIndex,
+      endIndex
+    );
 
     return {
       data: paginatedRequests,

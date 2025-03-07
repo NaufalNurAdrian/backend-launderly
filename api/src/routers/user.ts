@@ -16,17 +16,27 @@ export class UserRouter {
   private initializeRoutes() {
     // Get User by ID
     this.router.get("/profile", verifyToken, this.userController.getUsersId);
+    this.router.get("/profile", verifyToken, this.userController.getUsersId);
 
     // Reset Password User
     this.router.patch("/reset-password", verifyToken, this.userController.resetPassword);
+    this.router.patch("/reset-password", verifyToken, this.userController.resetPassword);
     // Edit Avatar User
+    this.router.patch("/edit-avatar", verifyToken, uploader("memoryStorage", "avatarLogin-").single("avatar"), this.userController.editAvatar);
     this.router.patch("/edit-avatar", verifyToken, uploader("memoryStorage", "avatarLogin-").single("avatar"), this.userController.editAvatar);
     // Update Email User
     this.router.patch("/update-email", verifyToken, this.userController.updateEmail);
+    this.router.patch("/update-email", verifyToken, this.userController.updateEmail);
     // Confirm Email User
+    this.router.patch("/verify-email", verifyToken, this.userController.verifyEmail);
+    // Confirm Order
+    this.router.patch("/confirm-order", this.userController.confirmOrder);
+    // Confirm Forget Password
+    this.router.patch("/confirm-forget-password", this.userController.confirmForgetPassword);
     this.router.patch("/verify-email", verifyToken, this.userController.verifyEmail);
 
     // Request Forget Password
+    this.router.post("/request-forget-password", this.userController.requestForgetPassword);
     this.router.post("/request-forget-password", this.userController.requestForgetPassword);
     // Confirm Forget Password
     this.router.post("/confirm-forget-password", this.userController.confirmForgetPassword);
