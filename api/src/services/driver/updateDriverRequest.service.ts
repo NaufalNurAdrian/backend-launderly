@@ -1,6 +1,6 @@
 import { createNotificationForNextStation } from "../notifications/createNotification.service";
 import prisma from "../../prisma";
-import { DeliveryStatus, OrderStatus, PickupStatus } from "@prisma/client";
+import { DeliveryStatus, OrderStatus, PickupStatus } from "../../../prisma/generated/client";
 
 interface UpdateRequestStatusData {
   driverId: number;

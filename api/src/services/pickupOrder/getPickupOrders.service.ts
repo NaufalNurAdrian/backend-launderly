@@ -1,6 +1,6 @@
 import prisma from "../../prisma";
 import { PaginationQueryParams } from "../../types/pagination.type";
-import { PickupStatus, Prisma } from "@prisma/client";
+import { PickupStatus, Prisma } from "../../../prisma/generated/client";
 
 interface GetPickupOrdersQuery extends PaginationQueryParams {
   id: number;

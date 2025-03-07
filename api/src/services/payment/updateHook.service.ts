@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { PaymentStatus, OrderStatus, DeliveryStatus } from "@prisma/client";
+import { PaymentStatus, OrderStatus, DeliveryStatus } from "../../../prisma/generated/client";
 
 interface UpdatePaymentBody {
   order_id: string;
