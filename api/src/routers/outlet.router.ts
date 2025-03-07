@@ -22,7 +22,7 @@ export class OutletRouter {
     this.router.get("/", verifyToken, checkSuperAdmin, this.outletController.getAllOutlet)
     this.router.patch("/update/", verifyToken, checkSuperAdmin, this.outletController.updateOutlet)
     this.router.patch("/delete", verifyToken, checkSuperAdmin, this.outletController.deleteOutlet)
-    this.router.get("/:id", this.outletController.getOutletById)
+    this.router.get("/:id", verifyToken, checkSuperAdmin, this.outletController.getOutletById)
   }
   
 
