@@ -23,7 +23,7 @@ class UserRouter {
         // Confirm Email User
         this.router.patch("/verify-email", verify_1.verifyToken, this.userController.verifyEmail);
         // Confirm Order
-        this.router.patch("/confirm-order", verify_1.verifyToken, this.userController.confirmOrder);
+        this.router.patch("/confirm-order", this.userController.confirmOrder);
         // Confirm Forget Password
         this.router.patch("/confirm-forget-password", this.userController.confirmForgetPassword);
         // Request Forget Password

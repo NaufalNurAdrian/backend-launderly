@@ -17,7 +17,7 @@ const haversine_1 = __importDefault(require("../../helpers/haversine"));
 const prisma_1 = __importDefault(require("../../prisma"));
 const getPickupRequestsService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3 } = query;
+        const { driverId, sortBy = "updatedAt", order = "desc", page = 1, pageSize = 3, } = query;
         const driver = yield prisma_1.default.employee.findUnique({
             where: { userId: driverId },
             select: { outletId: true, id: true },
@@ -73,7 +73,9 @@ const getPickupRequestsService = (query) => __awaiter(void 0, void 0, void 0, fu
         });
         if (sortBy === "distance") {
             pickupRequestsWithDistance.sort((a, b) => {
-                return order === "asc" ? a.distance - b.distance : b.distance - a.distance;
+                return order === "asc"
+                    ? a.distance - b.distance
+                    : b.distance - a.distance;
             });
         }
         else if (sortBy === "createdAt") {

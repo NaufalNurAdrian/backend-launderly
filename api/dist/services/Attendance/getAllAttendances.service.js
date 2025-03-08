@@ -70,7 +70,8 @@ const getAllAttendancesService = (query) => __awaiter(void 0, void 0, void 0, fu
         const totalAttendances = yield prisma_1.default.attendance.count({
             where: filter,
         });
-        return { data: result,
+        return {
+            data: result,
             pagination: {
                 total: totalAttendances,
                 page: page,

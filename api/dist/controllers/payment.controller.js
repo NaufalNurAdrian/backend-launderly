@@ -13,7 +13,6 @@ exports.PaymentController = void 0;
 const createPayment_service_1 = require("../services/payment/createPayment.service");
 const getPayment_service_1 = require("../services/payment/getPayment.service");
 const getPaymentChart_service_1 = require("../services/payment/getPaymentChart.service");
-const updatePayment_service_1 = require("../services/payment/updatePayment.service");
 const getPaymentById_service_1 = require("../services/payment/getPaymentById.service");
 const updateHook_service_1 = require("../services/payment/updateHook.service");
 class PaymentController {
@@ -50,7 +49,7 @@ class PaymentController {
             try {
                 const query = {
                     id: parseInt(res.locals.user.id),
-                    filterOutlet: parseInt(req.query.filterOutlet) || 'all',
+                    filterOutlet: parseInt(req.query.filterOutlet) || "all",
                     filterMonth: req.query.filterMonth,
                     filterYear: req.query.filterYear,
                 };
@@ -59,38 +58,6 @@ class PaymentController {
                 return;
             }
             catch (error) {
-                next(error);
-            }
-        });
-    }
-    updatePaymentController(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { order_id, transaction_status } = req.body;
-                // Validasi input awal sebelum dikirim ke service
-                if (!order_id || !transaction_status) {
-                    res.status(400).json({
-                        status: "fail",
-                        message: "order_id and transaction_status are required",
-                    });
-                    return;
-                }
-                const result = yield (0, updatePayment_service_1.updatePaymentService)(req.body);
-                res.status(200).json({
-                    status: "success",
-                    message: result.message,
-                });
-                return;
-            }
-            catch (error) {
-                console.error("Error in updatePaymentController:", error);
-                if (error instanceof Error && error.message.includes("Not Found")) {
-                    res.status(404).json({
-                        status: "fail",
-                        message: error.message,
-                    });
-                    return;
-                }
                 next(error);
             }
         });
@@ -108,6 +75,14 @@ class PaymentController {
                 return;
             }
             catch (error) {
+                console.error("Error in updatePaymentController:", error);
+                if (error instanceof Error && error.message.includes("Not Found")) {
+                    res.status(404).json({
+                        status: "fail",
+                        message: error.message,
+                    });
+                    return;
+                }
                 next(error);
             }
         });
@@ -118,14 +93,18 @@ class PaymentController {
                 console.log("Received Midtrans webhook:", req.body);
                 const { transaction_status, order_id } = req.body;
                 if (!transaction_status || !order_id) {
-                    res.status(400).json({ error: "Missing transaction_status or order_id" });
+                    res
+                        .status(400)
+                        .json({ error: "Missing transaction_status or order_id" });
                     return;
                 }
-                yield (0, updateHook_service_1.updatePaymentStatus)(order_id);
+                console.log(`Processing order_id: ${order_id}, status: ${transaction_status}`);
+                yield (0, updateHook_service_1.updateHooktStatus)({ order_id, transaction_status });
                 res.status(200).json({ message: "Payment status updated successfully" });
             }
             catch (error) {
                 console.error("Midtrans Webhook Error:", error);
+                res.status(500).json({ error: "Internal Server Error" });
             }
         });
     }

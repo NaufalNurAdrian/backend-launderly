@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getWorkerOrdersHistoryService = void 0;
-const client_1 = require("prisma/generated/client");
 const prisma_1 = __importDefault(require("../../../prisma"));
 const getWorkerOrdersHistoryService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -22,7 +21,7 @@ const getWorkerOrdersHistoryService = (query) => __awaiter(void 0, void 0, void 
             where: { id: workerId, role: "WORKER" },
         });
         if (!worker) {
-            throw new Error("Hanya worker yang dapat mengakses data ini");
+            throw new Error("only worker can access this data");
         }
         const workerStation = yield prisma_1.default.employee.findFirst({
             where: {
@@ -30,22 +29,16 @@ const getWorkerOrdersHistoryService = (query) => __awaiter(void 0, void 0, void 
             },
         });
         if (!workerStation) {
-            throw new Error("Worker tidak memiliki station yang ditetapkan");
+            throw new Error("worker station undefined");
         }
         const station = workerStation.station;
         const whereClause = {
-            AND: [
-                {
-                    OR: [{ orderStatus: client_1.OrderStatus.WASHING_COMPLETED }, { orderStatus: client_1.OrderStatus.IRONING_COMPLETED }, { orderStatus: client_1.OrderStatus.AWAITING_PAYMENT }],
+            orderWorker: {
+                some: {
+                    workerId: workerStation.id,
+                    isComplete: true
                 },
-                {
-                    orderWorker: {
-                        some: {
-                            workerId: workerStation.id,
-                        },
-                    },
-                },
-            ],
+            },
         };
         const orders = yield prisma_1.default.order.findMany({
             where: whereClause,

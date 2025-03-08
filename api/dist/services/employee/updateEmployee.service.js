@@ -41,7 +41,6 @@ const updateEmployeeService = (data, id) => __awaiter(void 0, void 0, void 0, fu
                 throw new Error("Outlet not found");
             updateData.outletId = data.outletId;
         }
-        // Persiapkan objek untuk user update dengan tipe yang tepat
         const userUpdate = {};
         if (data.fullName && data.fullName !== employee.user.fullName) {
             userUpdate.fullName = data.fullName;
@@ -59,13 +58,11 @@ const updateEmployeeService = (data, id) => __awaiter(void 0, void 0, void 0, fu
             userUpdate.role = data.role;
             hasUserUpdates = true;
         }
-        // Siapkan data update untuk user jika ada perubahan
         if (hasUserUpdates) {
             updateData.user = {
-                update: userUpdate
+                update: userUpdate,
             };
         }
-        // Periksa apakah ada perubahan pada level atas ATAU pada level user
         if (Object.keys(updateData).length === 0) {
             throw new Error("No changes detected");
         }

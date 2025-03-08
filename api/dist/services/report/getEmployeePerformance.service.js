@@ -19,16 +19,13 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
     var _a, _b;
     try {
         const { id, filterOutlet = "all", filterMonth, filterYear } = query;
-        // Cek apakah user ada
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id },
             select: { employee: { select: { outletId: true } }, role: true },
         });
         if (!existingUser)
             throw new Error("User not found!");
-        // Definisi tipe `whereClause`
         const whereClause = {};
-        // Outlet Admin hanya bisa melihat outletnya sendiri
         if (existingUser.role !== "SUPER_ADMIN") {
             whereClause.worker = {
                 outletId: (_b = (_a = existingUser.employee) === null || _a === void 0 ? void 0 : _a.outletId) !== null && _b !== void 0 ? _b : undefined,
@@ -39,11 +36,9 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
                 outletId: Number(filterOutlet),
             };
         }
-        // Gunakan bulan & tahun saat ini jika tidak diberikan
         const now = new Date();
         const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
         const year = filterYear ? Number(filterYear) : now.getFullYear();
-        // Filter berdasarkan tanggal jika ada
         if (filterMonth || filterYear) {
             whereClause.createdAt = {
                 gte: (0, date_fns_1.startOfMonth)(new Date(year, month)),
@@ -51,7 +46,6 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
             };
         }
         console.log("whereClause:", JSON.stringify(whereClause, null, 2));
-        // Ambil data performa karyawan
         const employeePerformances = yield prisma_1.default.orderWorker.findMany({
             where: whereClause,
             include: {
@@ -73,7 +67,6 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
                 },
             },
         });
-        // Hitung jumlah pekerjaan per karyawan
         const performanceMap = new Map();
         employeePerformances.forEach((record) => {
             var _a;
@@ -94,7 +87,6 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
             }
             performanceMap.get(userId).count += 1;
         });
-        // Konversi ke array
         const performanceReport = Array.from(performanceMap.values()).map((item) => (Object.assign(Object.assign({}, item.data), { taskCompleted: item.count })));
         return {
             message: "Successfully fetched employee performance",

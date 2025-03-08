@@ -13,9 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrderStatus = void 0;
-const numberGenerator_1 = require("../../../helpers/numberGenerator");
 const prisma_1 = __importDefault(require("../../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require("../../../../prisma/generated/client");
 const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const { workerId, orderId } = query;
     try {
@@ -37,15 +36,12 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
         }
         if (orderWorker.bypassRequest) {
             if (orderWorker.bypassAccepted === null) {
-                console.log("Bypass request pending");
                 throw new Error("Bypass request is still pending");
             }
             else if (orderWorker.bypassAccepted === true) {
-                console.log("Bypass request accepted");
                 throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
             }
             else if (orderWorker.bypassAccepted === false) {
-                console.log("Bypass request was rejected. Continuing process...");
             }
         }
         let newStatus;
@@ -73,19 +69,17 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
             if (!order) {
                 throw new Error("Order not found");
             }
-            newStatus = order.isPaid ? client_1.OrderStatus.WAITING_FOR_DELIVERY_DRIVER : client_1.OrderStatus.AWAITING_PAYMENT;
-            const deliveryNumber = yield (0, numberGenerator_1.generateOrderNumber)("DLV");
-            const deliveryOrder = yield prisma_1.default.deliveryOrder.create({
+            newStatus = order.isPaid
+                ? client_1.OrderStatus.WAITING_FOR_DELIVERY_DRIVER
+                : client_1.OrderStatus.AWAITING_PAYMENT;
+            const deliveryOrder = yield prisma_1.default.deliveryOrder.update({
+                where: { orderId: orderId },
                 data: {
                     orderId: orderId,
-                    deliveryNumber: deliveryNumber,
-                    deliveryStatus: order.isPaid ? client_1.DeliveryStatus.WAITING_FOR_DRIVER : client_1.DeliveryStatus.NOT_READY_TO_DELIVER,
-                    createdAt: new Date(),
-                    deliveryPrice: 20000,
+                    deliveryStatus: order.isPaid
+                        ? client_1.DeliveryStatus.WAITING_FOR_DRIVER
+                        : client_1.DeliveryStatus.NOT_READY_TO_DELIVER,
                     driverId: null,
-                    userId: order.pickupOrder.userId,
-                    addressId: order.pickupOrder.addressId,
-                    distance: order.pickupOrder.distance,
                 },
             });
         }
@@ -103,7 +97,11 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
             data: { isComplete: true },
         });
         const station = worker.station;
-        const nextStation = station === "WASHING" ? "IRONING" : station === "IRONING" ? "PACKING" : null;
+        const nextStation = station === "WASHING"
+            ? "IRONING"
+            : station === "IRONING"
+                ? "PACKING"
+                : null;
         if (nextStation) {
             const usersInNextStation = yield prisma_1.default.employee.findMany({
                 where: { station: nextStation },

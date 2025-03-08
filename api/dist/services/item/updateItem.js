@@ -16,16 +16,15 @@ exports.updateItemService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 const updateItemService = (body) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { itemName } = body;
         const existingItem = yield prisma_1.default.laundryItem.findFirst({
-            where: { itemName },
+            where: { itemName: body.itemName },
         });
         if (existingItem) {
             throw new Error("Item already exist");
         }
         const updatedItem = yield prisma_1.default.laundryItem.update({
-            where: { id: body.id },
-            data: { itemName },
+            where: { id: Number(body.id) },
+            data: { itemName: body.itemName },
         });
         return updatedItem;
     }

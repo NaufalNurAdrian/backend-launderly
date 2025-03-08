@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { EmployeeWorkShift, EmployeeStation, Role } from "@prisma/client";
+import { EmployeeWorkShift, EmployeeStation, Role } from "../../../prisma/generated/client";
 
 export interface UpdateEmployeeInput {
   workShift?: EmployeeWorkShift;
@@ -9,6 +9,16 @@ export interface UpdateEmployeeInput {
   email?: string;
   password?: string;
   role?: Role;
+<<<<<<< HEAD
+=======
+}
+
+interface UserUpdateInput {
+  fullName?: string;
+  email?: string;
+  password?: string;
+  role?: Role;
+>>>>>>> 96d3bef47ffaa081a9034f3a8b4c56e837af74bf
 }
 
 // Interface untuk user update
@@ -54,7 +64,6 @@ export const updateEmployeeService = async (
       updateData.outletId = data.outletId;
     }
 
-    // Persiapkan objek untuk user update dengan tipe yang tepat
     const userUpdate: UserUpdateInput = {};
 
     if (data.fullName && data.fullName !== employee.user.fullName) {
@@ -77,14 +86,12 @@ export const updateEmployeeService = async (
       hasUserUpdates = true;
     }
 
-    // Siapkan data update untuk user jika ada perubahan
     if (hasUserUpdates) {
       updateData.user = {
         update: userUpdate,
       };
     }
 
-    // Periksa apakah ada perubahan pada level atas ATAU pada level user
     if (Object.keys(updateData).length === 0) {
       throw new Error("No changes detected");
     }

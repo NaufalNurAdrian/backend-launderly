@@ -25,18 +25,36 @@ const checkInService = (data) => __awaiter(void 0, void 0, void 0, function* () 
         if (!user) {
             throw new Error("unAuthorized.");
         }
-        if (user.role !== "DRIVER" && user.role !== "WORKER") {
-            throw new Error("only Driver and Worker allowed to check attendance.");
+        if (!user.employee || !user.employee.workShift) {
+            throw new Error("Employee shift not found.");
         }
-        const todayStart = luxon_1.DateTime.now().startOf("day").toJSDate();
-        const todayEnd = luxon_1.DateTime.now().endOf("day").toJSDate();
+        const now = luxon_1.DateTime.now();
+        let todayStart;
+        let todayEnd;
+        if (user.employee.workShift === "DAY") {
+            todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
+            todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
+            if (checkInTime < todayStart || checkInTime > todayEnd) {
+                throw new Error("Check-in time is outside your shift hours (06:00 - 15:00).");
+            }
+        }
+        else if (user.employee.workShift === "NIGHT") {
+            todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
+            todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
+            if (checkInTime < todayStart || checkInTime > todayEnd) {
+                throw new Error("Check-in time is outside your shift hours (15:00 - 24:00).");
+            }
+        }
+        else {
+            throw new Error("unfalid shift");
+        }
         const existingAttendance = yield prisma_1.default.attendance.findFirst({
             where: {
                 userId: userId,
                 createdAt: {
                     gte: todayStart,
                     lte: todayEnd,
-                }
+                },
             },
         });
         if (existingAttendance) {

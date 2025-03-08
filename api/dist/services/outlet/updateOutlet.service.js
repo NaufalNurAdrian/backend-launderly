@@ -19,32 +19,28 @@ const updateOutletService = (body) => __awaiter(void 0, void 0, void 0, function
         const { id, outletName, outletType, address } = body;
         const existingOutlet = yield prisma_1.default.outlet.findUnique({
             where: { id: parseInt(id) },
-            include: { address: true }, // Ambil alamat yang sudah ada
+            include: { address: true },
         });
         if (!existingOutlet) {
             throw new Error("Outlet not found");
         }
-        // Cek alamat yang ada di database
         const existingAddresses = Array.isArray(existingOutlet.address)
             ? existingOutlet.address
             : existingOutlet.address
                 ? [existingOutlet.address]
                 : [];
-        // Mapping ID alamat yang dikirim di request
         const requestAddressIds = Array.isArray(address)
             ? address.map((addr) => addr.id).filter(Boolean)
             : [];
-        // Set alamat lama yang tidak ada di request menjadi isDelete: true
         yield prisma_1.default.address.updateMany({
             where: {
                 id: {
                     in: existingAddresses.map((addr) => addr.id),
-                    notIn: requestAddressIds, // Alamat yang tidak ada di request
+                    notIn: requestAddressIds,
                 },
             },
             data: { isDelete: true },
         });
-        // Proses alamat baru dan update alamat lama
         const updatedAddresses = yield Promise.all(Array.isArray(address)
             ? address.map((addr) => __awaiter(void 0, void 0, void 0, function* () {
                 if (addr.id) {
@@ -72,13 +68,11 @@ const updateOutletService = (body) => __awaiter(void 0, void 0, void 0, function
                     });
                 }
             }))
-            : [] // Jika address bukan array, kosongkan prosesnya
-        );
-        // Update Outlet
+            : []);
         const updatedOutlet = yield prisma_1.default.outlet.update({
             where: { id: parseInt(id) },
             data: Object.assign(Object.assign({}, (outletName && { outletName })), (outletType && { outletType })),
-            include: { address: true }, // Ambil alamat yang sudah diperbarui
+            include: { address: true },
         });
         return {
             message: "Outlet updated successfully",

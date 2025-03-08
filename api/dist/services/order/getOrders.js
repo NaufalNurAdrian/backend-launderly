@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOrdersService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const client_1 = require("prisma/generated/client");
+const client_1 = require("../../../prisma/generated/client");
 const getOrdersService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {

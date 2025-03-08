@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNextStatus = void 0;
-const client_1 = require("prisma/generated/client");
+const client_1 = require("../../prisma/generated/client");
 const getNextStatus = (type, currentStatus) => {
     var _a;
     const statusFlow = {

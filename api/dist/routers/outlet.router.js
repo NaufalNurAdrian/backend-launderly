@@ -15,7 +15,7 @@ class OutletRouter {
         this.router.get("/", verify_1.verifyToken, verify_1.checkSuperAdmin, this.outletController.getAllOutlet);
         this.router.patch("/update/", verify_1.verifyToken, verify_1.checkSuperAdmin, this.outletController.updateOutlet);
         this.router.patch("/delete", verify_1.verifyToken, verify_1.checkSuperAdmin, this.outletController.deleteOutlet);
-        this.router.get("/:id", this.outletController.getOutletById);
+        this.router.get("/:id", verify_1.verifyToken, verify_1.checkSuperAdmin, this.outletController.getOutletById);
     }
     getRouter() {
         return this.router;

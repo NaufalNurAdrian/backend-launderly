@@ -15,7 +15,6 @@ class PaymentRouter {
         this.router.get('/report-chart', verify_1.verifyToken, this.paymentController.getPaymentChartController);
         this.router.get('/:userId', verify_1.verifyToken, this.paymentController.getUserPaymentByIdController);
         this.router.post('/', verify_1.verifyToken, this.paymentController.createPaymentController);
-        this.router.post('/webhook/midtrans', this.paymentController.updatePaymentController);
         this.router.post('/midtrans-callback', this.paymentController.handlePaymentWebhook);
     }
     getRouter() {
