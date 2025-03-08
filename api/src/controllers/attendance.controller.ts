@@ -56,7 +56,7 @@ export class AttendanceController {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).send({ message: err });
+      res.status(400).send({ message: err.message });
     }
   }
 
@@ -72,7 +72,7 @@ export class AttendanceController {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).send({ message: err });
+      res.status(400).send({ message: err.message });
     }
   }
 }
