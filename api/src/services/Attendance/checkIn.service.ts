@@ -27,22 +27,24 @@ const now = DateTime.now().setZone("Asia/Jakarta")
     let todayStart: Date;
     let todayEnd: Date;
 
+    const checkInWIB = DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta").toJSDate();
+
     if (user.employee.workShift === "DAY") {
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-    
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
-        throw new Error("Check-in time is outside your shift hours (06:00 - 15:00).");
+
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+        throw new Error("Check-in time is outside your shift hours (06:00 - 15:00 WIB).");
       }
     } else if (user.employee.workShift === "NIGHT") {
       todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-      todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-    
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
-        throw new Error("Check-in time is outside your shift hours (15:00 - 24:00).");
+      todayEnd = now.set({ hour: 23, minute: 59, second: 59, millisecond: 999 }).toJSDate();
+
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+        throw new Error("Check-in time is outside your shift hours (15:00 - 24:00 WIB).");
       }
-    }else {
-      throw new Error("unfalid shift");
+    } else {
+      throw new Error("Invalid shift.");
     }
 
     const existingAttendance = await prisma.attendance.findFirst({
@@ -60,8 +62,8 @@ const now = DateTime.now().setZone("Asia/Jakarta")
 
     const newAttendance = await prisma.attendance.create({
       data: {
-        createdAt: new Date(),
-        checkIn: checkInTime,
+        createdAt: now.toJSDate(),
+        checkIn: checkInWIB,
         checkOut: null,
         workHour: 0,
         userId: userId,
