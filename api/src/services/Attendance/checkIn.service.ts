@@ -28,6 +28,7 @@ export const checkInService = async (data: CheckInData) => {
     let todayEnd: Date;
 
     const checkInWIB = DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta").toJSDate();
+
     if (user.employee.workShift === "DAY") {
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
@@ -61,7 +62,7 @@ export const checkInService = async (data: CheckInData) => {
 
     const newAttendance = await prisma.attendance.create({
       data: {
-        createdAt: new Date(),
+        createdAt: now.toJSDate(),
         checkIn: checkInWIB,
         checkOut: null,
         workHour: 0,
