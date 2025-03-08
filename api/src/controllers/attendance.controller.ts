@@ -20,7 +20,7 @@ export class AttendanceController {
 
       res.status(200).send(attendance);
     } catch (err: any) {
-      res.status(400).send({ message: err });
+      res.status(400).send({ message: err.message  });
     }
   }
 
@@ -40,7 +40,7 @@ export class AttendanceController {
 
       res.status(200).send(attendances);
     } catch (err: any) {
-      res.status(400).send({ message: err });
+      res.status(400).send({ message: err.message  });
     }
   }
 
