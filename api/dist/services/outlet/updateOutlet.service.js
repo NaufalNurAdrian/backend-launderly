@@ -69,6 +69,10 @@ const updateOutletService = (body) => __awaiter(void 0, void 0, void 0, function
                 }
             }))
             : []);
+<<<<<<< HEAD
+=======
+        // Update Outlet
+>>>>>>> 76429f45c8ab9994cccca8209f294f3c1a3396f2
         const updatedOutlet = yield prisma_1.default.outlet.update({
             where: { id: parseInt(id) },
             data: Object.assign(Object.assign({}, (outletName && { outletName })), (outletType && { outletType })),
