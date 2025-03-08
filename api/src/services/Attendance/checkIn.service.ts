@@ -33,18 +33,18 @@ export const checkInService = async (data: CheckInData) => {
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
 
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
         throw new Error("Check-in time is outside your shift hours (06:00 - 15:00).");
       }
     } else if (user.employee.workShift === "NIGHT") {
       todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
 
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
         throw new Error("Check-in time is outside your shift hours (15:00 - 24:00).");
       }
     } else {
-      throw new Error("unfalid shift");
+      throw new Error("Invalid shift");
     }
 
     const existingAttendance = await prisma.attendance.findFirst({
@@ -56,6 +56,7 @@ export const checkInService = async (data: CheckInData) => {
         },
       },
     });
+
     if (existingAttendance) {
       throw new Error("You are already checked In today.");
     }
