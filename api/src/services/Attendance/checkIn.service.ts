@@ -62,7 +62,7 @@ export const checkInService = async (data: CheckInData) => {
 
     const newAttendance = await prisma.attendance.create({
       data: {
-        createdAt: now.toJSDate(),
+        createdAt: new Date(),
         checkIn: checkInWIB,
         checkOut: null,
         workHour: 0,
