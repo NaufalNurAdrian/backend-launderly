@@ -1,5 +1,9 @@
 import prisma from "../../prisma";
+<<<<<<< HEAD
+import { PaymentStatus, OrderStatus, DeliveryStatus } from "@prisma/client";
+=======
 import { PaymentStatus, OrderStatus, DeliveryStatus } from "../../../prisma/generated/client";
+>>>>>>> 96d3bef47ffaa081a9034f3a8b4c56e837af74bf
 
 interface UpdatePaymentBody {
   order_id: string;

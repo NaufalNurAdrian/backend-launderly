@@ -9,6 +9,8 @@ export interface UpdateEmployeeInput {
   email?: string;
   password?: string;
   role?: Role;
+<<<<<<< HEAD
+=======
 }
 
 interface UserUpdateInput {
@@ -16,6 +18,7 @@ interface UserUpdateInput {
   email?: string;
   password?: string;
   role?: Role;
+>>>>>>> 96d3bef47ffaa081a9034f3a8b4c56e837af74bf
 }
 
 // Interface untuk user update
