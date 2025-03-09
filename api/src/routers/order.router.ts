@@ -26,7 +26,7 @@ export class OrderRouter {
       checkOutletSuper,
       asyncMiddleware(this.orderController.getOrdersController.bind(this.orderController))
     );
-    this.router.post("/bypass", verifyToken, checkSuperAdmin, this.orderController.bypassOrderController)
+    this.router.post("/bypass", verifyToken,  this.orderController.bypassOrderController)
   }
 
   getRouter() {

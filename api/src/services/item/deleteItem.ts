@@ -1,10 +1,10 @@
 import prisma from "../../prisma";
 
 
-export const deleteItemService = async (id: number) => {
+export const deleteItemService = async (id: string) => {
   try {
     const existingItem = await prisma.laundryItem.findFirst({
-      where: { id },
+      where: { id: Number(id) },
     });
 
     if (!existingItem) {
@@ -12,7 +12,7 @@ export const deleteItemService = async (id: number) => {
     }
 
     const deleteItem = await prisma.laundryItem.update({
-      where: { id },
+      where: { id: Number(id) },
       data: { isDelete: true },
     });
     return deleteItem;

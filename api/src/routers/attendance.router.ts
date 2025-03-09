@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AttendanceController } from "../controllers/attendance.controller";
-import { verifyRole, verifyToken } from "../middlewares/verify";
+import { checkOutletSuper, verifyRole, verifyToken } from "../middlewares/verify";
 
 export class AttendanceRouter {
   private attendanceController: AttendanceController;

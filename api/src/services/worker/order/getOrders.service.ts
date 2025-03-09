@@ -53,6 +53,7 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
+
           OR: [
             {
               orderStatus: orderStatus,
@@ -78,26 +79,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
                 },
               },
             },
-          },
-          {
-            OR: [
-              {
-                orderWorker: {
-                  none: {
-                    bypassAccepted: true,
-                    station: station,
-                  },
-                },
-              },
-              {
-                orderWorker: {
-                  some: {
-                    bypassRejected: true,
-                    station: station,
-                  },
-                },
-              },
-            ],
           },
         ],
       };
