@@ -1,4 +1,4 @@
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../../../prisma/generated/client";
 import prisma from "../../../prisma";
 
 interface GetWorkerOrdersData {
@@ -11,7 +11,7 @@ interface GetWorkerOrdersData {
 
 export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
   try {
-    const { workerId, order, page = 1, pageSize = 4, sortBy } = query;
+    const { workerId, order, page = 1, pageSize = 3, sortBy } = query;
 
     const worker = await prisma.user.findUnique({
       where: { id: workerId, role: "WORKER" },
@@ -53,7 +53,6 @@ export const getWorkerOrdersService = async (query: GetWorkerOrdersData) => {
     const whereClause: Prisma.OrderWhereInput = {
       AND: [
         {
-
           OR: [
             {
               orderStatus: orderStatus,

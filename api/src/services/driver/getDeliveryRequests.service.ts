@@ -1,5 +1,5 @@
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/client";
 import haversineDistance from "../../helpers/haversine";
 import prisma from "../../prisma";
 
@@ -81,7 +81,6 @@ export const getDeliveryRequestsService = async (query: getDeliveryData) => {
 
       const deliveryLat = request.address.latitude || 0;
       const deliveryLon = request.address.longitude || 0;
-
       const distance = haversineDistance(
         outletLat,
         outletLon,

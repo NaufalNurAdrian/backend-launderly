@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output = "./generated/client"
+  output   = "./generated/client"
 }
 
 datasource db {
@@ -87,26 +87,25 @@ enum PaymentStatus {
 }
 
 model User {
-  id                   Int       @id @default(autoincrement())
+  id                   Int                @id @default(autoincrement())
   fullName             String
-  email                String    @unique
+  email                String             @unique
   password             String?
-  isVerify             Boolean   @default(false)
-  role                 Role      @default(CUSTOMER)
+  isVerify             Boolean            @default(false)
+  role                 Role               @default(CUSTOMER)
   avatar               String?
-  createdAt            DateTime  @default(now())
-  isDelete             Boolean   @default(false)
+  createdAt            DateTime           @default(now())
+  isDelete             Boolean            @default(false)
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
   emailVerifyToken     String?
-  authProvider         String    @default("email")
+  authProvider         String             @default("email")
   employee             Employee?
   address              Address[]
-
-  pickupOrder      PickupOrder[]
-  deliveryOrder    DeliveryOrder[]
-  userNotification UserNotification[]
-  Attendance       Attendance[]
+  pickupOrder          PickupOrder[]
+  deliveryOrder        DeliveryOrder[]
+  userNotification     UserNotification[]
+  Attendance           Attendance[]
 }
 
 model Employee {
@@ -186,9 +185,9 @@ model Order {
   pickupOrderId Int         @unique
   isPaid        Boolean     @default(false)
   isConfirm     Boolean     @default(false)
-  receivedAt    DateTime?   
-  confirmedAt   DateTime?   
-  
+  receivedAt    DateTime?
+  confirmedAt   DateTime?
+
   pickupOrder   PickupOrder     @relation(fields: [pickupOrderId], references: [id])
   orderItem     OrderItem[]
   deliveryOrder DeliveryOrder[]
@@ -196,13 +195,12 @@ model Order {
   payment       Payment[]
 }
 
-
 model OrderItem {
   id            Int     @id @default(autoincrement())
   qty           Int
   orderId       Int
   laundryItemId Int
-  isDelete      Boolean @default(false) 
+  isDelete      Boolean @default(false)
 
   laundryItem LaundryItem @relation(fields: [laundryItemId], references: [id])
   order       Order       @relation(fields: [orderId], references: [id])

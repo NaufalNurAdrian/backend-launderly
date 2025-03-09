@@ -114,7 +114,7 @@ export const verifyRoleAndAttendance = (allowedRoles: string[]) => {
     if (!activeAttendance) {
       res
         .status(403)
-        .json({ message: "Anda belum check-in atau sudah check-out" });
+        .json({ message: "you are not checked in or already checked out" });
       return;
     }
 

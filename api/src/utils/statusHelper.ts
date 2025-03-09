@@ -1,4 +1,4 @@
-import { DeliveryStatus, PickupStatus } from "@prisma/client";
+import { DeliveryStatus, PickupStatus } from "../../prisma/generated/client";
 
 export const getNextStatus = (
   type: "pickup" | "delivery",

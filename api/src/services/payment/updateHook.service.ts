@@ -1,5 +1,5 @@
 import prisma from "../../prisma";
-import { PaymentStatus, OrderStatus, DeliveryStatus } from "@prisma/client";
+import { PaymentStatus, OrderStatus, DeliveryStatus } from "../../../prisma/generated/client";
 
 interface UpdatePaymentBody {
   order_id: string;
@@ -42,7 +42,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
 
     console.log(`Mapped payment status: ${paymentStatus}`);
 
-    // Cari invoice berdasarkan order_id
     console.log(`Searching for invoice with order_id: ${order_id}`);
     const existingInvoice = await prisma.payment.findUnique({
       where: { invoiceNumber: order_id },
