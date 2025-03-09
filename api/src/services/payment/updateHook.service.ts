@@ -120,10 +120,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
     console.log(
       `Payment updated for order ${order_id}. New status: ${newOrderStatus}, Delivery: ${newDeliveryStatus}`
     );
-<<<<<<< HEAD
-
-=======
->>>>>>> 9cdabb44be0883e7b1e118c5b79d9b3e1dac3466
 
     return { message: "Payment updated successfully" };
   } catch (error) {

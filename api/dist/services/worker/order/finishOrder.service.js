@@ -36,12 +36,15 @@ const updateOrderStatus = (query) => __awaiter(void 0, void 0, void 0, function*
         }
         if (orderWorker.bypassRequest) {
             if (orderWorker.bypassAccepted === null) {
+                console.log("Bypass request pending");
                 throw new Error("Bypass request is still pending");
             }
             else if (orderWorker.bypassAccepted === true) {
+                console.log("Bypass request accepted");
                 throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
             }
             else if (orderWorker.bypassAccepted === false) {
+                console.log("Bypass request was rejected. Continuing process...");
             }
         }
         let newStatus;
