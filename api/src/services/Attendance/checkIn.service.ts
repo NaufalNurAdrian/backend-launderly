@@ -22,26 +22,29 @@ export const checkInService = async (data: CheckInData) => {
     if (!user.employee || !user.employee.workShift) {
       throw new Error("Employee shift not found.");
     }
-    const now = DateTime.now();
+
+    const now = DateTime.now().setZone("Asia/Jakarta");
     let todayStart: Date;
     let todayEnd: Date;
+
+    const checkInWIB = DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta").toJSDate();
 
     if (user.employee.workShift === "DAY") {
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
       todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-    
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
+
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
         throw new Error("Check-in time is outside your shift hours (06:00 - 15:00).");
       }
     } else if (user.employee.workShift === "NIGHT") {
       todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-      todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-    
-      if (checkInTime < todayStart || checkInTime > todayEnd) {
-        throw new Error("Check-in time is outside your shift hours (15:00 - 24:00).");
+      todayEnd = now.set({ hour: 23, minute: 0, second: 0, millisecond: 0 }).toJSDate();
+
+      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+        throw new Error("Check-in time is outside your shift hours (15:00 - 23:00).");
       }
-    }else {
-      throw new Error("unfalid shift");
+    } else {
+      throw new Error("Invalid shift");
     }
 
     const existingAttendance = await prisma.attendance.findFirst({
@@ -59,8 +62,8 @@ export const checkInService = async (data: CheckInData) => {
 
     const newAttendance = await prisma.attendance.create({
       data: {
-        createdAt: new Date(),
-        checkIn: checkInTime,
+        createdAt: now.toJSDate(),
+        checkIn: checkInWIB,
         checkOut: null,
         workHour: 0,
         userId: userId,

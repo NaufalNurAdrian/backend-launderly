@@ -1,16 +1,32 @@
 import { Request, Response } from "express";
 import prisma from "../../prisma";
+import { verify } from "jsonwebtoken";
 
 export const verifyEmailService = async (req: Request, res: Response) => {
   try {
-    const token = req.query.token;
+    const { token } = req.body;
 
-    // Pastikan token adalah string
-    if (!token || typeof token !== "string") {
-      return res.status(400).json({ message: "Invalid verification token!" });
+    if (!token) {
+      return res.status(400).json({ message: "Verification token is required!" });
     }
 
-    // Cek apakah token valid
+    // Verifikasi token JWT
+    let decoded;
+    try {
+      decoded = verify(token, process.env.JWT_KEY!) as { id: string; newEmail: string };
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid or expired token!" });
+    }
+
+    const { id, newEmail } = decoded;
+
+    // Konversi ID ke number
+    const userId = Number(id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID!" });
+    }
+
+    // Cari user berdasarkan token yang dikirim di params
     const user = await prisma.user.findFirst({
       where: { emailVerifyToken: token },
     });
@@ -19,18 +35,25 @@ export const verifyEmailService = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid or expired token!" });
     }
 
-    // Update status email menjadi verified
+    // Cek apakah email baru masih tersedia
+    const existingUser = await prisma.user.findUnique({ where: { email: newEmail } });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use!" });
+    }
+
+    // Update email dan hapus token verifikasi
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
-        isVerify: true,
-        emailVerifyToken: null, 
+        email: newEmail,
+        emailVerifyToken: null,
       },
     });
 
-    res.status(200).json({ message: "Email verified successfully!" });
+    res.status(200).json({ message: "Email verified and updated successfully!" });
   } catch (error) {
     console.error("Error verifying email:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "An internal server error occurred!" });
   }
 };

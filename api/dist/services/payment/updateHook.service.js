@@ -37,7 +37,7 @@ const updateHooktStatus = (body) => __awaiter(void 0, void 0, void 0, function* 
             return { message: `Unknown transaction_status: ${transaction_status}` };
         }
         console.log(`Mapped payment status: ${paymentStatus}`);
-        // Cari invoice berdasarkan order_id
+
         console.log(`Searching for invoice with order_id: ${order_id}`);
         const existingInvoice = yield prisma_1.default.payment.findUnique({
             where: { invoiceNumber: order_id },
