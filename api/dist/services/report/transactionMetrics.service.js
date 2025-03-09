@@ -25,9 +25,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTransactionMetrics = getTransactionMetrics;
 const prisma_1 = __importDefault(require("../../prisma"));
-function getTransactionMetrics(baseWhereClause) {
-    return __awaiter(this, void 0, void 0, function* () {
+const date_fns_1 = require("date-fns");
+function getTransactionMetrics(baseWhereClause_1) {
+    return __awaiter(this, arguments, void 0, function* (baseWhereClause, timeframe = "daily") {
         try {
+            console.log(`Transaction metrics where clause (timeframe: ${timeframe}):`, JSON.stringify(baseWhereClause, null, 2));
             const { outletId } = baseWhereClause, otherWhereClause = __rest(baseWhereClause, ["outletId"]);
             const whereClause = Object.assign(Object.assign({}, otherWhereClause), { order: outletId ? {
                     pickupOrder: {
@@ -44,13 +46,49 @@ function getTransactionMetrics(baseWhereClause) {
                     }
                 }
             });
-            const successful = payments.filter(p => p.paymentStatus === 'SUCCESSED').length;
-            const pending = payments.filter(p => p.paymentStatus === 'PENDING').length;
-            const failed = payments.filter(p => ['CANCELLED', 'DENIED', 'EXPIRED'].includes(p.paymentStatus)).length;
-            const total = payments.length;
+            // Determine current period based on timeframe for "right now" calculations
+            const now = new Date();
+            let currentPeriodStart;
+            let currentPeriodEnd;
+            switch (timeframe) {
+                case "daily":
+                    currentPeriodStart = (0, date_fns_1.startOfDay)(now);
+                    currentPeriodEnd = (0, date_fns_1.endOfDay)(now);
+                    break;
+                case "weekly":
+                    currentPeriodStart = (0, date_fns_1.startOfWeek)(now, { weekStartsOn: 1 }); // Week starts on Monday
+                    currentPeriodEnd = (0, date_fns_1.endOfWeek)(now, { weekStartsOn: 1 });
+                    break;
+                case "monthly":
+                    currentPeriodStart = (0, date_fns_1.startOfMonth)(now);
+                    currentPeriodEnd = (0, date_fns_1.endOfMonth)(now);
+                    break;
+                case "yearly":
+                    currentPeriodStart = (0, date_fns_1.startOfYear)(now);
+                    currentPeriodEnd = (0, date_fns_1.endOfYear)(now);
+                    break;
+                default:
+                    currentPeriodStart = (0, date_fns_1.startOfDay)(now);
+                    currentPeriodEnd = (0, date_fns_1.endOfDay)(now);
+            }
+            // Filter payments for current period (if timeframe is not custom)
+            const currentPeriodPayments = timeframe !== "custom"
+                ? payments.filter(payment => {
+                    const paymentDate = new Date(payment.createdAt);
+                    return (0, date_fns_1.isWithinInterval)(paymentDate, {
+                        start: currentPeriodStart,
+                        end: currentPeriodEnd
+                    });
+                })
+                : payments;
+            console.log(`Current period (${timeframe}) has ${currentPeriodPayments.length} payments`);
+            const successful = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED').length;
+            const pending = currentPeriodPayments.filter(p => p.paymentStatus === 'PENDING').length;
+            const failed = currentPeriodPayments.filter(p => ['CANCELLED', 'DENIED', 'EXPIRED'].includes(p.paymentStatus)).length;
+            const total = currentPeriodPayments.length;
             const conversionRate = total > 0 ? (successful / total) * 100 : 0;
             const paymentMethodsMap = new Map();
-            payments.forEach(payment => {
+            currentPeriodPayments.forEach(payment => {
                 const method = payment.paymentMethode || 'Unknown';
                 if (!paymentMethodsMap.has(method)) {
                     paymentMethodsMap.set(method, { method, count: 0, value: 0 });
@@ -60,7 +98,7 @@ function getTransactionMetrics(baseWhereClause) {
                 methodStat.value += payment.amount;
             });
             const paymentMethods = Array.from(paymentMethodsMap.values());
-            const successfulPayments = payments.filter(p => p.paymentStatus === 'SUCCESSED');
+            const successfulPayments = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED');
             const amounts = successfulPayments.map(p => p.amount);
             const averageValue = amounts.length > 0
                 ? amounts.reduce((sum, val) => sum + val, 0) / amounts.length
