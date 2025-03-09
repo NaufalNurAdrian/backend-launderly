@@ -68,7 +68,13 @@ export class EmployeeController {
 
   async deleteEmployee(req: Request, res: Response) {
     try {
-      const result = await deleteEmployeeService(Number(req.params.id));
+      const id = req.body.id
+
+      if (!id) {
+        res.status(200).send({message: "employee id not found"})
+      }
+
+      const result = await deleteEmployeeService(id);
       res
         .status(200)
         .send({ message: "Employee deleted successfully", result });

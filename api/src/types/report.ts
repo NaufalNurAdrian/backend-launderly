@@ -1,4 +1,5 @@
-export type ReportTimeframe = "daily" | "weekly" | "monthly" | "custom";
+
+export type ReportTimeframe = "daily" | "weekly" | "monthly" | "yearly" | "custom";
 export type ReportType = "transactions" | "revenue" | "customers" | "orders" | "comprehensive";
 
 export interface ReportFilters {

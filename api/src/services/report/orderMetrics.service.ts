@@ -1,6 +1,7 @@
 import prisma from "../../prisma";
+import { ReportTimeframe } from "@/types/report";
 
-export async function getOrderMetrics(baseWhereClause: any) {
+export async function getOrderMetrics(baseWhereClause: any, timeframe?: ReportTimeframe) {
   try {
     const ordersByStatus = await prisma.order.groupBy({
       by: ['orderStatus'],

@@ -1,6 +1,7 @@
 import prisma from "../../prisma";
+import { ReportTimeframe } from "@/types/report";
 
-export async function getCustomerMetrics(baseWhereClause: any) {
+export async function getCustomerMetrics(baseWhereClause: any, timeframe?: ReportTimeframe) {
   try {
     const activeCustomers = await prisma.user.findMany({
       where: {
