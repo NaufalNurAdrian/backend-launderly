@@ -11,6 +11,7 @@ export const getAllOutletService = async (page: number, limit: number) => {
         outletName: true,
         outletType: true,
         address: true,
+        isDelete: true
       },
     });
 
