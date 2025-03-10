@@ -18,7 +18,16 @@ const date_fns_1 = require("date-fns");
 const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const { id, filterOutlet, filterMonth, filterYear, timeframe = "monthly" } = query;
+        const { id, filterOutlet, filterMonth, filterYear, timeframe = "monthly", startDate, endDate } = query;
+        // Log the query parameters
+        console.log("Sales report query:", {
+            filterOutlet,
+            filterMonth,
+            filterYear,
+            timeframe,
+            startDate,
+            endDate
+        });
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id },
             select: {
@@ -51,35 +60,48 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
         const now = new Date();
         const year = filterYear ? Number(filterYear) : now.getFullYear();
         const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
-        // Define timeframe-specific date ranges for totals calculation
+        // Define timeframe-specific date ranges
         let timeframeStartDate;
         let timeframeEndDate;
-        switch (timeframe) {
-            case "daily":
-                // Today only
-                timeframeStartDate = (0, date_fns_1.startOfDay)(now);
-                timeframeEndDate = (0, date_fns_1.endOfDay)(now);
-                break;
-            case "weekly":
-                // Last 7 days
-                timeframeStartDate = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 6)); // 6 days ago + today = 7 days
-                timeframeEndDate = (0, date_fns_1.endOfDay)(now);
-                break;
-            case "monthly":
-                // Current month only
-                timeframeStartDate = (0, date_fns_1.startOfMonth)(now);
-                timeframeEndDate = (0, date_fns_1.endOfMonth)(now);
-                break;
-            case "yearly":
-                // Current year only
-                timeframeStartDate = (0, date_fns_1.startOfYear)(now);
-                timeframeEndDate = (0, date_fns_1.endOfYear)(now);
-                break;
-            default:
-                // Default to monthly (current month)
-                timeframeStartDate = (0, date_fns_1.startOfMonth)(now);
-                timeframeEndDate = (0, date_fns_1.endOfMonth)(now);
+        // Handle custom timeframe with explicit dates
+        if (timeframe === "custom" && startDate && endDate) {
+            timeframeStartDate = (0, date_fns_1.parseISO)(startDate);
+            timeframeEndDate = (0, date_fns_1.parseISO)(endDate);
+            // Set proper time components
+            timeframeStartDate.setHours(0, 0, 0, 0);
+            timeframeEndDate.setHours(23, 59, 59, 999);
+            console.log(`Using custom date range: ${(0, date_fns_1.format)(timeframeStartDate, 'yyyy-MM-dd')} to ${(0, date_fns_1.format)(timeframeEndDate, 'yyyy-MM-dd')}`);
         }
+        else {
+            // Standard timeframes
+            switch (timeframe) {
+                case "daily":
+                    // Today only
+                    timeframeStartDate = (0, date_fns_1.startOfDay)(now);
+                    timeframeEndDate = (0, date_fns_1.endOfDay)(now);
+                    break;
+                case "weekly":
+                    // Last 7 days
+                    timeframeStartDate = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 6)); // 6 days ago + today = 7 days
+                    timeframeEndDate = (0, date_fns_1.endOfDay)(now);
+                    break;
+                case "monthly":
+                    // Current month only
+                    timeframeStartDate = (0, date_fns_1.startOfMonth)(now);
+                    timeframeEndDate = (0, date_fns_1.endOfMonth)(now);
+                    break;
+                case "yearly":
+                    // Current year only
+                    timeframeStartDate = (0, date_fns_1.startOfYear)(now);
+                    timeframeEndDate = (0, date_fns_1.endOfYear)(now);
+                    break;
+                default:
+                    // Default to monthly (current month)
+                    timeframeStartDate = (0, date_fns_1.startOfMonth)(now);
+                    timeframeEndDate = (0, date_fns_1.endOfMonth)(now);
+            }
+        }
+        console.log(`Using timeframe ${timeframe} from ${(0, date_fns_1.format)(timeframeStartDate, 'yyyy-MM-dd')} to ${(0, date_fns_1.format)(timeframeEndDate, 'yyyy-MM-dd')}`);
         // Get the orders for the selected timeframe (for total calculations)
         const timeframeWhereClause = Object.assign({}, orderWhereClause);
         timeframeWhereClause.createdAt = {
@@ -103,6 +125,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
                 deliveryOrder: true
             }
         });
+        console.log(`Found ${timeframeOrders.length} orders in the selected timeframe`);
         // Calculate totals for the timeframe
         let totalIncome = 0;
         let totalTransaction = timeframeOrders.length;
@@ -128,7 +151,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
             totalIncome += orderIncome;
             totalWeight += (_a = order.weight) !== null && _a !== void 0 ? _a : 0;
         });
-        // Now, prepare chart data as in the original code
+        // Now, prepare chart data
         // For daily chart data (30 days)
         const dailyStartDate = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
         const dailyEndDate = (0, date_fns_1.endOfDay)(now);
@@ -139,7 +162,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
         const monthlyEndDate = (0, date_fns_1.endOfMonth)(new Date(year, month));
         // Get orders for chart data
         const chartWhereClause = Object.assign({}, orderWhereClause);
-        // We need orders for the last 30 days for daily charts
+        // Use the same date range as the timeframe for consistency
         chartWhereClause.createdAt = {
             gte: dailyStartDate,
             lte: dailyEndDate
@@ -161,6 +184,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
                 deliveryOrder: true
             }
         });
+        console.log(`Found ${chartOrders.length} orders for chart data in 30-day range`);
         // Initialize arrays for chart data
         let incomeDaily = new Array(30).fill(0);
         let transactionDaily = new Array(30).fill(0);
@@ -313,6 +337,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
             incomeYearly[i] = yearlyIncome;
             transactionYearly[i] = yearlyOrders.length;
         }
+        console.log("Sales report calculation complete");
         return {
             message: "Successfully fetched sales report",
             result: {
@@ -339,6 +364,7 @@ const getSalesReportService = (query) => __awaiter(void 0, void 0, void 0, funct
         };
     }
     catch (error) {
+        console.error("Error in getSalesReportService:", error);
         throw error;
     }
 });

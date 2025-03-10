@@ -22,43 +22,59 @@ const orderMetrics_service_1 = require("./orderMetrics.service");
 const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { outletId, startDate, endDate, timeframe = "daily", reportType = "comprehensive" } = filters;
+        // Log request parameters
+        console.log("Report generation request:", {
+            outletId,
+            startDate: startDate === null || startDate === void 0 ? void 0 : startDate.toISOString(),
+            endDate: endDate === null || endDate === void 0 ? void 0 : endDate.toISOString(),
+            timeframe,
+            reportType
+        });
         let dateStart = startDate;
         let dateEnd = endDate;
-        // If dates aren't provided, calculate appropriate date ranges based on timeframe
-        if (!startDate || !endDate) {
+        // If dates aren't provided or for custom timeframe, calculate appropriate date ranges
+        if ((!startDate || !endDate)) {
+            // For custom timeframe without dates, show an error
+            if (timeframe === "custom") {
+                throw new Error("Date range is required for custom time period");
+            }
+            // Calculate default date ranges for other timeframes
             const today = new Date();
             switch (timeframe) {
                 case "daily":
-                    // Use the last 30 days for daily view
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 29)); // 30 days including today
+                    // Use just today for daily view
+                    dateStart = (0, date_fns_1.startOfDay)(today);
                     dateEnd = (0, date_fns_1.endOfDay)(today);
                     break;
                 case "weekly":
-                    // Use the last 12 weeks for weekly view
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subWeeks)(today, 11)); // 12 weeks including current week
+                    // Use exactly 7 days for weekly view (including today)
+                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 6));
                     dateEnd = (0, date_fns_1.endOfDay)(today);
                     break;
                 case "monthly":
-                    // Use current year for monthly view
+                    // Use current month for monthly view
+                    dateStart = (0, date_fns_1.startOfMonth)(today);
+                    dateEnd = (0, date_fns_1.endOfMonth)(today);
+                    break;
+                case "yearly":
+                    // Use current year for yearly view
                     dateStart = (0, date_fns_1.startOfYear)(today);
                     dateEnd = (0, date_fns_1.endOfYear)(today);
                     break;
-                case "yearly":
-                    // Use last 5 years for yearly view
-                    dateStart = (0, date_fns_1.startOfYear)(new Date(today.getFullYear() - 4, 0, 1));
-                    dateEnd = (0, date_fns_1.endOfYear)(today);
-                    break;
-                case "custom":
-                    // For custom timeframe with no dates, default to last 30 days
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 29));
-                    dateEnd = (0, date_fns_1.endOfDay)(today);
-                    break;
                 default:
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 29));
+                    dateStart = (0, date_fns_1.startOfDay)(today);
                     dateEnd = (0, date_fns_1.endOfDay)(today);
             }
         }
-        // Create base where clause
+        // Pada titik ini, dateStart dan dateEnd seharusnya selalu didefinisikan
+        // tapi TypeScript tidak bisa mengetahuinya, jadi kita perlu memastikan
+        if (!dateStart || !dateEnd) {
+            // Fallback jika somehow masih undefined
+            const today = new Date();
+            dateStart = (0, date_fns_1.startOfDay)(today);
+            dateEnd = (0, date_fns_1.endOfDay)(today);
+        }
+        // Create base where clause with properly formatted dates
         const baseWhereClause = {
             createdAt: {
                 gte: dateStart,
@@ -68,9 +84,11 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
         if (outletId) {
             baseWhereClause.outletId = outletId;
         }
-        console.log(`Fetching data from ${dateStart} to ${dateEnd} with timeframe ${timeframe}`);
+        // Sekarang dateStart dan dateEnd sudah pasti tidak undefined
+        console.log(`Fetching data from ${(0, date_fns_1.format)(dateStart, 'yyyy-MM-dd HH:mm:ss')} to ${(0, date_fns_1.format)(dateEnd, 'yyyy-MM-dd HH:mm:ss')} with timeframe ${timeframe}`);
+        // Generate report data with the metric services
         let reportData = {};
-        // Pass the timeframe to each metrics service so they can apply appropriate grouping
+        // Pass the timeframe to each metrics service
         if (reportType === "transactions" || reportType === "comprehensive") {
             const transactionMetrics = yield (0, transactionMetrics_service_1.getTransactionMetrics)(baseWhereClause, timeframe);
             reportData.transactions = transactionMetrics;
@@ -98,6 +116,7 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
             });
             reportData.outletDetails = outlet;
         }
+        // Add metadata
         reportData.metadata = {
             generatedAt: new Date(),
             timeframe,

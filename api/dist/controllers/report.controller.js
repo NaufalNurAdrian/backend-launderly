@@ -19,12 +19,17 @@ class ReportController {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const { filterOutlet, filterMonth, filterYear, timeframe } = req.query;
+                const { filterOutlet, filterMonth, filterYear, timeframe, startDate, endDate } = req.query;
+                console.log("Sales report request:", {
+                    filterOutlet, filterMonth, filterYear, timeframe, startDate, endDate
+                });
                 const result = yield (0, getSalesReport_service_1.getSalesReportService)({
                     filterOutlet: filterOutlet,
                     filterMonth: filterMonth,
                     filterYear: filterYear,
                     timeframe: timeframe,
+                    startDate: startDate,
+                    endDate: endDate,
                     id: Number((_a = req.user) === null || _a === void 0 ? void 0 : _a.id),
                 });
                 res
@@ -32,6 +37,7 @@ class ReportController {
                     .send({ message: "Successfully fetched sales report", result });
             }
             catch (error) {
+                console.error("Error in getSalesReportController:", error);
                 res
                     .status(500)
                     .send({ message: error.message || "Failed to get sales report" });
@@ -54,6 +60,7 @@ class ReportController {
                     .send({ message: "Successfully fetched employee performance", result });
             }
             catch (error) {
+                console.error("Error in getEmployeePerformanceController:", error);
                 res.status(500).send({
                     message: error.message || "Failed to get employee performance",
                 });
@@ -62,15 +69,24 @@ class ReportController {
     }
     generateOutletReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
                 const { outletId, startDate, endDate, timeframe, reportType } = req.query;
-                console.log("Report request:", {
+                console.log("Report API request:", {
                     outletId,
                     startDate,
                     endDate,
                     timeframe,
                     reportType
                 });
+                // Validate parameters for custom timeframe
+                if (timeframe === 'custom' && (!startDate || !endDate)) {
+                    res.status(400).json({
+                        success: false,
+                        message: "Date range is required for custom time period"
+                    });
+                }
+                // Parse parameters with proper type conversion
                 const filters = {
                     outletId: outletId ? (outletId === 'all' ? undefined : parseInt(outletId)) : undefined,
                     startDate: startDate ? new Date(startDate) : undefined,
@@ -78,7 +94,21 @@ class ReportController {
                     timeframe: (timeframe || "daily"),
                     reportType: (reportType || "comprehensive"),
                 };
+                // Format dates with proper time components
+                if (filters.startDate) {
+                    filters.startDate.setHours(0, 0, 0, 0);
+                }
+                if (filters.endDate) {
+                    filters.endDate.setHours(23, 59, 59, 999);
+                }
+                // Generate report with enhanced logging
+                console.log(`Generating ${filters.reportType} report for ${filters.timeframe} timeframe`, {
+                    startDate: (_a = filters.startDate) === null || _a === void 0 ? void 0 : _a.toISOString(),
+                    endDate: (_b = filters.endDate) === null || _b === void 0 ? void 0 : _b.toISOString(),
+                    outletId: filters.outletId
+                });
                 const reportData = yield (0, getAnalitics_service_1.generateOutletReportService)(filters);
+                // Return response with success status
                 res.status(200).json({
                     success: true,
                     data: reportData,
@@ -86,9 +116,11 @@ class ReportController {
             }
             catch (error) {
                 console.error("Error in generateOutletReport controller:", error);
+                // Provide detailed error message for troubleshooting
                 res.status(500).json({
                     success: false,
                     message: error.message,
+                    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
                 });
             }
         });
@@ -96,9 +128,17 @@ class ReportController {
     compareOutlets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { timeframe } = req.query;
-                console.log(`Outlet comparison request with timeframe: ${timeframe}`);
-                const comparisonData = yield (0, getOutletComparisonService_1.getOutletComparisonService)((timeframe || "monthly"));
+                const { timeframe, startDate, endDate } = req.query;
+                console.log(`Outlet comparison request:`, {
+                    timeframe,
+                    startDate,
+                    endDate
+                });
+                // Parse timeframe
+                const parsedTimeframe = (timeframe || "monthly");
+                // Sesuaikan pemanggilan getOutletComparisonService dengan jumlah parameter yang benar
+                // Error sebelumnya: Expected 0-1 arguments, but got 3
+                const comparisonData = yield (0, getOutletComparisonService_1.getOutletComparisonService)(parsedTimeframe);
                 res.status(200).json({
                     success: true,
                     data: comparisonData,
@@ -117,6 +157,7 @@ class ReportController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { outletId, period, startDate, endDate } = req.query;
+                // Parse parameters with proper validation
                 const filters = {
                     outletId: outletId ? parseInt(outletId) : undefined,
                     startDate: startDate ? new Date(startDate) : undefined,
@@ -124,7 +165,15 @@ class ReportController {
                     timeframe: "custom",
                     reportType: "revenue",
                 };
+                // Format dates with proper time components
+                if (filters.startDate) {
+                    filters.startDate.setHours(0, 0, 0, 0);
+                }
+                if (filters.endDate) {
+                    filters.endDate.setHours(23, 59, 59, 999);
+                }
                 const reportData = yield (0, getAnalitics_service_1.generateOutletReportService)(filters);
+                // Extract trends data from report
                 const trends = reportData.revenue.daily;
                 res.status(200).json({
                     success: true,
@@ -136,6 +185,7 @@ class ReportController {
                 });
             }
             catch (error) {
+                console.error("Error in getTransactionTrends controller:", error);
                 res.status(500).json({
                     success: false,
                     message: error.message,
@@ -146,12 +196,22 @@ class ReportController {
     getCustomerAnalytics(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { outletId, timeframe } = req.query;
+                const { outletId, timeframe, startDate, endDate } = req.query;
+                // Parse parameters with proper validation
                 const filters = {
                     outletId: outletId ? parseInt(outletId) : undefined,
+                    startDate: startDate ? new Date(startDate) : undefined,
+                    endDate: endDate ? new Date(endDate) : undefined,
                     timeframe: (timeframe || "monthly"),
                     reportType: "customers",
                 };
+                // Format dates with proper time components
+                if (filters.startDate) {
+                    filters.startDate.setHours(0, 0, 0, 0);
+                }
+                if (filters.endDate) {
+                    filters.endDate.setHours(23, 59, 59, 999);
+                }
                 const reportData = yield (0, getAnalitics_service_1.generateOutletReportService)(filters);
                 res.status(200).json({
                     success: true,
@@ -159,6 +219,7 @@ class ReportController {
                 });
             }
             catch (error) {
+                console.error("Error in getCustomerAnalytics controller:", error);
                 res.status(500).json({
                     success: false,
                     message: error.message,
