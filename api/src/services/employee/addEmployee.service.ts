@@ -52,7 +52,7 @@ export const addEmployeeService = async (data: AddEmployeeInput, req: Request) =
 
     const payload = { id: employee.id, role: data.role };
     const token = sign(payload, process.env.JWT_KEY!, { expiresIn: "60m" });
-    const link = `${process.env.BASE_URL_FE}/verify/${token}`;
+    const link = `${process.env.BASE_URL_FE}/auth/verify/${token}`;
 
     const templatePath = path.join(__dirname, "../templates", "verify.hbs");
     const templateSource = fs.readFileSync(templatePath, "utf-8");
