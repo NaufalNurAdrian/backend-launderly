@@ -357,7 +357,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\nurad\\OneDrive\\Desktop\\JCWD0508\\backend-launderly\\api\\prisma\\generated\\client",
+      "value": "D:\\Data\\Documents\\Data Allysa\\BE-final-project\\api\\prisma\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -371,7 +371,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\nurad\\OneDrive\\Desktop\\JCWD0508\\backend-launderly\\api\\prisma\\schema.prisma",
+    "sourceFilePath": "D:\\Data\\Documents\\Data Allysa\\BE-final-project\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

@@ -116,7 +116,6 @@ class ReportController {
             }
             catch (error) {
                 console.error("Error in generateOutletReport controller:", error);
-                // Provide detailed error message for troubleshooting
                 res.status(500).json({
                     success: false,
                     message: error.message,
@@ -157,7 +156,6 @@ class ReportController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { outletId, period, startDate, endDate } = req.query;
-                // Parse parameters with proper validation
                 const filters = {
                     outletId: outletId ? parseInt(outletId) : undefined,
                     startDate: startDate ? new Date(startDate) : undefined,
