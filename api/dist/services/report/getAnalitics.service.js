@@ -62,7 +62,7 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
                     dateEnd = (0, date_fns_1.endOfYear)(today);
                     break;
                 default:
-                    dateStart = (0, date_fns_1.startOfDay)(today);
+                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 29));
                     dateEnd = (0, date_fns_1.endOfDay)(today);
             }
         }

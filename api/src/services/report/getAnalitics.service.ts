@@ -77,7 +77,7 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
           break;
           
         default:
-          dateStart = startOfDay(today);
+          dateStart = startOfDay(subDays(today, 29));
           dateEnd = endOfDay(today);
       }
     }
