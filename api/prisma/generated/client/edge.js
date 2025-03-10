@@ -357,7 +357,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Data\\Documents\\Data Allysa\\BE-final-project\\api\\prisma\\generated\\client",
+      "value": "C:\\Users\\nurad\\OneDrive\\Desktop\\JCWD0508\\backend-launderly\\api\\prisma\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -371,7 +371,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Data\\Documents\\Data Allysa\\BE-final-project\\api\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\nurad\\OneDrive\\Desktop\\JCWD0508\\backend-launderly\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -385,7 +385,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": true,
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
