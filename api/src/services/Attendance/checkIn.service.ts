@@ -46,7 +46,6 @@ export const checkInService = async (data: CheckInData) => {
     } else {
       throw new Error("Invalid shift");
     }
-
     const existingAttendance = await prisma.attendance.findFirst({
       where: {
         userId: userId,
@@ -60,6 +59,7 @@ export const checkInService = async (data: CheckInData) => {
       throw new Error("You are already checked In today.");
     }
 
+    console.log(checkInWIB)
     const newAttendance = await prisma.attendance.create({
       data: {
         createdAt: now.toJSDate(),
