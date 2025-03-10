@@ -22,8 +22,8 @@ export const checkInService = async (data: CheckInData) => {
     if (!user.employee || !user.employee.workShift) {
       throw new Error("Employee shift not found.");
     }
-
-    const now = DateTime.now().setZone("Asia/Jakarta");
+    
+    const now = DateTime.now()
     let todayStart: Date;
     let todayEnd: Date;
 

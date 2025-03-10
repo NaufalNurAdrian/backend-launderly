@@ -21,7 +21,7 @@ class UserRouter {
         // Update Email User
         this.router.patch("/update-email", verify_1.verifyToken, this.userController.updateEmail);
         // Confirm Email User
-        this.router.patch("/verify-email", this.userController.verifyEmail);
+        this.router.patch("/verify-email", verify_1.verifyToken, this.userController.verifyEmail);
         // Confirm Order
         this.router.patch("/confirm-order", this.userController.confirmOrder);
         // Confirm Forget Password

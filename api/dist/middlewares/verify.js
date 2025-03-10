@@ -105,7 +105,7 @@ const verifyRoleAndAttendance = (allowedRoles) => {
         if (!activeAttendance) {
             res
                 .status(403)
-                .json({ message: "you are not checked in or already checked out" });
+                .json({ message: "Anda belum check-in atau sudah check-out" });
             return;
         }
         next();

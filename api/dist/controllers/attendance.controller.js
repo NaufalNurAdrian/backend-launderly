@@ -30,7 +30,7 @@ class AttendanceController {
                 res.status(200).send(attendance);
             }
             catch (err) {
-                res.status(400).send({ message: err.message });
+                res.status(400).send({ message: err });
             }
         });
     }
@@ -51,7 +51,7 @@ class AttendanceController {
                 res.status(200).send(attendances);
             }
             catch (err) {
-                res.status(400).send({ message: err.message });
+                res.status(400).send({ message: err });
             }
         });
     }
@@ -68,7 +68,7 @@ class AttendanceController {
                 });
             }
             catch (err) {
-                res.status(400).send({ message: err.message });
+                res.status(400).send({ message: err });
             }
         });
     }
@@ -85,7 +85,7 @@ class AttendanceController {
                 });
             }
             catch (err) {
-                res.status(400).send({ message: err.message });
+                res.status(400).send({ message: err });
             }
         });
     }

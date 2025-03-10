@@ -12,25 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteEmployeeService = void 0;
-const prisma_1 = __importDefault(require("../../prisma"));
-const deleteEmployeeService = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const employee = yield prisma_1.default.employee.findFirst({
-            where: { id },
-            include: { user: true },
-        });
-        if (!employee) {
-            throw new Error("Employee not found");
-        }
-        const updateEmployee = yield prisma_1.default.user.update({
-            where: { id: employee.userId },
-            data: { isDelete: true },
-        });
-        return updateEmployee;
-    }
-    catch (error) {
-        throw new Error(error.message || "Failed to delete employee");
-    }
+exports.generateOrderNumber = void 0;
+const prisma_1 = __importDefault(require("../prisma"));
+const generateOrderNumber = (type) => __awaiter(void 0, void 0, void 0, function* () {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0].replace(/-/g, "");
+    const count = yield prisma_1.default.deliveryOrder.count({
+        where: {
+            createdAt: {
+                gte: new Date(`${today.toISOString().split("T")[0]}T00:00:00.000Z`),
+                lt: new Date(`${today.toISOString().split("T")[0]}T23:59:59.999Z`),
+            },
+        },
+    });
+    const sequence = String(count + 1).padStart(3, "0");
+    return `${type}-${formattedDate}-${sequence}`;
 });
-exports.deleteEmployeeService = deleteEmployeeService;
+exports.generateOrderNumber = generateOrderNumber;

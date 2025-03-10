@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmailService = void 0;
+exports.verifyEmail = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const verifyEmailService = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.query.token;
         // Pastikan token adalah string
@@ -33,7 +33,7 @@ const verifyEmailService = (req, res) => __awaiter(void 0, void 0, void 0, funct
             where: { id: user.id },
             data: {
                 isVerify: true,
-                emailVerifyToken: null,
+                emailVerifyToken: null, // Hapus token setelah verifikasi
             },
         });
         res.status(200).json({ message: "Email verified successfully!" });
@@ -43,4 +43,4 @@ const verifyEmailService = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ message: "Internal server error" });
     }
 });
-exports.verifyEmailService = verifyEmailService;
+exports.verifyEmail = verifyEmail;

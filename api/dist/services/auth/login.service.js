@@ -21,6 +21,7 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.log("Request Body:", req.body);
         // Validasi input
         if (!req.body || !req.body.email || !req.body.password) {
+<<<<<<< HEAD
             res.status(400).json({ message: "Email and password are required" });
             return;
         }
@@ -47,6 +48,31 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             throw new Error("Your account is not verified. Please verify your account before logging in.");
         }
         // Buat token JWT untuk user
+=======
+            res.status(400).send({ message: "Email and password are required" });
+            return;
+        }
+        const { email, password } = req.body;
+        const customer = yield prisma_1.default.user.findFirst({
+            where: { email },
+        });
+        if (!customer)
+            throw { message: "Customer account not found!" };
+        // Cek apakah user mendaftar dengan Google
+        if (!customer.password) {
+            throw {
+                message: "This email is registered via Google. Please log in using Google.",
+            };
+        }
+        const isValidPass = yield bcrypt_1.default.compare(password, customer.password);
+        if (!isValidPass)
+            throw { message: "Incorrect Password!" };
+        if (!customer.isVerify)
+            throw {
+                message: "Your account is not verified. Please verify your account before logging in.",
+            };
+        // Create JWT token for the customer
+>>>>>>> 76429f45c8ab9994cccca8209f294f3c1a3396f2
         const payload = {
             id: customer.id,
             role: customer.role,
@@ -54,6 +80,7 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         };
         const token = (0, jsonwebtoken_1.sign)(payload, process.env.JWT_KEY, { expiresIn: "1d" });
         console.log("Generated Token:", token);
+<<<<<<< HEAD
         res.status(200).json({ message: "Login Successfully", customer, token });
     }
     catch (err) {
@@ -65,6 +92,13 @@ const loginService = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else {
             res.status(400).json({ message: "Something went wrong" });
         }
+=======
+        res.status(200).send({ message: "Login Successfully", customer, token });
+    }
+    catch (err) {
+        console.error("Error during login:", err);
+        res.status(400).send("This email is registered via Google. Please log in using Google.");
+>>>>>>> 76429f45c8ab9994cccca8209f294f3c1a3396f2
     }
 });
 exports.loginService = loginService;

@@ -12,23 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateEmailService = void 0;
+exports.updateEmail = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const handlebars_1 = __importDefault(require("handlebars"));
 const nodemailer_1 = require("../../libs/nodemailer");
-const updateEmailService = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id; // Dapatkan user ID dari JWT
         const { newEmail } = req.body;
         if (!newEmail) {
             return res.status(400).json({ message: "New email is required!" });
         }
         // Cek apakah email sudah digunakan oleh user lain
-        const existingUser = yield prisma_1.default.user.findUnique({
+        const existingUser = yield prisma_1.default.user.findFirst({
             where: { email: newEmail },
         });
         if (existingUser) {
@@ -67,4 +67,4 @@ const updateEmailService = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ message: "Internal server error" });
     }
 });
-exports.updateEmailService = updateEmailService;
+exports.updateEmail = updateEmail;
