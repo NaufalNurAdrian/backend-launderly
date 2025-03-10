@@ -14,33 +14,52 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyEmailService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
+const jsonwebtoken_1 = require("jsonwebtoken");
 const verifyEmailService = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.query.token;
-        // Pastikan token adalah string
-        if (!token || typeof token !== "string") {
-            return res.status(400).json({ message: "Invalid verification token!" });
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ message: "Verification token is required!" });
         }
-        // Cek apakah token valid
+        // Verifikasi token JWT
+        let decoded;
+        try {
+            decoded = (0, jsonwebtoken_1.verify)(token, process.env.JWT_KEY);
+        }
+        catch (error) {
+            return res.status(400).json({ message: "Invalid or expired token!" });
+        }
+        const { id, newEmail } = decoded;
+        // Konversi ID ke number
+        const userId = Number(id);
+        if (isNaN(userId)) {
+            return res.status(400).json({ message: "Invalid user ID!" });
+        }
+        // Cari user berdasarkan token yang dikirim di params
         const user = yield prisma_1.default.user.findFirst({
             where: { emailVerifyToken: token },
         });
         if (!user) {
             return res.status(400).json({ message: "Invalid or expired token!" });
         }
-        // Update status email menjadi verified
+        // Cek apakah email baru masih tersedia
+        const existingUser = yield prisma_1.default.user.findUnique({ where: { email: newEmail } });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already in use!" });
+        }
+        // Update email dan hapus token verifikasi
         yield prisma_1.default.user.update({
-            where: { id: user.id },
+            where: { id: userId },
             data: {
-                isVerify: true,
+                email: newEmail,
                 emailVerifyToken: null,
             },
         });
-        res.status(200).json({ message: "Email verified successfully!" });
+        res.status(200).json({ message: "Email verified and updated successfully!" });
     }
     catch (error) {
         console.error("Error verifying email:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "An internal server error occurred!" });
     }
 });
 exports.verifyEmailService = verifyEmailService;

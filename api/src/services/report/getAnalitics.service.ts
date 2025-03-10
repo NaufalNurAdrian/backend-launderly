@@ -50,6 +50,7 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       
       // Calculate default date ranges for other timeframes
       const today = new Date();
+      
       switch (timeframe) {
         case "daily":
           // Use just today for daily view

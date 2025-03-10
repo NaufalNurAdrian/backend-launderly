@@ -52,7 +52,7 @@ export const checkInService = async (data: CheckInData) => {
     const todayEndUTC = todayEnd.toUTC().toJSDate();
     const checkInUTC = checkInWIB.toUTC().toJSDate();
 
-    await prisma.$transaction(async (prisma: any) => {
+    await prisma.$transaction(async (prisma) => {
       const existingAttendance = await prisma.attendance.findFirst({
         where: {
           userId: userId,

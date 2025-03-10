@@ -17,7 +17,7 @@ const client_1 = require("../../../../prisma/generated/client");
 const prisma_1 = __importDefault(require("../../../prisma"));
 const getWorkerOrdersService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { workerId, order, page = 1, pageSize = 4, sortBy } = query;
+        const { workerId, order, page = 1, pageSize = 3, sortBy } = query;
         const worker = yield prisma_1.default.user.findUnique({
             where: { id: workerId, role: "WORKER" },
         });
