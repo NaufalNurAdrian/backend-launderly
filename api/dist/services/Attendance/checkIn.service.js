@@ -31,7 +31,7 @@ const checkInService = (data) => __awaiter(void 0, void 0, void 0, function* () 
         const now = luxon_1.DateTime.now().setZone("Asia/Jakarta");
         let todayStart;
         let todayEnd;
-        const checkInWIB = luxon_1.DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta", { keepLocalTime: true });
+        const checkInWIB = luxon_1.DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta");
         if (user.employee.workShift === "DAY") {
             todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 });
             todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 });
@@ -42,7 +42,7 @@ const checkInService = (data) => __awaiter(void 0, void 0, void 0, function* () 
         else if (user.employee.workShift === "NIGHT") {
             todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 });
             todayEnd = now.set({ hour: 23, minute: 0, second: 0, millisecond: 0 });
-            if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+            if (checkInWIB.toMillis() < todayStart.toMillis() || checkInWIB.toMillis() > todayEnd.toMillis()) {
                 throw new Error("Check-in time is outside your shift hours (15:00 - 23:00 WIB).");
             }
         }

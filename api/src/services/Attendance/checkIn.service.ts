@@ -28,7 +28,7 @@ export const checkInService = async (data: CheckInData) => {
     let todayStart: DateTime;
     let todayEnd: DateTime;
 
-    const checkInWIB = DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta", { keepLocalTime: true });
+    const checkInWIB = DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta");
 
     if (user.employee.workShift === "DAY") {
       todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 });
@@ -41,7 +41,7 @@ export const checkInService = async (data: CheckInData) => {
       todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 });
       todayEnd = now.set({ hour: 23, minute: 0, second: 0, millisecond: 0 });
 
-      if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+      if (checkInWIB.toMillis() < todayStart.toMillis() || checkInWIB.toMillis() > todayEnd.toMillis()) {
         throw new Error("Check-in time is outside your shift hours (15:00 - 23:00 WIB).");
       }
     } else {

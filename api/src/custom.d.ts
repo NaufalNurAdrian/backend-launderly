@@ -1,5 +1,4 @@
-// src/custom.d.ts
-import "express"; // Menambahkan ekstensi ke Express
+import "express";
 
 export type Role = "SUPER_ADMIN" | "OUTLET_ADMIN" | "WORKER" | "DRIVER" | "CUSTOMER";
 
@@ -11,7 +10,7 @@ export type UserPayload = {
 declare global {
   namespace Express {
     interface Request {
-      user?: UserPayload; // Menambahkan `user` ke Request
+      user?: UserPayload; 
     }
   }
 }
