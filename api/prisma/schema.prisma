@@ -102,10 +102,34 @@ model User {
   authProvider         String             @default("email")
   employee             Employee?
   address              Address[]
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+<<<<<<< HEAD
+=======
+>>>>>>> 8f4b5848d4a91b7da04ff14c43810755bf4bf6b2
+=======
+>>>>>>> be0fc1b3dcbb2ccf5eb953758502dcb8c51255cc
   pickupOrder          PickupOrder[]
   deliveryOrder        DeliveryOrder[]
   userNotification     UserNotification[]
   Attendance           Attendance[]
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4c228e42da5306600049dac9c91678d1ec254b40
+
+=======
+>>>>>>> 67e351f8aa1f613af1c69e9ed81c6311eaa563db
+  pickupOrder      PickupOrder[]
+  deliveryOrder    DeliveryOrder[]
+  userNotification UserNotification[]
+  Attendance       Attendance[]
+=======
+>>>>>>> 8f4b5848d4a91b7da04ff14c43810755bf4bf6b2
+=======
+>>>>>>> be0fc1b3dcbb2ccf5eb953758502dcb8c51255cc
 }
 
 model Employee {
