@@ -22,11 +22,10 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
     }
 
     const existingAddresses = Array.isArray(existingOutlet.address)
-  ? existingOutlet.address
-  : existingOutlet.address
-  ? [existingOutlet.address]
-  : [];
-
+      ? existingOutlet.address
+      : existingOutlet.address
+      ? [existingOutlet.address]
+      : [];
 
     const requestAddressIds = Array.isArray(address)
   ? address.map((addr) => addr.id).filter(Boolean)
@@ -72,6 +71,7 @@ export const updateOutletService = async (body: UpdateOutletInput) => {
         : [] 
     );
 
+    // Update Outlet
     const updatedOutlet = await prisma.outlet.update({
       where: { id: parseInt(id) },
       data: {

@@ -1,11 +1,22 @@
 import { ReportFilters, ReportTimeframe } from "@/types/report";
 import prisma from "../../prisma";
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { 
+  startOfDay, 
+  endOfDay, 
+  startOfWeek, 
+  endOfWeek, 
+  startOfMonth, 
+  endOfMonth, 
+  subDays, 
+  subWeeks, 
+  subMonths, 
+  startOfYear, 
+  endOfYear 
+} from "date-fns";
 import { getTransactionMetrics } from "./transactionMetrics.service";
 import { getRevenueMetrics } from "./revenueMetrics.service";
 import { getCustomerMetrics } from "./customerMetrics.service";
 import { getOrderMetrics } from "./orderMetrics.service";
-
 
 export const generateOutletReportService = async (filters: ReportFilters) => {
   try {
@@ -20,27 +31,48 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
     let dateStart = startDate;
     let dateEnd = endDate;
 
+    // If dates aren't provided, calculate appropriate date ranges based on timeframe
     if (!startDate || !endDate) {
       const today = new Date();
+      
       switch (timeframe) {
         case "daily":
-          dateStart = startOfDay(today);
+          // Use the last 30 days for daily view
+          dateStart = startOfDay(subDays(today, 29)); // 30 days including today
           dateEnd = endOfDay(today);
           break;
+          
         case "weekly":
-          dateStart = startOfWeek(today);
-          dateEnd = endOfWeek(today);
+          // Use the last 12 weeks for weekly view
+          dateStart = startOfDay(subWeeks(today, 11)); // 12 weeks including current week
+          dateEnd = endOfDay(today);
           break;
+          
         case "monthly":
-          dateStart = startOfMonth(today);
-          dateEnd = endOfMonth(today);
+          // Use current year for monthly view
+          dateStart = startOfYear(today);
+          dateEnd = endOfYear(today);
           break;
+          
+        case "yearly":
+          // Use last 5 years for yearly view
+          dateStart = startOfYear(new Date(today.getFullYear() - 4, 0, 1));
+          dateEnd = endOfYear(today);
+          break;
+          
+        case "custom":
+          // For custom timeframe with no dates, default to last 30 days
+          dateStart = startOfDay(subDays(today, 29));
+          dateEnd = endOfDay(today);
+          break;
+          
         default:
-          dateStart = startOfDay(today);
+          dateStart = startOfDay(subDays(today, 29));
           dateEnd = endOfDay(today);
       }
     }
 
+    // Create base where clause
     const baseWhereClause: any = {
       createdAt: {
         gte: dateStart,
@@ -52,25 +84,28 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       baseWhereClause.outletId = outletId;
     }
 
+    console.log(`Fetching data from ${dateStart} to ${dateEnd} with timeframe ${timeframe}`);
+
     let reportData: any = {};
 
+    // Pass the timeframe to each metrics service so they can apply appropriate grouping
     if (reportType === "transactions" || reportType === "comprehensive") {
-      const transactionMetrics = await getTransactionMetrics(baseWhereClause);
+      const transactionMetrics = await getTransactionMetrics(baseWhereClause, timeframe);
       reportData.transactions = transactionMetrics;
     }
 
     if (reportType === "revenue" || reportType === "comprehensive") {
-      const revenueMetrics = await getRevenueMetrics(baseWhereClause);
+      const revenueMetrics = await getRevenueMetrics(baseWhereClause, timeframe);
       reportData.revenue = revenueMetrics;
     }
 
     if (reportType === "customers" || reportType === "comprehensive") {
-      const customerMetrics = await getCustomerMetrics(baseWhereClause);
+      const customerMetrics = await getCustomerMetrics(baseWhereClause, timeframe);
       reportData.customers = customerMetrics;
     }
 
     if (reportType === "orders" || reportType === "comprehensive") {
-      const orderMetrics = await getOrderMetrics(baseWhereClause);
+      const orderMetrics = await getOrderMetrics(baseWhereClause, timeframe);
       reportData.orders = orderMetrics;
     }
 
@@ -97,73 +132,7 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
 
     return reportData;
   } catch (error: any) {
+    console.error("Error in generateOutletReportService:", error);
     throw new Error(`Error generating outlet report: ${error.message}`);
-  }
-};
-
-export const getOutletComparisonService = async (timeframe: ReportTimeframe = "monthly") => {
-  try {
-    const today = new Date();
-    let dateStart: Date;
-    let dateEnd = endOfDay(today);
-
-    switch (timeframe) {
-      case "daily":
-        dateStart = startOfDay(today);
-        break;
-      case "weekly":
-        dateStart = startOfWeek(today);
-        break;
-      case "monthly":
-        dateStart = startOfMonth(today);
-        break;
-      default:
-        dateStart = startOfMonth(today);
-    }
-
-    const outlets = await prisma.outlet.findMany({
-      where: {
-        isDelete: false,
-      },
-      select: {
-        id: true,
-        outletName: true,
-        outletType: true,
-      },
-    });
-
-    const outletPerformance = await Promise.all(
-      outlets.map(async outlet => {
-        const reportData = await generateOutletReportService({
-          outletId: outlet.id,
-          startDate: dateStart,
-          endDate: dateEnd,
-          timeframe: timeframe,
-          reportType: "comprehensive",
-        });
-        return {
-          id: outlet.id,
-          name: outlet.outletName,
-          type: outlet.outletType,
-          revenue: reportData.revenue.total,
-          orders: reportData.orders?.byStatus.reduce(
-            (sum: number, status: any) => sum + status._count,
-            0
-          ) || 0,
-          customers: reportData.customers?.active || 0,
-        };
-      })
-    );
-
-    return {
-      outlets: outletPerformance,
-      timeframe,
-      dateRange: {
-        from: dateStart,
-        to: dateEnd,
-      },
-    };
-  } catch (error: any) {
-    throw new Error(`Error generating outlet comparison: ${error.message}`);
   }
 };

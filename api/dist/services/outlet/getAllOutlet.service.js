@@ -25,6 +25,7 @@ const getAllOutletService = (page, limit) => __awaiter(void 0, void 0, void 0, f
                 outletName: true,
                 outletType: true,
                 address: true,
+                isDelete: true
             },
         });
         const totalCount = yield prisma_1.default.outlet.count(); // Hitung total data

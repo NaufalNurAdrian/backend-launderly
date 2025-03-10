@@ -19,18 +19,25 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const handlebars_1 = __importDefault(require("handlebars"));
 const nodemailer_1 = require("../../libs/nodemailer");
+const validator_1 = __importDefault(require("validator"));
 const updateEmailService = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { newEmail } = req.body;
-        if (!newEmail) {
-            return res.status(400).json({ message: "New email is required!" });
+        if (!newEmail || !validator_1.default.isEmail(newEmail)) {
+            return res.status(400).json({ message: "Invalid email format!" });
         }
-        // Cek apakah email sudah digunakan oleh user lain
-        const existingUser = yield prisma_1.default.user.findUnique({
-            where: { email: newEmail },
-        });
+        // Cek apakah user ada dan sudah diverifikasi sebelumnya
+        const user = yield prisma_1.default.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found!" });
+        }
+        if (!user.isVerify) {
+            return res.status(403).json({ message: "Please verify your current email first!" });
+        }
+        // Cek apakah email sudah dipakai oleh user lain
+        const existingUser = yield prisma_1.default.user.findUnique({ where: { email: newEmail } });
         if (existingUser) {
             return res.status(400).json({ message: "Email already in use!" });
         }
@@ -43,7 +50,7 @@ const updateEmailService = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const templateSource = fs_1.default.readFileSync(templatePath, "utf-8");
         const compiledTemplate = handlebars_1.default.compile(templateSource);
         const html = compiledTemplate({ link });
-        // Kirim email verifikasi dengan Nodemailer
+        // Kirim email verifikasi
         yield nodemailer_1.transporter.sendMail({
             from: "Admin",
             to: newEmail,
@@ -55,11 +62,10 @@ const updateEmailService = (req, res) => __awaiter(void 0, void 0, void 0, funct
             where: { id: userId },
             data: {
                 emailVerifyToken: token,
-                isVerify: false, // Email harus diverifikasi ulang
             },
         });
         res.status(200).json({
-            message: "Email update requested. Please verify your new email address.",
+            message: "Verification email sent! Please check your inbox.",
         });
     }
     catch (error) {

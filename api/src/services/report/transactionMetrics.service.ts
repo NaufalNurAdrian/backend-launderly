@@ -1,7 +1,17 @@
 import prisma from "../../prisma";
+import { ReportTimeframe } from "@/types/report";
+import { 
+  startOfDay, endOfDay, 
+  startOfWeek, endOfWeek, 
+  startOfMonth, endOfMonth, 
+  startOfYear, endOfYear,
+  isWithinInterval 
+} from "date-fns";
 
-export async function getTransactionMetrics(baseWhereClause: any) {
+export async function getTransactionMetrics(baseWhereClause: any, timeframe: ReportTimeframe = "daily") {
   try {
+    console.log(`Transaction metrics where clause (timeframe: ${timeframe}):`, JSON.stringify(baseWhereClause, null, 2));
+    
     const { outletId, ...otherWhereClause } = baseWhereClause;
 
     const whereClause = {
@@ -24,17 +34,57 @@ export async function getTransactionMetrics(baseWhereClause: any) {
       }
     });
 
-    const successful = payments.filter(p => p.paymentStatus === 'SUCCESSED').length;
-    const pending = payments.filter(p => p.paymentStatus === 'PENDING').length;
-    const failed = payments.filter(p =>
+    // Determine current period based on timeframe for "right now" calculations
+    const now = new Date();
+    let currentPeriodStart: Date;
+    let currentPeriodEnd: Date;
+    
+    switch (timeframe) {
+      case "daily":
+        currentPeriodStart = startOfDay(now);
+        currentPeriodEnd = endOfDay(now);
+        break;
+      case "weekly":
+        currentPeriodStart = startOfWeek(now, { weekStartsOn: 1 }); // Week starts on Monday
+        currentPeriodEnd = endOfWeek(now, { weekStartsOn: 1 });
+        break;
+      case "monthly":
+        currentPeriodStart = startOfMonth(now);
+        currentPeriodEnd = endOfMonth(now);
+        break;
+      case "yearly":
+        currentPeriodStart = startOfYear(now);
+        currentPeriodEnd = endOfYear(now);
+        break;
+      default:
+        currentPeriodStart = startOfDay(now);
+        currentPeriodEnd = endOfDay(now);
+    }
+    
+    // Filter payments for current period (if timeframe is not custom)
+    const currentPeriodPayments = timeframe !== "custom" 
+      ? payments.filter(payment => {
+          const paymentDate = new Date(payment.createdAt);
+          return isWithinInterval(paymentDate, {
+            start: currentPeriodStart,
+            end: currentPeriodEnd
+          });
+        })
+      : payments;
+    
+    console.log(`Current period (${timeframe}) has ${currentPeriodPayments.length} payments`);
+
+    const successful = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED').length;
+    const pending = currentPeriodPayments.filter(p => p.paymentStatus === 'PENDING').length;
+    const failed = currentPeriodPayments.filter(p =>
       ['CANCELLED', 'DENIED', 'EXPIRED'].includes(p.paymentStatus as string)
     ).length;
-    const total = payments.length;
+    const total = currentPeriodPayments.length;
 
     const conversionRate = total > 0 ? (successful / total) * 100 : 0;
 
     const paymentMethodsMap = new Map();
-    payments.forEach(payment => {
+    currentPeriodPayments.forEach(payment => {
       const method = payment.paymentMethode || 'Unknown';
       if (!paymentMethodsMap.has(method)) {
         paymentMethodsMap.set(method, { method, count: 0, value: 0 });
@@ -45,7 +95,7 @@ export async function getTransactionMetrics(baseWhereClause: any) {
     });
     const paymentMethods = Array.from(paymentMethodsMap.values());
 
-    const successfulPayments = payments.filter(p => p.paymentStatus === 'SUCCESSED');
+    const successfulPayments = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED');
     const amounts = successfulPayments.map(p => p.amount);
     const averageValue = amounts.length > 0 
       ? amounts.reduce((sum, val) => sum + val, 0) / amounts.length 

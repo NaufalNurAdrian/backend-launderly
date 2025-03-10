@@ -87,11 +87,12 @@ class OutletController {
     deleteOutlet(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const id = req.body;
+                const id = req.body.id;
                 if (!id) {
                     res.status(400).send({ message: "Outlet ID is required" });
                 }
-                const result = yield (0, deleteOutlet_service_1.deleteOutletService)(id);
+                const outletId = parseInt(id);
+                const result = yield (0, deleteOutlet_service_1.deleteOutletService)(outletId);
                 res.status(200).send({ message: "Outlet deleted successfully", result });
             }
             catch (error) {

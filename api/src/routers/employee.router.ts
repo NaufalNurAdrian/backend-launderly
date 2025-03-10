@@ -26,6 +26,7 @@ export class EmployeeRouter {
       this.employeeController.getAllEmployee
     );
     this.router.get("/:id", verifyToken, checkSuperAdmin, this.employeeController.getEmployeeById);
+    this.router.patch("/delete", verifyToken, checkSuperAdmin, this.employeeController.deleteEmployee)
     this.router.patch(
       "/update/:id",
       verifyToken,
