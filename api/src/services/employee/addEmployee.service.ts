@@ -50,7 +50,7 @@ export const addEmployeeService = async (data: AddEmployeeInput, req: Request) =
       },
     });
 
-    const payload = { id: employee.id, role: data.role };
+    const payload = { id: user.id, role: data.role };
     const token = sign(payload, process.env.JWT_KEY!, { expiresIn: "60m" });
     const link = `${process.env.BASE_URL_FE}/auth/verify/${token}`;
 

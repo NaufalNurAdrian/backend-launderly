@@ -48,9 +48,9 @@ const addEmployeeService = (data, req) => __awaiter(void 0, void 0, void 0, func
                 station: data.station,
             },
         });
-        const payload = { id: employee.id, role: data.role };
+        const payload = { id: user.id, role: data.role };
         const token = (0, jsonwebtoken_1.sign)(payload, process.env.JWT_KEY, { expiresIn: "60m" });
-        const link = `${process.env.BASE_URL_FE}/auth/verify/${token}`;
+        const link = `${process.env.BASE_URL_FE}/verify/${token}`;
         const templatePath = path_1.default.join(__dirname, "../templates", "verify.hbs");
         const templateSource = fs_1.default.readFileSync(templatePath, "utf-8");
         const compiledTemplate = handlebars_1.default.compile(templateSource);
