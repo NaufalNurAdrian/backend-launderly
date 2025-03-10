@@ -28,49 +28,55 @@ const checkInService = (data) => __awaiter(void 0, void 0, void 0, function* () 
         if (!user.employee || !user.employee.workShift) {
             throw new Error("Employee shift not found.");
         }
-        const now = luxon_1.DateTime.now();
+        const now = luxon_1.DateTime.now().setZone("Asia/Jakarta");
         let todayStart;
         let todayEnd;
+        const checkInWIB = luxon_1.DateTime.fromJSDate(checkInTime).setZone("Asia/Jakarta", { keepLocalTime: true });
         if (user.employee.workShift === "DAY") {
-            todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-            todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-            if (checkInTime < todayStart || checkInTime > todayEnd) {
-                throw new Error("Check-in time is outside your shift hours (06:00 - 15:00).");
+            todayStart = now.set({ hour: 6, minute: 0, second: 0, millisecond: 0 });
+            todayEnd = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 });
+            if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+                throw new Error("Check-in time is outside your shift hours (06:00 - 15:00 WIB).");
             }
         }
         else if (user.employee.workShift === "NIGHT") {
-            todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-            todayEnd = now.set({ hour: 24, minute: 0, second: 0, millisecond: 0 }).toJSDate();
-            if (checkInTime < todayStart || checkInTime > todayEnd) {
-                throw new Error("Check-in time is outside your shift hours (15:00 - 24:00).");
+            todayStart = now.set({ hour: 15, minute: 0, second: 0, millisecond: 0 });
+            todayEnd = now.set({ hour: 23, minute: 0, second: 0, millisecond: 0 });
+            if (checkInWIB < todayStart || checkInWIB > todayEnd) {
+                throw new Error("Check-in time is outside your shift hours (15:00 - 23:00 WIB).");
             }
         }
         else {
-            throw new Error("unfalid shift");
+            throw new Error("Invalid shift");
         }
-        const existingAttendance = yield prisma_1.default.attendance.findFirst({
-            where: {
-                userId: userId,
-                createdAt: {
-                    gte: todayStart,
-                    lte: todayEnd,
+        const todayStartUTC = todayStart.toUTC().toJSDate();
+        const todayEndUTC = todayEnd.toUTC().toJSDate();
+        const checkInUTC = checkInWIB.toUTC().toJSDate();
+        yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            const existingAttendance = yield prisma.attendance.findFirst({
+                where: {
+                    userId: userId,
+                    checkIn: {
+                        gte: todayStartUTC,
+                        lte: todayEndUTC,
+                    },
                 },
-            },
-        });
-        if (existingAttendance) {
-            throw new Error("You are already checked In today.");
-        }
-        const newAttendance = yield prisma_1.default.attendance.create({
-            data: {
-                createdAt: new Date(),
-                checkIn: checkInTime,
-                checkOut: null,
-                workHour: 0,
-                userId: userId,
-                attendanceStatus: "ACTIVE",
-            },
-        });
-        return newAttendance;
+            });
+            if (existingAttendance) {
+                throw new Error("You are already checked in today.");
+            }
+            const newAttendance = yield prisma.attendance.create({
+                data: {
+                    createdAt: luxon_1.DateTime.now().toUTC().toJSDate(),
+                    checkIn: checkInUTC,
+                    checkOut: null,
+                    workHour: 0,
+                    userId: userId,
+                    attendanceStatus: "ACTIVE",
+                },
+            });
+            return newAttendance;
+        }));
     }
     catch (err) {
         throw err;

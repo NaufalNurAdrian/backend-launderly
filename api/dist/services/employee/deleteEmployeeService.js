@@ -17,7 +17,7 @@ const prisma_1 = __importDefault(require("../../prisma"));
 const deleteEmployeeService = (id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const employee = yield prisma_1.default.employee.findFirst({
-            where: { id },
+            where: { id: Number(id) },
             include: { user: true },
         });
         if (!employee) {
