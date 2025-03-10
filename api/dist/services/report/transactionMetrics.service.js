@@ -36,6 +36,11 @@ function getTransactionMetrics(baseWhereClause_1) {
                         outletId: outletId
                     }
                 } : undefined });
+            // Log date range for clarity
+            if (otherWhereClause.createdAt) {
+                console.log(`Fetching payments from ${(0, date_fns_1.format)(otherWhereClause.createdAt.gte, 'yyyy-MM-dd HH:mm:ss')} to ${(0, date_fns_1.format)(otherWhereClause.createdAt.lte, 'yyyy-MM-dd HH:mm:ss')}`);
+            }
+            // Find all payments within the specified date range
             const payments = yield prisma_1.default.payment.findMany({
                 where: whereClause,
                 include: {
@@ -46,49 +51,19 @@ function getTransactionMetrics(baseWhereClause_1) {
                     }
                 }
             });
-            // Determine current period based on timeframe for "right now" calculations
-            const now = new Date();
-            let currentPeriodStart;
-            let currentPeriodEnd;
-            switch (timeframe) {
-                case "daily":
-                    currentPeriodStart = (0, date_fns_1.startOfDay)(now);
-                    currentPeriodEnd = (0, date_fns_1.endOfDay)(now);
-                    break;
-                case "weekly":
-                    currentPeriodStart = (0, date_fns_1.startOfWeek)(now, { weekStartsOn: 1 }); // Week starts on Monday
-                    currentPeriodEnd = (0, date_fns_1.endOfWeek)(now, { weekStartsOn: 1 });
-                    break;
-                case "monthly":
-                    currentPeriodStart = (0, date_fns_1.startOfMonth)(now);
-                    currentPeriodEnd = (0, date_fns_1.endOfMonth)(now);
-                    break;
-                case "yearly":
-                    currentPeriodStart = (0, date_fns_1.startOfYear)(now);
-                    currentPeriodEnd = (0, date_fns_1.endOfYear)(now);
-                    break;
-                default:
-                    currentPeriodStart = (0, date_fns_1.startOfDay)(now);
-                    currentPeriodEnd = (0, date_fns_1.endOfDay)(now);
-            }
-            // Filter payments for current period (if timeframe is not custom)
-            const currentPeriodPayments = timeframe !== "custom"
-                ? payments.filter(payment => {
-                    const paymentDate = new Date(payment.createdAt);
-                    return (0, date_fns_1.isWithinInterval)(paymentDate, {
-                        start: currentPeriodStart,
-                        end: currentPeriodEnd
-                    });
-                })
-                : payments;
-            console.log(`Current period (${timeframe}) has ${currentPeriodPayments.length} payments`);
-            const successful = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED').length;
-            const pending = currentPeriodPayments.filter(p => p.paymentStatus === 'PENDING').length;
-            const failed = currentPeriodPayments.filter(p => ['CANCELLED', 'DENIED', 'EXPIRED'].includes(p.paymentStatus)).length;
-            const total = currentPeriodPayments.length;
-            const conversionRate = total > 0 ? (successful / total) * 100 : 0;
+            console.log(`Found ${payments.length} payments in the specified date range`);
+            // IMPORTANT: Use all payments in the date range, not just "current period"
+            // This ensures consistency across all reports
+            const filteredPayments = payments;
+            // Calculate metrics based on all payments in the date range
+            const successful = filteredPayments.filter(p => p.paymentStatus === 'SUCCESSED').length;
+            const pending = filteredPayments.filter(p => p.paymentStatus === 'PENDING').length;
+            const failed = filteredPayments.filter(p => ['CANCELLED', 'DENIED', 'EXPIRED'].includes(p.paymentStatus)).length;
+            const total = filteredPayments.length;
+            const conversionRate = total > 0 ? successful / total : 0;
+            // Process payment methods
             const paymentMethodsMap = new Map();
-            currentPeriodPayments.forEach(payment => {
+            filteredPayments.forEach(payment => {
                 const method = payment.paymentMethode || 'Unknown';
                 if (!paymentMethodsMap.has(method)) {
                     paymentMethodsMap.set(method, { method, count: 0, value: 0 });
@@ -98,13 +73,22 @@ function getTransactionMetrics(baseWhereClause_1) {
                 methodStat.value += payment.amount;
             });
             const paymentMethods = Array.from(paymentMethodsMap.values());
-            const successfulPayments = currentPeriodPayments.filter(p => p.paymentStatus === 'SUCCESSED');
+            // Calculate transaction value statistics
+            const successfulPayments = filteredPayments.filter(p => p.paymentStatus === 'SUCCESSED');
             const amounts = successfulPayments.map(p => p.amount);
             const averageValue = amounts.length > 0
                 ? amounts.reduce((sum, val) => sum + val, 0) / amounts.length
                 : 0;
             const highestValue = amounts.length > 0 ? Math.max(...amounts) : 0;
             const lowestValue = amounts.length > 0 ? Math.min(...amounts) : 0;
+            // Log summary for debugging
+            console.log(`Transaction metrics summary for ${timeframe}:`, {
+                total,
+                successful,
+                pending,
+                failed,
+                avgValue: Math.round(averageValue)
+            });
             return {
                 count: {
                     successful,
@@ -112,7 +96,7 @@ function getTransactionMetrics(baseWhereClause_1) {
                     failed,
                     total
                 },
-                conversionRate: parseFloat(conversionRate.toFixed(2)),
+                conversionRate: parseFloat(conversionRate.toFixed(4)),
                 paymentMethods,
                 averageValue: Math.round(averageValue),
                 highestValue,

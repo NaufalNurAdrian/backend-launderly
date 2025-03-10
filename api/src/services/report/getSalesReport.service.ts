@@ -15,6 +15,7 @@ import {
   format,
   eachDayOfInterval,
   eachWeekOfInterval,
+  parseISO
 } from "date-fns";
 
 interface GetSalesReportQuery {
@@ -22,12 +23,24 @@ interface GetSalesReportQuery {
   filterMonth: string;
   filterYear: string;
   id: number;
-  timeframe?: "daily" | "weekly" | "monthly" | "yearly";
+  timeframe?: "daily" | "weekly" | "monthly" | "yearly" | "custom";
+  startDate?: string;
+  endDate?: string;
 }
 
 export const getSalesReportService = async (query: GetSalesReportQuery) => {
   try {
-    const { id, filterOutlet, filterMonth, filterYear, timeframe = "monthly" } = query;
+    const { id, filterOutlet, filterMonth, filterYear, timeframe = "monthly", startDate, endDate } = query;
+
+    // Log the query parameters
+    console.log("Sales report query:", {
+      filterOutlet,
+      filterMonth,
+      filterYear,
+      timeframe,
+      startDate,
+      endDate
+    });
 
     const existingUser = await prisma.user.findFirst({
       where: { id },
@@ -68,40 +81,55 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
     const year = filterYear ? Number(filterYear) : now.getFullYear();
     const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
 
-    // Define timeframe-specific date ranges for totals calculation
+    // Define timeframe-specific date ranges
     let timeframeStartDate: Date;
     let timeframeEndDate: Date;
     
-    switch (timeframe) {
-      case "daily":
-        // Today only
-        timeframeStartDate = startOfDay(now);
-        timeframeEndDate = endOfDay(now);
-        break;
-        
-      case "weekly":
-        // Last 7 days
-        timeframeStartDate = startOfDay(subDays(now, 6)); // 6 days ago + today = 7 days
-        timeframeEndDate = endOfDay(now);
-        break;
-        
-      case "monthly":
-        // Current month only
-        timeframeStartDate = startOfMonth(now);
-        timeframeEndDate = endOfMonth(now);
-        break;
-        
-      case "yearly":
-        // Current year only
-        timeframeStartDate = startOfYear(now);
-        timeframeEndDate = endOfYear(now);
-        break;
-        
-      default:
-        // Default to monthly (current month)
-        timeframeStartDate = startOfMonth(now);
-        timeframeEndDate = endOfMonth(now);
+    // Handle custom timeframe with explicit dates
+    if (timeframe === "custom" && startDate && endDate) {
+      timeframeStartDate = parseISO(startDate);
+      timeframeEndDate = parseISO(endDate);
+      
+      // Set proper time components
+      timeframeStartDate.setHours(0, 0, 0, 0);
+      timeframeEndDate.setHours(23, 59, 59, 999);
+      
+      console.log(`Using custom date range: ${format(timeframeStartDate, 'yyyy-MM-dd')} to ${format(timeframeEndDate, 'yyyy-MM-dd')}`);
+    } else {
+      // Standard timeframes
+      switch (timeframe) {
+        case "daily":
+          // Today only
+          timeframeStartDate = startOfDay(now);
+          timeframeEndDate = endOfDay(now);
+          break;
+          
+        case "weekly":
+          // Last 7 days
+          timeframeStartDate = startOfDay(subDays(now, 6)); // 6 days ago + today = 7 days
+          timeframeEndDate = endOfDay(now);
+          break;
+          
+        case "monthly":
+          // Current month only
+          timeframeStartDate = startOfMonth(now);
+          timeframeEndDate = endOfMonth(now);
+          break;
+          
+        case "yearly":
+          // Current year only
+          timeframeStartDate = startOfYear(now);
+          timeframeEndDate = endOfYear(now);
+          break;
+          
+        default:
+          // Default to monthly (current month)
+          timeframeStartDate = startOfMonth(now);
+          timeframeEndDate = endOfMonth(now);
+      }
     }
+
+    console.log(`Using timeframe ${timeframe} from ${format(timeframeStartDate, 'yyyy-MM-dd')} to ${format(timeframeEndDate, 'yyyy-MM-dd')}`);
 
     // Get the orders for the selected timeframe (for total calculations)
     const timeframeWhereClause = { ...orderWhereClause };
@@ -127,6 +155,8 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
         deliveryOrder: true
       }
     });
+
+    console.log(`Found ${timeframeOrders.length} orders in the selected timeframe`);
 
     // Calculate totals for the timeframe
     let totalIncome = 0;
@@ -156,7 +186,7 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
       totalWeight += order.weight ?? 0;
     });
 
-    // Now, prepare chart data as in the original code
+    // Now, prepare chart data
     // For daily chart data (30 days)
     const dailyStartDate = startOfDay(subDays(now, 29));
     const dailyEndDate = endOfDay(now);
@@ -170,7 +200,7 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
     // Get orders for chart data
     const chartWhereClause = { ...orderWhereClause };
     
-    // We need orders for the last 30 days for daily charts
+    // Use the same date range as the timeframe for consistency
     chartWhereClause.createdAt = {
       gte: dailyStartDate,
       lte: dailyEndDate
@@ -194,6 +224,8 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
         deliveryOrder: true
       }
     });
+
+    console.log(`Found ${chartOrders.length} orders for chart data in 30-day range`);
 
     // Initialize arrays for chart data
     let incomeDaily = new Array(30).fill(0);
@@ -373,6 +405,8 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
       transactionYearly[i] = yearlyOrders.length;
     }
 
+    console.log("Sales report calculation complete");
+
     return {
       message: "Successfully fetched sales report",
       result: {
@@ -398,6 +432,7 @@ export const getSalesReportService = async (query: GetSalesReportQuery) => {
       },
     };
   } catch (error) {
+    console.error("Error in getSalesReportService:", error);
     throw error;
   }
 };

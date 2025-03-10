@@ -11,7 +11,8 @@ import {
   subWeeks, 
   subMonths, 
   startOfYear, 
-  endOfYear 
+  endOfYear,
+  format
 } from "date-fns";
 import { getTransactionMetrics } from "./transactionMetrics.service";
 import { getRevenueMetrics } from "./revenueMetrics.service";
@@ -28,42 +29,51 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       reportType = "comprehensive"
     } = filters;
 
+    // Log request parameters
+    console.log("Report generation request:", {
+      outletId,
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+      timeframe,
+      reportType
+    });
+
     let dateStart = startDate;
     let dateEnd = endDate;
 
-    // If dates aren't provided, calculate appropriate date ranges based on timeframe
-    if (!startDate || !endDate) {
+    // If dates aren't provided or for custom timeframe, calculate appropriate date ranges
+    if ((!startDate || !endDate)) {
+      // For custom timeframe without dates, show an error
+      if (timeframe === "custom") {
+        throw new Error("Date range is required for custom time period");
+      }
+      
+      // Calculate default date ranges for other timeframes
       const today = new Date();
       
       switch (timeframe) {
         case "daily":
-          // Use the last 30 days for daily view
-          dateStart = startOfDay(subDays(today, 29)); // 30 days including today
+          // Use just today for daily view
+          dateStart = startOfDay(today);
           dateEnd = endOfDay(today);
           break;
           
         case "weekly":
-          // Use the last 12 weeks for weekly view
-          dateStart = startOfDay(subWeeks(today, 11)); // 12 weeks including current week
+          // Use exactly 7 days for weekly view (including today)
+          dateStart = startOfDay(subDays(today, 6));
           dateEnd = endOfDay(today);
           break;
           
         case "monthly":
-          // Use current year for monthly view
-          dateStart = startOfYear(today);
-          dateEnd = endOfYear(today);
+          // Use current month for monthly view
+          dateStart = startOfMonth(today);
+          dateEnd = endOfMonth(today);
           break;
           
         case "yearly":
-          // Use last 5 years for yearly view
-          dateStart = startOfYear(new Date(today.getFullYear() - 4, 0, 1));
+          // Use current year for yearly view
+          dateStart = startOfYear(today);
           dateEnd = endOfYear(today);
-          break;
-          
-        case "custom":
-          // For custom timeframe with no dates, default to last 30 days
-          dateStart = startOfDay(subDays(today, 29));
-          dateEnd = endOfDay(today);
           break;
           
         default:
@@ -72,7 +82,16 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       }
     }
 
-    // Create base where clause
+    // Pada titik ini, dateStart dan dateEnd seharusnya selalu didefinisikan
+    // tapi TypeScript tidak bisa mengetahuinya, jadi kita perlu memastikan
+    if (!dateStart || !dateEnd) {
+      // Fallback jika somehow masih undefined
+      const today = new Date();
+      dateStart = startOfDay(today);
+      dateEnd = endOfDay(today);
+    }
+
+    // Create base where clause with properly formatted dates
     const baseWhereClause: any = {
       createdAt: {
         gte: dateStart,
@@ -84,11 +103,13 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       baseWhereClause.outletId = outletId;
     }
 
-    console.log(`Fetching data from ${dateStart} to ${dateEnd} with timeframe ${timeframe}`);
+    // Sekarang dateStart dan dateEnd sudah pasti tidak undefined
+    console.log(`Fetching data from ${format(dateStart, 'yyyy-MM-dd HH:mm:ss')} to ${format(dateEnd, 'yyyy-MM-dd HH:mm:ss')} with timeframe ${timeframe}`);
 
+    // Generate report data with the metric services
     let reportData: any = {};
 
-    // Pass the timeframe to each metrics service so they can apply appropriate grouping
+    // Pass the timeframe to each metrics service
     if (reportType === "transactions" || reportType === "comprehensive") {
       const transactionMetrics = await getTransactionMetrics(baseWhereClause, timeframe);
       reportData.transactions = transactionMetrics;
@@ -121,6 +142,7 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       reportData.outletDetails = outlet;
     }
 
+    // Add metadata
     reportData.metadata = {
       generatedAt: new Date(),
       timeframe,
