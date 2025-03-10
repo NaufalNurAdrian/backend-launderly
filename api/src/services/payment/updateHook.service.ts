@@ -42,7 +42,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
 
     console.log(`Mapped payment status: ${paymentStatus}`);
 
-    // Cari invoice berdasarkan order_id
     console.log(`Searching for invoice with order_id: ${order_id}`);
     const existingInvoice = await prisma.payment.findUnique({
       where: { invoiceNumber: order_id },
@@ -121,7 +120,6 @@ export const updateHooktStatus = async (body: UpdatePaymentBody) => {
     console.log(
       `Payment updated for order ${order_id}. New status: ${newOrderStatus}, Delivery: ${newDeliveryStatus}`
     );
-
 
     return { message: "Payment updated successfully" };
   } catch (error) {

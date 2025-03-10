@@ -5,20 +5,30 @@ import path from "path";
 import fs from "fs";
 import Handlebars from "handlebars";
 import { transporter } from "../../libs/nodemailer";
+import validator from "validator";
 
 export const updateEmailService = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id; 
+    const userId = req.user?.id;
     const { newEmail } = req.body;
 
-    if (!newEmail) {
-      return res.status(400).json({ message: "New email is required!" });
+    if (!newEmail || !validator.isEmail(newEmail)) {
+      return res.status(400).json({ message: "Invalid email format!" });
     }
 
-    // Cek apakah email sudah digunakan oleh user lain
-    const existingUser = await prisma.user.findUnique({
-      where: { email: newEmail },
-    });
+    // Cek apakah user ada dan sudah diverifikasi sebelumnya
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    if (!user.isVerify) {
+      return res.status(403).json({ message: "Please verify your current email first!" });
+    }
+
+    // Cek apakah email sudah dipakai oleh user lain
+    const existingUser = await prisma.user.findUnique({ where: { email: newEmail } });
 
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use!" });
@@ -35,7 +45,7 @@ export const updateEmailService = async (req: Request, res: Response) => {
     const compiledTemplate = Handlebars.compile(templateSource);
     const html = compiledTemplate({ link });
 
-    // Kirim email verifikasi dengan Nodemailer
+    // Kirim email verifikasi
     await transporter.sendMail({
       from: "Admin",
       to: newEmail,
@@ -48,12 +58,11 @@ export const updateEmailService = async (req: Request, res: Response) => {
       where: { id: userId },
       data: {
         emailVerifyToken: token,
-        isVerify: false, // Email harus diverifikasi ulang
       },
     });
 
     res.status(200).json({
-      message: "Email update requested. Please verify your new email address.",
+      message: "Verification email sent! Please check your inbox.",
     });
   } catch (error) {
     console.error("Error updating email:", error);

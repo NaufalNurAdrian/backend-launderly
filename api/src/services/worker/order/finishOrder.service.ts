@@ -1,4 +1,3 @@
-import { generateOrderNumber } from "../../../helpers/numberGenerator";
 import prisma from "../../../prisma";
 import { OrderStatus, DeliveryStatus } from "../../../../prisma/generated/client";
 

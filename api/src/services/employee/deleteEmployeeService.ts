@@ -1,9 +1,9 @@
 import prisma from "../../prisma";
 
-export const deleteEmployeeService = async (id: number) => {
+export const deleteEmployeeService = async (id: string) => {
   try {
     const employee = await prisma.employee.findFirst({
-      where: { id },
+      where: { id: Number(id) },
       include: { user: true },
     });
     if (!employee) {

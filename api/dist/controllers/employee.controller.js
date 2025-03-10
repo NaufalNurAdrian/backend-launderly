@@ -74,7 +74,11 @@ class EmployeeController {
     deleteEmployee(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield (0, deleteEmployeeService_1.deleteEmployeeService)(Number(req.params.id));
+                const id = req.body.id;
+                if (!id) {
+                    res.status(200).send({ message: "employee id not found" });
+                }
+                const result = yield (0, deleteEmployeeService_1.deleteEmployeeService)(id);
                 res
                     .status(200)
                     .send({ message: "Employee deleted successfully", result });

@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOrderMetrics = getOrderMetrics;
 const prisma_1 = __importDefault(require("../../prisma"));
-function getOrderMetrics(baseWhereClause) {
+function getOrderMetrics(baseWhereClause, timeframe) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const ordersByStatus = yield prisma_1.default.order.groupBy({

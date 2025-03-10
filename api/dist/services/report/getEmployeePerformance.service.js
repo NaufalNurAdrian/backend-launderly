@@ -18,7 +18,14 @@ const date_fns_1 = require("date-fns");
 const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const { id, filterOutlet = "all", filterMonth, filterYear } = query;
+        const { id, filterOutlet = "all", filterMonth, filterYear, timeframe = "monthly" } = query;
+        console.log("Employee performance query:", {
+            id,
+            filterOutlet,
+            filterMonth,
+            filterYear,
+            timeframe
+        });
         const existingUser = yield prisma_1.default.user.findFirst({
             where: { id },
             select: { employee: { select: { outletId: true } }, role: true },
@@ -26,6 +33,7 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
         if (!existingUser)
             throw new Error("User not found!");
         const whereClause = {};
+        // Handle outlet filtering
         if (existingUser.role !== "SUPER_ADMIN") {
             whereClause.worker = {
                 outletId: (_b = (_a = existingUser.employee) === null || _a === void 0 ? void 0 : _a.outletId) !== null && _b !== void 0 ? _b : undefined,
@@ -36,15 +44,46 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
                 outletId: Number(filterOutlet),
             };
         }
+        // Calculate date range based on timeframe
         const now = new Date();
-        const month = filterMonth ? Number(filterMonth) - 1 : now.getMonth();
-        const year = filterYear ? Number(filterYear) : now.getFullYear();
-        if (filterMonth || filterYear) {
-            whereClause.createdAt = {
-                gte: (0, date_fns_1.startOfMonth)(new Date(year, month)),
-                lte: (0, date_fns_1.endOfMonth)(new Date(year, month)),
-            };
+        let dateStart;
+        let dateEnd;
+        // If month and year are provided, use them
+        if (filterMonth && filterYear) {
+            const month = Number(filterMonth) - 1; // JS months are 0-indexed
+            const year = Number(filterYear);
+            dateStart = (0, date_fns_1.startOfMonth)(new Date(year, month));
+            dateEnd = (0, date_fns_1.endOfMonth)(new Date(year, month));
         }
+        else {
+            // Otherwise use timeframe
+            switch (timeframe) {
+                case "daily":
+                    // Last 30 days
+                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
+                    dateEnd = (0, date_fns_1.endOfDay)(now);
+                    break;
+                case "weekly":
+                    // Last 12 weeks
+                    dateStart = (0, date_fns_1.startOfWeek)((0, date_fns_1.subWeeks)(now, 11));
+                    dateEnd = (0, date_fns_1.endOfWeek)(now);
+                    break;
+                case "monthly":
+                default:
+                    // Current month if no specific month/year
+                    dateStart = (0, date_fns_1.startOfMonth)(now);
+                    dateEnd = (0, date_fns_1.endOfMonth)(now);
+            }
+        }
+        // Set date filter
+        whereClause.createdAt = {
+            gte: dateStart,
+            lte: dateEnd,
+        };
+        console.log("Date range:", {
+            start: dateStart.toISOString(),
+            end: dateEnd.toISOString()
+        });
         console.log("whereClause:", JSON.stringify(whereClause, null, 2));
         const employeePerformances = yield prisma_1.default.orderWorker.findMany({
             where: whereClause,
@@ -67,6 +106,7 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
                 },
             },
         });
+        console.log(`Found ${employeePerformances.length} employee performance records`);
         const performanceMap = new Map();
         employeePerformances.forEach((record) => {
             var _a;
@@ -90,7 +130,14 @@ const getEmployeePerformanceService = (query) => __awaiter(void 0, void 0, void 
         const performanceReport = Array.from(performanceMap.values()).map((item) => (Object.assign(Object.assign({}, item.data), { taskCompleted: item.count })));
         return {
             message: "Successfully fetched employee performance",
-            result: { performanceReport },
+            result: {
+                performanceReport,
+                timeframe,
+                dateRange: {
+                    from: dateStart,
+                    to: dateEnd
+                }
+            },
         };
     }
     catch (error) {

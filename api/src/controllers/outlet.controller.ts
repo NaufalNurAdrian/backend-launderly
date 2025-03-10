@@ -75,12 +75,14 @@ export class OutletController {
 
   async deleteOutlet(req: Request, res: Response) {
     try {
-      const id = req.body;
+      const id = req.body.id;
       if (!id) {
         res.status(400).send({ message: "Outlet ID is required" });
       }
 
-      const result = await deleteOutletService(id);
+      const outletId = parseInt(id);
+
+      const result = await deleteOutletService(outletId);
       res.status(200).send({ message: "Outlet deleted successfully", result });
     } catch (error: any) {
       res
