@@ -14,6 +14,7 @@ class EmployeeRouter {
         this.router.post("/create", verify_1.verifyToken, verify_1.checkSuperAdmin, this.employeeController.addEmployee);
         this.router.get("/", verify_1.verifyToken, verify_1.checkSuperAdmin, this.employeeController.getAllEmployee);
         this.router.get("/:id", verify_1.verifyToken, verify_1.checkSuperAdmin, this.employeeController.getEmployeeById);
+        this.router.patch("/delete", verify_1.verifyToken, verify_1.checkSuperAdmin, this.employeeController.deleteEmployee);
         this.router.patch("/update/:id", verify_1.verifyToken, verify_1.checkSuperAdmin, this.employeeController.updateEmployee);
     }
     getRouter() {

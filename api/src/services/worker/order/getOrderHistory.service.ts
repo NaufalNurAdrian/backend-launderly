@@ -1,4 +1,4 @@
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../../../prisma/generated/client";
 import prisma from "../../../prisma";
 
 interface GetWorkerOrdersData {

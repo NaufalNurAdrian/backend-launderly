@@ -46,7 +46,7 @@ export class ItemController {
       if (!id) {
         res.status(400).send({ message: "Invalid item ID" });
       }
-      const deleteItem = await deleteItemService(req.body);
+      const deleteItem = await deleteItemService(id);
       res.status(200).send({ message: "delete item laundry", deleteItem });
     } catch (error: any) {
       res

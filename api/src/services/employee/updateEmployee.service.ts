@@ -18,14 +18,6 @@ interface UserUpdateInput {
   role?: Role;
 }
 
-// Interface untuk user update
-interface UserUpdateInput {
-  fullName?: string;
-  email?: string;
-  password?: string;
-  role?: Role;
-}
-
 export const updateEmployeeService = async (
   data: UpdateEmployeeInput,
   id: string

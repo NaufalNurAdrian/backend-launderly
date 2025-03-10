@@ -1,6 +1,6 @@
-import { generateOrderNumber } from "../../../helpers/numberGenerator";
 import prisma from "../../../prisma";
 import { OrderStatus, DeliveryStatus } from "../../../../prisma/generated/client";
+
 interface updateOrderData {
   workerId: number;
   orderId: number;
@@ -31,10 +31,13 @@ export const updateOrderStatus = async (query: updateOrderData) => {
 
     if (orderWorker.bypassRequest) {
       if (orderWorker.bypassAccepted === null) {
+        console.log("Bypass request pending");
         throw new Error("Bypass request is still pending");
       } else if (orderWorker.bypassAccepted === true) {
+        console.log("Bypass request accepted");
         throw new Error("Bypass request has been accepted. You are no longer assigned to this order.");
       } else if (orderWorker.bypassAccepted === false) {
+        console.log("Bypass request was rejected. Continuing process...");
       }
     }
 
