@@ -23,7 +23,7 @@ export const checkInService = async (data: CheckInData) => {
       throw new Error("Employee shift not found.");
     }
     
-    const now = DateTime.now()
+    const now = DateTime.now().setZone("Asia/Jakarta").startOf("day");
     let todayStart: Date;
     let todayEnd: Date;
 
