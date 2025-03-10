@@ -1,12 +1,6 @@
 import prisma from "../../prisma";
 import { ReportTimeframe } from "@/types/report";
-import { 
-  startOfDay, endOfDay, 
-  startOfWeek, endOfWeek, 
-  startOfMonth, endOfMonth, 
-  startOfYear, endOfYear,
-  format, isWithinInterval
-} from "date-fns";
+import { format } from "date-fns";
 
 export async function getRevenueMetrics(baseWhereClause: any, timeframe: ReportTimeframe = "daily") {
   try {
@@ -18,6 +12,7 @@ export async function getRevenueMetrics(baseWhereClause: any, timeframe: ReportT
     // Apply date filter
     if (baseWhereClause.createdAt) {
       orderWhereClause.createdAt = baseWhereClause.createdAt;
+      console.log(`Fetching orders from ${format(baseWhereClause.createdAt.gte, 'yyyy-MM-dd HH:mm:ss')} to ${format(baseWhereClause.createdAt.lte, 'yyyy-MM-dd HH:mm:ss')}`);
     }
     
     // Apply outlet filter if present
@@ -50,62 +45,31 @@ export async function getRevenueMetrics(baseWhereClause: any, timeframe: ReportT
       },
     });
 
-    console.log(`Found ${orders.length} orders for revenue calculation`);
+    console.log(`Found ${orders.length} orders with successful payments in the specified date range`);
 
-    // Determine current period based on timeframe for "right now" calculations
-    const now = new Date();
-    let currentPeriodStart: Date;
-    let currentPeriodEnd: Date;
+    // IMPORTANT: Use all orders in the date range, not just "current period"
+    // This ensures consistency across all reports
+    const filteredOrders = orders;
     
-    switch (timeframe) {
-      case "daily":
-        currentPeriodStart = startOfDay(now);
-        currentPeriodEnd = endOfDay(now);
-        break;
-      case "weekly":
-        currentPeriodStart = startOfWeek(now, { weekStartsOn: 1 }); // Week starts on Monday
-        currentPeriodEnd = endOfWeek(now, { weekStartsOn: 1 });
-        break;
-      case "monthly":
-        currentPeriodStart = startOfMonth(now);
-        currentPeriodEnd = endOfMonth(now);
-        break;
-      case "yearly":
-        currentPeriodStart = startOfYear(now);
-        currentPeriodEnd = endOfYear(now);
-        break;
-      default:
-        currentPeriodStart = startOfDay(now);
-        currentPeriodEnd = endOfDay(now);
-    }
-    
-    // Filter orders for current period (if timeframe is not custom)
-    const currentPeriodOrders = timeframe !== "custom" 
-      ? orders.filter(order => {
-          const orderDate = new Date(order.createdAt);
-          return isWithinInterval(orderDate, {
-            start: currentPeriodStart,
-            end: currentPeriodEnd
-          });
-        })
-      : orders;
-    
-    console.log(`Current period (${timeframe}) has ${currentPeriodOrders.length} orders`);
+    console.log(`Using ${filteredOrders.length} orders for revenue calculations`);
 
-    // Calculate totals for the CURRENT PERIOD (based on timeframe)
+    // Calculate totals for ALL orders in the specified date range
     let totalRevenue = 0;
     let laundryRevenue = 0;
     let pickupRevenue = 0;
     let deliveryRevenue = 0;
 
-    currentPeriodOrders.forEach(order => {
+    filteredOrders.forEach(order => {
+      // Sum laundry payments
       const laundryPayments = order.payment.reduce((sum, payment) => sum + payment.amount, 0);
       laundryRevenue += laundryPayments;
 
+      // Add pickup revenue if exists
       if (order.pickupOrder) {
         pickupRevenue += order.pickupOrder.pickupPrice;
       }
 
+      // Add delivery revenue if exists
       if (order.deliveryOrder && Array.isArray(order.deliveryOrder) && order.deliveryOrder.length > 0) {
         deliveryRevenue += order.deliveryOrder[0].deliveryPrice;
       } else if (order.deliveryOrder && !Array.isArray(order.deliveryOrder)) {
@@ -119,9 +83,9 @@ export async function getRevenueMetrics(baseWhereClause: any, timeframe: ReportT
 
     totalRevenue = laundryRevenue + pickupRevenue + deliveryRevenue;
 
-    // Create daily revenue breakdown (this stays as is - showing all dates with data)
+    // Create daily revenue breakdown for all dates with data
     const dailyRevenueMap = new Map();
-    orders.forEach(order => {
+    filteredOrders.forEach(order => {
       const orderDate = order.createdAt.toISOString().split('T')[0];
       if (!dailyRevenueMap.has(orderDate)) {
         dailyRevenueMap.set(orderDate, {
@@ -162,7 +126,24 @@ export async function getRevenueMetrics(baseWhereClause: any, timeframe: ReportT
       .sort((a, b) => a.date.localeCompare(b.date));
 
     console.log(`Generated ${dailyRevenue.length} daily revenue entries`);
-    console.log(`Total revenue for current ${timeframe}: ${totalRevenue}`);
+    
+    // Verify totals
+    const calculatedTotal = dailyRevenue.reduce((sum, day) => sum + day.total, 0);
+    
+    if (calculatedTotal !== totalRevenue) {
+      console.warn(`Total mismatch: calculated sum of daily (${calculatedTotal}) doesn't match total revenue (${totalRevenue}). Using calculated total.`);
+      totalRevenue = calculatedTotal;
+      laundryRevenue = dailyRevenue.reduce((sum, day) => sum + day.laundry, 0);
+      pickupRevenue = dailyRevenue.reduce((sum, day) => sum + day.pickup, 0);
+      deliveryRevenue = dailyRevenue.reduce((sum, day) => sum + day.delivery, 0);
+    }
+    
+    console.log(`Revenue breakdown for ${timeframe}:`, {
+      total: totalRevenue,
+      laundry: laundryRevenue,
+      pickup: pickupRevenue,
+      delivery: deliveryRevenue
+    });
 
     return {
       total: totalRevenue,
