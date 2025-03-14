@@ -28,7 +28,7 @@ export class ReportRouter {
     this.router.get(
       "/generate", 
       verifyToken, 
-      checkSuperAdmin, 
+      checkOutletSuper, 
       this.reportController.generateOutletReport.bind(this.reportController)
     );
     this.router.get(

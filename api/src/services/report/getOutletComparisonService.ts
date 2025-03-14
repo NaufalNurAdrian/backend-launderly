@@ -1,15 +1,17 @@
 import prisma from "../../prisma";
 import { 
   startOfDay, endOfDay, 
-  startOfMonth, endOfMonth, 
-  startOfYear, endOfYear,
-  subDays, format
+  subDays,
+  format, parseISO
 } from "date-fns";
 import { ReportTimeframe } from "@/types/report";
 
-export async function getOutletComparisonService(timeframe: ReportTimeframe = "monthly") {
+export async function getOutletComparisonService(
+  timeframe: ReportTimeframe = "monthly",
+  startDateParam?: string,
+  endDateParam?: string
+) {
   try {
-    // Get all active outlets
     const outlets = await prisma.outlet.findMany({
       where: {
         isDelete: false
@@ -21,50 +23,61 @@ export async function getOutletComparisonService(timeframe: ReportTimeframe = "m
       }
     });
 
-    // Determine date range based on timeframe
     const now = new Date();
     let dateStart: Date;
     let dateEnd = endOfDay(now);
     
-    switch (timeframe) {
-      case "daily":
-        // Today only
-        dateStart = startOfDay(now);
-        break;
+    if (timeframe === "custom" && startDateParam && endDateParam) {
+      try {
+        dateStart = startOfDay(parseISO(startDateParam));
+        dateEnd = endOfDay(parseISO(endDateParam));
         
-      case "weekly":
-        // Use last 7 days instead of current week - more likely to have data
-        dateStart = startOfDay(subDays(now, 6)); // 6 days ago + today = 7 days
-        dateEnd = endOfDay(now);
-        break;
+        console.log(`Custom date range parsed successfully: ${format(dateStart, 'yyyy-MM-dd')} to ${format(dateEnd, 'yyyy-MM-dd')}`);
+      } catch (error) {
+        console.error("Error parsing custom date parameters:", error);
         
-      case "monthly":
-        // Current month
-        dateStart = startOfMonth(now);
-        dateEnd = endOfMonth(now);
-        break;
-        
-      case "yearly":
-        // Current year
-        dateStart = startOfYear(now);
-        dateEnd = endOfYear(now);
-        break;
-        
-      case "custom":
-        // Last 30 days for custom if no specific dates provided
-        dateStart = startOfDay(subDays(now, 29));
-        break;
-        
-      default:
-        // Default to last 30 days
-        dateStart = startOfDay(subDays(now, 29));
+        try {
+          dateStart = new Date(startDateParam);
+          dateEnd = new Date(endDateParam);
+          
+          dateStart.setHours(0, 0, 0, 0);
+          dateEnd.setHours(23, 59, 59, 999);
+          
+        } catch (fallbackError) {
+          console.error("Fallback date parsing also failed:", fallbackError);
+          dateStart = startOfDay(subDays(now, 30));
+          console.log(`Falling back to last 30 days: ${format(dateStart, 'yyyy-MM-dd')} to ${format(dateEnd, 'yyyy-MM-dd')}`);
+        }
+      }
+    } else {
+      switch (timeframe) {
+        case "daily":
+          dateStart = startOfDay(now);
+          dateEnd = endOfDay(now);
+          break;
+          
+        case "weekly":
+          dateStart = startOfDay(subDays(now, 6)); 
+          dateEnd = endOfDay(now);
+          break;
+          
+        case "monthly":
+          dateStart = startOfDay(subDays(now, 29)); 
+          dateEnd = endOfDay(now);
+          break;
+          
+        case "yearly":
+          dateStart = startOfDay(subDays(now, 364));
+          dateEnd = endOfDay(now);
+          break;
+          
+        default:
+          dateStart = startOfDay(subDays(now, 29));
+          dateEnd = endOfDay(now);
+      }
     }
 
-    console.log(`Generating outlet comparison for timeframe ${timeframe} from ${format(dateStart, 'yyyy-MM-dd')} to ${format(dateEnd, 'yyyy-MM-dd')}`);
-
-    // Collect metrics for each outlet
     const outletMetrics = await Promise.all(outlets.map(async (outlet) => {
-      // Find orders through the Order model directly, filtering by outlet via the pickup order
       const orders = await prisma.order.findMany({
         where: {
           pickupOrder: {
@@ -91,30 +104,27 @@ export async function getOutletComparisonService(timeframe: ReportTimeframe = "m
         }
       });
 
-      console.log(`Found ${orders.length} orders for outlet ${outlet.outletName} in the selected timeframe`);
 
-      // Calculate total revenue
       let revenue = 0;
       
       orders.forEach(order => {
-        // Add payment amounts
         revenue += order.payment.reduce(
           (sum: number, payment) => sum + (payment.amount || 0), 
           0
         );
         
-        // Add pickup price if exists
         if (order.pickupOrder) {
           revenue += order.pickupOrder.pickupPrice || 0;
         }
         
-        // Add delivery price if exists
-        if (order.deliveryOrder && order.deliveryOrder.length > 0) {
+        if (order.deliveryOrder && Array.isArray(order.deliveryOrder) && order.deliveryOrder.length > 0) {
           revenue += order.deliveryOrder[0].deliveryPrice || 0;
+        } else if (order.deliveryOrder && !Array.isArray(order.deliveryOrder)) {
+          const delivery = order.deliveryOrder as any;
+          revenue += Number(delivery.deliveryPrice) || 0;
         }
       });
 
-      // Get unique customer IDs from pickup orders
       const customerIds = orders.map(order => order.pickupOrder?.userId).filter(Boolean);
       const uniqueCustomerIds = new Set(customerIds);
 

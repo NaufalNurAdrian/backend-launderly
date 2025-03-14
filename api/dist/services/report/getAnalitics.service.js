@@ -20,44 +20,60 @@ const revenueMetrics_service_1 = require("./revenueMetrics.service");
 const customerMetrics_service_1 = require("./customerMetrics.service");
 const orderMetrics_service_1 = require("./orderMetrics.service");
 const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     try {
-        const { outletId, startDate, endDate, timeframe = "daily", reportType = "comprehensive" } = filters;
-        // Log request parameters
-        console.log("Report generation request:", {
-            outletId,
-            startDate: startDate === null || startDate === void 0 ? void 0 : startDate.toISOString(),
-            endDate: endDate === null || endDate === void 0 ? void 0 : endDate.toISOString(),
-            timeframe,
-            reportType
+        const { requestedOutletId, startDate, endDate, timeframe = "daily", reportType = "comprehensive", userId } = filters;
+        const existingUser = yield prisma_1.default.user.findFirst({
+            where: { id: userId },
+            select: {
+                role: true,
+                employee: {
+                    select: {
+                        outlet: { select: { id: true, outletName: true } }
+                    }
+                },
+            },
         });
+        if (!existingUser) {
+            throw new Error("User not found!");
+        }
+        let effectiveOutletId = requestedOutletId;
+        if (existingUser.role === "OUTLET_ADMIN") {
+            if (!((_b = (_a = existingUser.employee) === null || _a === void 0 ? void 0 : _a.outlet) === null || _b === void 0 ? void 0 : _b.id)) {
+                throw new Error("Outlet admin is not assigned to any outlet");
+            }
+            effectiveOutletId = existingUser.employee.outlet.id;
+        }
+        else if (existingUser.role === "SUPER_ADMIN") {
+            console.log(`User is SUPER_ADMIN ${effectiveOutletId ? `- Filtering by outlet ID: ${effectiveOutletId}` : '- Viewing all outlets'}`);
+        }
+        else {
+            if (!((_d = (_c = existingUser.employee) === null || _c === void 0 ? void 0 : _c.outlet) === null || _d === void 0 ? void 0 : _d.id)) {
+                throw new Error("Employee is not assigned to any outlet");
+            }
+            effectiveOutletId = existingUser.employee.outlet.id;
+        }
         let dateStart = startDate;
         let dateEnd = endDate;
-        // If dates aren't provided or for custom timeframe, calculate appropriate date ranges
         if ((!startDate || !endDate)) {
-            // For custom timeframe without dates, show an error
             if (timeframe === "custom") {
                 throw new Error("Date range is required for custom time period");
             }
-            // Calculate default date ranges for other timeframes
             const today = new Date();
             switch (timeframe) {
                 case "daily":
-                    // Use just today for daily view
                     dateStart = (0, date_fns_1.startOfDay)(today);
                     dateEnd = (0, date_fns_1.endOfDay)(today);
                     break;
                 case "weekly":
-                    // Use exactly 7 days for weekly view (including today)
                     dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(today, 6));
                     dateEnd = (0, date_fns_1.endOfDay)(today);
                     break;
                 case "monthly":
-                    // Use current month for monthly view
                     dateStart = (0, date_fns_1.startOfMonth)(today);
                     dateEnd = (0, date_fns_1.endOfMonth)(today);
                     break;
                 case "yearly":
-                    // Use current year for yearly view
                     dateStart = (0, date_fns_1.startOfYear)(today);
                     dateEnd = (0, date_fns_1.endOfYear)(today);
                     break;
@@ -66,29 +82,23 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
                     dateEnd = (0, date_fns_1.endOfDay)(today);
             }
         }
-        // Pada titik ini, dateStart dan dateEnd seharusnya selalu didefinisikan
-        // tapi TypeScript tidak bisa mengetahuinya, jadi kita perlu memastikan
         if (!dateStart || !dateEnd) {
-            // Fallback jika somehow masih undefined
             const today = new Date();
             dateStart = (0, date_fns_1.startOfDay)(today);
             dateEnd = (0, date_fns_1.endOfDay)(today);
         }
-        // Create base where clause with properly formatted dates
         const baseWhereClause = {
             createdAt: {
                 gte: dateStart,
                 lte: dateEnd,
             },
         };
-        if (outletId) {
-            baseWhereClause.outletId = outletId;
+        if (effectiveOutletId) {
+            baseWhereClause.outletId = effectiveOutletId;
         }
-        // Sekarang dateStart dan dateEnd sudah pasti tidak undefined
         console.log(`Fetching data from ${(0, date_fns_1.format)(dateStart, 'yyyy-MM-dd HH:mm:ss')} to ${(0, date_fns_1.format)(dateEnd, 'yyyy-MM-dd HH:mm:ss')} with timeframe ${timeframe}`);
-        // Generate report data with the metric services
+        console.log(`Using outlet filter: ${effectiveOutletId || 'All outlets'}`);
         let reportData = {};
-        // Pass the timeframe to each metrics service
         if (reportType === "transactions" || reportType === "comprehensive") {
             const transactionMetrics = yield (0, transactionMetrics_service_1.getTransactionMetrics)(baseWhereClause, timeframe);
             reportData.transactions = transactionMetrics;
@@ -105,9 +115,9 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
             const orderMetrics = yield (0, orderMetrics_service_1.getOrderMetrics)(baseWhereClause, timeframe);
             reportData.orders = orderMetrics;
         }
-        if (outletId) {
+        if (effectiveOutletId) {
             const outlet = yield prisma_1.default.outlet.findUnique({
-                where: { id: outletId },
+                where: { id: effectiveOutletId },
                 select: {
                     id: true,
                     outletName: true,
@@ -116,7 +126,6 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
             });
             reportData.outletDetails = outlet;
         }
-        // Add metadata
         reportData.metadata = {
             generatedAt: new Date(),
             timeframe,
@@ -124,6 +133,7 @@ const generateOutletReportService = (filters) => __awaiter(void 0, void 0, void 
                 from: dateStart,
                 to: dateEnd,
             },
+            userRole: existingUser.role
         };
         return reportData;
     }

@@ -19,59 +19,85 @@ import { getRevenueMetrics } from "./revenueMetrics.service";
 import { getCustomerMetrics } from "./customerMetrics.service";
 import { getOrderMetrics } from "./orderMetrics.service";
 
-export const generateOutletReportService = async (filters: ReportFilters) => {
+interface ExtendedReportFilters extends ReportFilters {
+  userId: number;
+  requestedOutletId?: number;
+}
+
+export const generateOutletReportService = async (filters: ExtendedReportFilters) => {
   try {
     const {
-      outletId,
+      requestedOutletId,
       startDate,
       endDate,
       timeframe = "daily",
-      reportType = "comprehensive"
+      reportType = "comprehensive",
+      userId
     } = filters;
 
-    // Log request parameters
-    console.log("Report generation request:", {
-      outletId,
-      startDate: startDate?.toISOString(),
-      endDate: endDate?.toISOString(),
-      timeframe,
-      reportType
+    const existingUser = await prisma.user.findFirst({
+      where: { id: userId },
+      select: {
+        role: true,
+        employee: { 
+          select: { 
+            outlet: { select: { id: true, outletName: true } } 
+          } 
+        },
+      },
     });
+
+    if (!existingUser) {
+      throw new Error("User not found!");
+    }
+
+    let effectiveOutletId: number | undefined = requestedOutletId;
+
+    if (existingUser.role === "OUTLET_ADMIN") {
+      if (!existingUser.employee?.outlet?.id) {
+        throw new Error("Outlet admin is not assigned to any outlet");
+      }
+      
+      effectiveOutletId = existingUser.employee.outlet.id;
+    } 
+    else if (existingUser.role === "SUPER_ADMIN") {
+      console.log(`User is SUPER_ADMIN ${effectiveOutletId ? `- Filtering by outlet ID: ${effectiveOutletId}` : '- Viewing all outlets'}`);
+    }
+    else {
+      if (!existingUser.employee?.outlet?.id) {
+        throw new Error("Employee is not assigned to any outlet");
+      }
+      
+      effectiveOutletId = existingUser.employee.outlet.id;
+    }
 
     let dateStart = startDate;
     let dateEnd = endDate;
 
-    // If dates aren't provided or for custom timeframe, calculate appropriate date ranges
     if ((!startDate || !endDate)) {
-      // For custom timeframe without dates, show an error
       if (timeframe === "custom") {
         throw new Error("Date range is required for custom time period");
       }
       
-      // Calculate default date ranges for other timeframes
       const today = new Date();
       
       switch (timeframe) {
         case "daily":
-          // Use just today for daily view
           dateStart = startOfDay(today);
           dateEnd = endOfDay(today);
           break;
           
         case "weekly":
-          // Use exactly 7 days for weekly view (including today)
           dateStart = startOfDay(subDays(today, 6));
           dateEnd = endOfDay(today);
           break;
           
         case "monthly":
-          // Use current month for monthly view
           dateStart = startOfMonth(today);
           dateEnd = endOfMonth(today);
           break;
           
         case "yearly":
-          // Use current year for yearly view
           dateStart = startOfYear(today);
           dateEnd = endOfYear(today);
           break;
@@ -82,16 +108,12 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       }
     }
 
-    // Pada titik ini, dateStart dan dateEnd seharusnya selalu didefinisikan
-    // tapi TypeScript tidak bisa mengetahuinya, jadi kita perlu memastikan
     if (!dateStart || !dateEnd) {
-      // Fallback jika somehow masih undefined
       const today = new Date();
       dateStart = startOfDay(today);
       dateEnd = endOfDay(today);
     }
 
-    // Create base where clause with properly formatted dates
     const baseWhereClause: any = {
       createdAt: {
         gte: dateStart,
@@ -99,17 +121,15 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       },
     };
 
-    if (outletId) {
-      baseWhereClause.outletId = outletId;
+    if (effectiveOutletId) {
+      baseWhereClause.outletId = effectiveOutletId;
     }
 
-    // Sekarang dateStart dan dateEnd sudah pasti tidak undefined
     console.log(`Fetching data from ${format(dateStart, 'yyyy-MM-dd HH:mm:ss')} to ${format(dateEnd, 'yyyy-MM-dd HH:mm:ss')} with timeframe ${timeframe}`);
+    console.log(`Using outlet filter: ${effectiveOutletId || 'All outlets'}`);
 
-    // Generate report data with the metric services
     let reportData: any = {};
 
-    // Pass the timeframe to each metrics service
     if (reportType === "transactions" || reportType === "comprehensive") {
       const transactionMetrics = await getTransactionMetrics(baseWhereClause, timeframe);
       reportData.transactions = transactionMetrics;
@@ -130,9 +150,9 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       reportData.orders = orderMetrics;
     }
 
-    if (outletId) {
+    if (effectiveOutletId) {
       const outlet = await prisma.outlet.findUnique({
-        where: { id: outletId },
+        where: { id: effectiveOutletId },
         select: {
           id: true,
           outletName: true,
@@ -142,7 +162,6 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
       reportData.outletDetails = outlet;
     }
 
-    // Add metadata
     reportData.metadata = {
       generatedAt: new Date(),
       timeframe,
@@ -150,6 +169,7 @@ export const generateOutletReportService = async (filters: ReportFilters) => {
         from: dateStart,
         to: dateEnd,
       },
+      userRole: existingUser.role
     };
 
     return reportData;
