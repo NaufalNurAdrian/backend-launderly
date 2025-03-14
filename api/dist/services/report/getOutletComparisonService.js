@@ -16,9 +16,8 @@ exports.getOutletComparisonService = getOutletComparisonService;
 const prisma_1 = __importDefault(require("../../prisma"));
 const date_fns_1 = require("date-fns");
 function getOutletComparisonService() {
-    return __awaiter(this, arguments, void 0, function* (timeframe = "monthly") {
+    return __awaiter(this, arguments, void 0, function* (timeframe = "monthly", startDateParam, endDateParam) {
         try {
-            // Get all active outlets
             const outlets = yield prisma_1.default.outlet.findMany({
                 where: {
                     isDelete: false
@@ -29,42 +28,54 @@ function getOutletComparisonService() {
                     outletType: true
                 }
             });
-            // Determine date range based on timeframe
             const now = new Date();
             let dateStart;
             let dateEnd = (0, date_fns_1.endOfDay)(now);
-            switch (timeframe) {
-                case "daily":
-                    // Today only
-                    dateStart = (0, date_fns_1.startOfDay)(now);
-                    break;
-                case "weekly":
-                    // Use last 7 days instead of current week - more likely to have data
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 6)); // 6 days ago + today = 7 days
-                    dateEnd = (0, date_fns_1.endOfDay)(now);
-                    break;
-                case "monthly":
-                    // Current month
-                    dateStart = (0, date_fns_1.startOfMonth)(now);
-                    dateEnd = (0, date_fns_1.endOfMonth)(now);
-                    break;
-                case "yearly":
-                    // Current year
-                    dateStart = (0, date_fns_1.startOfYear)(now);
-                    dateEnd = (0, date_fns_1.endOfYear)(now);
-                    break;
-                case "custom":
-                    // Last 30 days for custom if no specific dates provided
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
-                    break;
-                default:
-                    // Default to last 30 days
-                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
+            if (timeframe === "custom" && startDateParam && endDateParam) {
+                try {
+                    dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.parseISO)(startDateParam));
+                    dateEnd = (0, date_fns_1.endOfDay)((0, date_fns_1.parseISO)(endDateParam));
+                    console.log(`Custom date range parsed successfully: ${(0, date_fns_1.format)(dateStart, 'yyyy-MM-dd')} to ${(0, date_fns_1.format)(dateEnd, 'yyyy-MM-dd')}`);
+                }
+                catch (error) {
+                    console.error("Error parsing custom date parameters:", error);
+                    try {
+                        dateStart = new Date(startDateParam);
+                        dateEnd = new Date(endDateParam);
+                        dateStart.setHours(0, 0, 0, 0);
+                        dateEnd.setHours(23, 59, 59, 999);
+                    }
+                    catch (fallbackError) {
+                        console.error("Fallback date parsing also failed:", fallbackError);
+                        dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 30));
+                        console.log(`Falling back to last 30 days: ${(0, date_fns_1.format)(dateStart, 'yyyy-MM-dd')} to ${(0, date_fns_1.format)(dateEnd, 'yyyy-MM-dd')}`);
+                    }
+                }
             }
-            console.log(`Generating outlet comparison for timeframe ${timeframe} from ${(0, date_fns_1.format)(dateStart, 'yyyy-MM-dd')} to ${(0, date_fns_1.format)(dateEnd, 'yyyy-MM-dd')}`);
-            // Collect metrics for each outlet
+            else {
+                switch (timeframe) {
+                    case "daily":
+                        dateStart = (0, date_fns_1.startOfDay)(now);
+                        dateEnd = (0, date_fns_1.endOfDay)(now);
+                        break;
+                    case "weekly":
+                        dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 6));
+                        dateEnd = (0, date_fns_1.endOfDay)(now);
+                        break;
+                    case "monthly":
+                        dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
+                        dateEnd = (0, date_fns_1.endOfDay)(now);
+                        break;
+                    case "yearly":
+                        dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 364));
+                        dateEnd = (0, date_fns_1.endOfDay)(now);
+                        break;
+                    default:
+                        dateStart = (0, date_fns_1.startOfDay)((0, date_fns_1.subDays)(now, 29));
+                        dateEnd = (0, date_fns_1.endOfDay)(now);
+                }
+            }
             const outletMetrics = yield Promise.all(outlets.map((outlet) => __awaiter(this, void 0, void 0, function* () {
-                // Find orders through the Order model directly, filtering by outlet via the pickup order
                 const orders = yield prisma_1.default.order.findMany({
                     where: {
                         pickupOrder: {
@@ -90,22 +101,20 @@ function getOutletComparisonService() {
                         deliveryOrder: true
                     }
                 });
-                console.log(`Found ${orders.length} orders for outlet ${outlet.outletName} in the selected timeframe`);
-                // Calculate total revenue
                 let revenue = 0;
                 orders.forEach(order => {
-                    // Add payment amounts
                     revenue += order.payment.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-                    // Add pickup price if exists
                     if (order.pickupOrder) {
                         revenue += order.pickupOrder.pickupPrice || 0;
                     }
-                    // Add delivery price if exists
-                    if (order.deliveryOrder && order.deliveryOrder.length > 0) {
+                    if (order.deliveryOrder && Array.isArray(order.deliveryOrder) && order.deliveryOrder.length > 0) {
                         revenue += order.deliveryOrder[0].deliveryPrice || 0;
                     }
+                    else if (order.deliveryOrder && !Array.isArray(order.deliveryOrder)) {
+                        const delivery = order.deliveryOrder;
+                        revenue += Number(delivery.deliveryPrice) || 0;
+                    }
                 });
-                // Get unique customer IDs from pickup orders
                 const customerIds = orders.map(order => { var _a; return (_a = order.pickupOrder) === null || _a === void 0 ? void 0 : _a.userId; }).filter(Boolean);
                 const uniqueCustomerIds = new Set(customerIds);
                 return {

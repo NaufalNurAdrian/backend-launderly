@@ -10,9 +10,11 @@ export class ReportController {
     try {
       const { filterOutlet, filterMonth, filterYear, timeframe, startDate, endDate } = req.query;
       
-      console.log("Sales report request:", {
-        filterOutlet, filterMonth, filterYear, timeframe, startDate, endDate
-      });
+      if (!req.user?.id) {
+       res.status(401).send({ 
+          message: "Unauthorized. User not authenticated properly." 
+        });
+      }
       
       const result = await getSalesReportService({
         filterOutlet: filterOutlet as string,
@@ -29,6 +31,13 @@ export class ReportController {
         .send({ message: "Successfully fetched sales report", result });
     } catch (error: any) {
       console.error("Error in getSalesReportController:", error);
+      
+      if (error.message.includes("not assigned to any outlet")) {
+        res.status(400).send({ 
+          message: "You are not assigned to any outlet. Please contact an administrator." 
+        });
+      }
+      
       res
         .status(500)
         .send({ message: error.message || "Failed to get sales report" });
@@ -38,6 +47,13 @@ export class ReportController {
   async getEmployeePerformanceController(req: Request, res: Response) {
     try {
       const { filterOutlet, filterMonth, filterYear } = req.query;
+      
+      if (!req.user?.id) {
+       res.status(401).send({ 
+          message: "Unauthorized. User not authenticated properly." 
+        });
+      }
+      
       const result = await getEmployeePerformanceService({
         filterOutlet: filterOutlet as string,
         filterMonth: filterMonth as string,
@@ -59,25 +75,22 @@ export class ReportController {
     try {
       const { outletId, startDate, endDate, timeframe, reportType } = req.query;
 
-      console.log("Report API request:", {
-        outletId,
-        startDate,
-        endDate,
-        timeframe,
-        reportType
-      });
+      if (!req.user?.id) {
+       res.status(401).json({
+          success: false,
+          message: "Unauthorized. User not authenticated properly."
+        });
+      }
 
-      // Validate parameters for custom timeframe
       if (timeframe === 'custom' && (!startDate || !endDate)) {
-        res.status(400).json({
+       res.status(400).json({
           success: false,
           message: "Date range is required for custom time period"
         });
       }
 
-      // Parse parameters with proper type conversion
-      const filters = {
-        outletId: outletId ? (outletId === 'all' ? undefined : parseInt(outletId as string)) : undefined,
+      const parsedFilters = {
+        requestedOutletId: outletId ? (outletId === 'all' ? undefined : parseInt(outletId as string)) : undefined,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         timeframe: ((timeframe as string) || "daily") as ReportTimeframe,
@@ -87,27 +100,19 @@ export class ReportController {
           | "customers"
           | "orders"
           | "comprehensive",
+        userId: Number(req.user?.id)
       };
 
-      // Format dates with proper time components
-      if (filters.startDate) {
-        filters.startDate.setHours(0, 0, 0, 0);
+      if (parsedFilters.startDate) {
+        parsedFilters.startDate.setHours(0, 0, 0, 0);
       }
       
-      if (filters.endDate) {
-        filters.endDate.setHours(23, 59, 59, 999);
+      if (parsedFilters.endDate) {
+        parsedFilters.endDate.setHours(23, 59, 59, 999);
       }
-
-      // Generate report with enhanced logging
-      console.log(`Generating ${filters.reportType} report for ${filters.timeframe} timeframe`, {
-        startDate: filters.startDate?.toISOString(),
-        endDate: filters.endDate?.toISOString(),
-        outletId: filters.outletId
-      });
       
-      const reportData = await generateOutletReportService(filters);
+      const reportData = await generateOutletReportService(parsedFilters);
 
-      // Return response with success status
       res.status(200).json({
         success: true,
         data: reportData,
@@ -115,7 +120,13 @@ export class ReportController {
     } catch (error: any) {
       console.error("Error in generateOutletReport controller:", error);
       
-      // Provide detailed error message for troubleshooting
+      if (error.message.includes("not assigned to any outlet")) {
+       res.status(400).json({
+          success: false,
+          message: "You are not assigned to any outlet. Please contact an administrator."
+        });
+      }
+      
       res.status(500).json({
         success: false,
         message: error.message,
@@ -128,25 +139,47 @@ export class ReportController {
     try {
       const { timeframe, startDate, endDate } = req.query;
       
+      if (!req.user?.id) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized. User not authenticated properly."
+        });
+      }
+      
       console.log(`Outlet comparison request:`, {
         timeframe,
         startDate,
         endDate
       });
       
-      // Parse timeframe
+      if (timeframe === 'custom' && (!startDate || !endDate)) {
+        res.status(400).json({
+          success: false,
+          message: "Start date and end date are required for custom timeframe"
+        });
+      }
+      
       const parsedTimeframe = (timeframe as string || "monthly") as ReportTimeframe;
-  
-      // Sesuaikan pemanggilan getOutletComparisonService dengan jumlah parameter yang benar
-      // Error sebelumnya: Expected 0-1 arguments, but got 3
-      const comparisonData = await getOutletComparisonService(parsedTimeframe);
-  
+      
+      const comparisonData = await getOutletComparisonService(
+        parsedTimeframe,
+        startDate as string,
+        endDate as string
+      );
+    
       res.status(200).json({
         success: true,
         data: comparisonData,
       });
     } catch (error: any) {
       console.error("Error in compareOutlets controller:", error);
+      
+      if (error.message.includes("Only super admins")) {
+        res.status(403).json({
+          success: false,
+          message: error.message
+        });
+      }
       
       res.status(500).json({
         success: false,
@@ -159,9 +192,15 @@ export class ReportController {
     try {
       const { outletId, period, startDate, endDate } = req.query;
 
-      // Parse parameters with proper validation
+      if (!req.user?.id) {
+       res.status(401).json({
+          success: false,
+          message: "Unauthorized. User not authenticated properly."
+        });
+      }
+
       const filters = {
-        outletId: outletId ? parseInt(outletId as string) : undefined,
+        requestedOutletId: outletId ? parseInt(outletId as string) : undefined,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         timeframe: "custom" as "daily" | "weekly" | "monthly" | "custom",
@@ -171,9 +210,9 @@ export class ReportController {
           | "customers"
           | "orders"
           | "comprehensive",
+        userId: Number(req.user?.id)
       };
 
-      // Format dates with proper time components
       if (filters.startDate) {
         filters.startDate.setHours(0, 0, 0, 0);
       }
@@ -184,7 +223,6 @@ export class ReportController {
 
       const reportData = await generateOutletReportService(filters);
 
-      // Extract trends data from report
       const trends = reportData.revenue.daily;
 
       res.status(200).json({
@@ -197,6 +235,12 @@ export class ReportController {
       });
     } catch (error: any) {
       console.error("Error in getTransactionTrends controller:", error);
+      if (error.message.includes("not assigned to any outlet")) {
+       res.status(400).json({
+          success: false,
+          message: "You are not assigned to any outlet. Please contact an administrator."
+        });
+      }
       res.status(500).json({
         success: false,
         message: error.message,
@@ -208,9 +252,15 @@ export class ReportController {
     try {
       const { outletId, timeframe, startDate, endDate } = req.query;
 
-      // Parse parameters with proper validation
+      if (!req.user?.id) {
+       res.status(401).json({
+          success: false,
+          message: "Unauthorized. User not authenticated properly."
+        });
+      }
+
       const filters = {
-        outletId: outletId ? parseInt(outletId as string) : undefined,
+        requestedOutletId: outletId ? parseInt(outletId as string) : undefined,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         timeframe: ((timeframe as string) || "monthly") as
@@ -224,9 +274,9 @@ export class ReportController {
           | "customers"
           | "orders"
           | "comprehensive",
+        userId: Number(req.user?.id)
       };
 
-      // Format dates with proper time components
       if (filters.startDate) {
         filters.startDate.setHours(0, 0, 0, 0);
       }
@@ -243,6 +293,12 @@ export class ReportController {
       });
     } catch (error: any) {
       console.error("Error in getCustomerAnalytics controller:", error);
+      if (error.message.includes("not assigned to any outlet")) {
+       res.status(400).json({
+          success: false,
+          message: "You are not assigned to any outlet. Please contact an administrator."
+        });
+      }
       res.status(500).json({
         success: false,
         message: error.message,
